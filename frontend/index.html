@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#7c3aed">
+    <title>مدیا</title>
+    <link rel="stylesheet" href="/static/style.css?v=2">
+</head>
+
+<body>
+
+<!-- ================= AUTH ================= -->
+
+<section class="auth-screen" id="authScreen">
+
+    <div class="auth-card">
+
+        <div class="brand">
+            <div class="brand-logo">M</div>
+
+            <h1>مدیا</h1>
+
+            <p>
+                پیام‌رسان مدرن و امن شما
+            </p>
+        </div>
+
+
+        <!-- LOGIN -->
+
+        <div class="auth-form" id="loginForm">
+
+            <h2>خوش آمدید 👋</h2>
+
+            <p class="form-subtitle">
+                برای ورود به حساب مدیا اطلاعات خود را وارد کنید.
+            </p>
+
+            <label>
+                نام کاربری
+            </label>
+
+            <input
+                id="loginUsername"
+                type="text"
+                placeholder="نام کاربری"
+                autocomplete="username"
+            >
+
+            <label>
+                رمز عبور
+            </label>
+
+            <input
+                id="loginPassword"
+                type="password"
+                placeholder="رمز عبور"
+                autocomplete="current-password"
+            >
+
+            <button
+                class="primary-button"
+                id="loginButton"
+                type="button"
+            >
+                ورود به مدیا
+            </button>
+
+            <div class="switch-auth">
+
+                حساب ندارید؟
+
+                <button
+                    id="showRegister"
+                    type="button"
+                >
+                    ثبت‌نام کنید
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- REGISTER -->
+
+        <div
+            class="auth-form hidden"
+            id="registerForm"
+        >
+
+            <h2>ساخت حساب 💜</h2>
+
+            <p class="form-subtitle">
+                به خانواده مدیا بپیوندید.
+            </p>
+
+
+            <label>
+                نام شما
+            </label>
+
+            <input
+                id="registerName"
+                type="text"
+                placeholder="نام نمایشی"
+                autocomplete="name"
+            >
+
+            <div
+                class="field-error"
+                id="nameError"
+            ></div>
+
+
+            <label>
+                نام کاربری
+            </label>
+
+            <input
+                id="registerUsername"
+                type="text"
+                placeholder="مثلاً media_user"
+                autocomplete="username"
+            >
+
+            <div
+                class="field-error"
+                id="usernameError"
+            ></div>
+
+
+            <label>
+                ایمیل
+            </label>
+
+            <input
+                id="registerEmail"
+                type="email"
+                placeholder="example@gmail.com"
+                autocomplete="email"
+            >
+
+            <div
+                class="field-error"
+                id="emailError"
+            ></div>
+
+
+            <label>
+                رمز عبور
+            </label>
+
+            <input
+                id="registerPassword"
+                type="password"
+                placeholder="رمز عبور قوی"
+                autocomplete="new-password"
+            >
+
+
+            <div
+                class="password-rules"
+                id="passwordRules"
+            >
+
+                <div
+                    class="rule"
+                    id="ruleLength"
+                >
+                    <span>●</span>
+                    حداقل ۸ کاراکتر
+                </div>
+
+                <div
+                    class="rule"
+                    id="ruleUpper"
+                >
+                    <span>●</span>
+                    حداقل یک حرف بزرگ انگلیسی
+                </div>
+
+                <div
+                    class="rule"
+                    id="ruleLower"
+                >
+                    <span>●</span>
+                    حداقل یک حرف کوچک انگلیسی
+                </div>
+
+                <div
+                    class="rule"
+                    id="ruleNumber"
+                >
+                    <span>●</span>
+                    حداقل یک عدد
+                </div>
+
+                <div
+                    class="rule"
+                    id="ruleSymbol"
+                >
+                    <span>●</span>
+                    حداقل یک علامت مثل @ یا #
+                </div>
+
+            </div>
+
+
+            <label>
+                تکرار رمز عبور
+            </label>
+
+            <input
+                id="registerPassword2"
+                type="password"
+                placeholder="رمز عبور را دوباره وارد کنید"
+                autocomplete="new-password"
+            >
+
+            <div
+                class="field-error"
+                id="passwordError"
+            ></div>
+
+
+            <button
+                class="primary-button"
+                id="registerButton"
+                type="button"
+            >
+                ساخت حساب
+            </button>
+
+
+            <div class="switch-auth">
+
+                قبلاً حساب ساخته‌اید؟
+
+                <button
+                    id="showLogin"
+                    type="button"
+                >
+                    ورود
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= MAIN APP ================= -->
+
+<div
+    class="app hidden"
+    id="mainApp"
+>
+
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-header">
+
+            <div>
+                <h1>مدیا</h1>
+
+                <span>
+                    پیام‌رسان شما
+                </span>
+            </div>
+
+
+            <button
+                class="circle-button"
+                id="profileButton"
+                title="تنظیمات"
+            >
+                ⚙️
+            </button>
+
+        </div>
+
+
+        <div class="search-box">
+
+            <span>⌕</span>
+
+            <input
+                id="searchInput"
+                type="text"
+                placeholder="جستجوی گفتگو..."
+            >
+
+        </div>
+
+
+        <button
+            class="new-chat-button"
+            id="newChatButton"
+            type="button"
+        >
+            ✨ گفتگوی جدید
+        </button>
+
+
+        <!-- EMPTY CHAT LIST -->
+
+        <div
+            class="chats"
+            id="chatList"
+        >
+
+            <div
+                class="empty-chat-list"
+                id="emptyChatList"
+            >
+
+                <div class="empty-list-icon">
+                    💬
+                </div>
+
+                <strong>
+                    هنوز گفتگویی ندارید
+                </strong>
+
+                <span>
+                    یک گفتگوی جدید شروع کنید.
+                </span>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- CHAT -->
+
+    <main
+        class="chat-page"
+        id="chatPage"
+    >
+
+        <!-- CHAT HEADER -->
+
+        <header class="chat-header">
+
+            <button
+                class="back-button"
+                id="backButton"
+            >
+                → 
+            </button>
+
+
+            <div class="chat-avatar">
+                💜
+            </div>
+
+
+            <div class="chat-header-info">
+
+                <strong id="chatTitle">
+                    مدیا
+                </strong>
+
+                <span id="chatStatus">
+                    پشتیبانی رسمی برنامه
+                </span>
+
+            </div>
+
+
+            <div class="chat-actions">
+
+                <button
+                    id="searchChatButton"
+                    title="جستجو"
+                >
+                    🔍
+                </button>
+
+                <button
+                    id="chatMenuButton"
+                    title="بیشتر"
+                >
+                    ⋮
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <!-- MESSAGES -->
+
+        <div
+            class="messages"
+            id="messages"
+        >
+
+            <div class="welcome-card">
+
+                <div class="welcome-icon">
+                    💜
+                </div>
+
+                <h2>
+                    به مدیا خوش آمدید
+                </h2>
+
+                <p>
+                    اینجا می‌توانید با دوستان خود
+                    گفتگو کنید، عکس و ویدیو بفرستید
+                    و از ایموجی‌های اختصاصی مدیا استفاده کنید.
+                </p>
+
+                <div class="welcome-owner">
+                    👑 Media
+                    <span>💎 Premium</span>
+                </div>
+
+            </div>
+
+
+            <div class="system-message">
+
+                🎁
+
+                <strong>
+                    Media
+                </strong>
+
+                <span>
+                    پشتیبانی رسمی مدیا
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- MESSAGE COMPOSER -->
+
+        <div class="message-composer">
+
+            <button
+                id="emojiButton"
+                type="button"
+                title="ایموجی"
+            >
+                😊
+            </button>
+
+
+            <button
+                id="fileButton"
+                type="button"
+                title="فایل"
+            >
+                📎
+            </button>
+
+
+            <input
+                id="messageInput"
+                type="text"
+                placeholder="پیام خود را بنویسید..."
+                autocomplete="off"
+            >
+
+
+            <button
+                id="mediaButton"
+                type="button"
+                title="عکس و ویدیو"
+            >
+                🖼️
+            </button>
+
+
+            <button
+                class="send-button"
+                id="sendButton"
+                type="button"
+                title="ارسال"
+            >
+                ➤
+            </button>
+
+        </div>
+
+
+        <!-- EMOJI PICKER -->
+
+        <div
+            class="emoji-picker hidden"
+            id="emojiPicker"
+        >
+
+            <div class="emoji-header">
+
+                <strong>
+                    ایموجی‌ها
+                </strong>
+
+                <span>
+                    💎 Premium
+                </span>
+
+            </div>
+
+
+            <div
+                class="emoji-grid"
+                id="emojiGrid"
+            ></div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- ================= SETTINGS ================= -->
+
+<aside
+    class="settings-panel"
+    id="settingsPanel"
+>
+
+    <div class="settings-header">
+
+        <button
+            id="closeSettings"
+            type="button"
+        >
+            ×
+        </button>
+
+        <h2>
+            تنظیمات مدیا
+        </h2>
+
+    </div>
+
+
+    <!-- PROFILE -->
+
+    <div class="profile-card">
+
+        <div class="profile-avatar">
+            👤
+        </div>
+
+        <div>
+
+            <strong id="profileName">
+                کاربر مدیا
+            </strong>
+
+            <span id="profileUsername">
+                حساب کاربری
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- SETTINGS -->
+
+    <div class="settings-list">
+
+
+        <button
+            class="setting-item"
+            id="accountSetting"
+        >
+
+            <div class="setting-icon purple-bg">
+                👤
+            </div>
+
+            <div class="setting-text">
+
+                <strong>
+                    نام و اطلاعات حساب
+                </strong>
+
+                <small>
+                    مدیریت پروفایل و اطلاعات حساب
+                </small>
+
+            </div>
+
+            <span>‹</span>
+
+        </button>
+
+
+        <button
+            class="setting-item"
+            id="notificationSetting"
+        >
+
+            <div class="setting-icon blue-bg">
+                🔔
+            </div>
+
+            <div class="setting-text">
+
+                <strong>
+                    اعلان‌ها
+                </strong>
+
+                <small>
+                    مدیریت اعلان‌ها
+                </small>
+
+            </div>
+
+            <span>‹</span>
+
+        </button>
+
+
+        <button
+            class="setting-item"
+            id="privacySetting"
+        >
+
+            <div class="setting-icon green-bg">
+                🔒
+            </div>
+
+            <div class="setting-text">
+
+                <strong>
+                    حریم خصوصی
+                </strong>
+
+                <small>
+                    امنیت و حریم خصوصی
+                </small>
+
+            </div>
+
+            <span>‹</span>
+
+        </button>
+
+
+        <button
+            class="setting-item"
+            id="appearanceSetting"
+        >
+
+            <div class="setting-icon pink-bg">
+                🎨
+            </div>
+
+            <div class="setting-text">
+
+                <strong>
+                    ظاهر برنامه
+                </strong>
+
+                <small>
+                    رنگ و حالت نمایش
+                </small>
+
+            </div>
+
+            <span>‹</span>
+
+        </button>
+
+
+        <button
+            class="setting-item"
+            id="aboutSetting"
+        >
+
+            <div class="setting-icon orange-bg">
+                ℹ️
+            </div>
+
+            <div class="setting-text">
+
+                <strong>
+                    درباره برنامه
+                </strong>
+
+                <small>
+                    درباره مدیا و قوانین
+                </small>
+
+            </div>
+
+            <span>‹</span>
+
+        </button>
+
+    </div>
+
+
+    <!-- ABOUT -->
+
+    <div
+        class="about-card"
+        id="aboutCard"
+    >
+
+        <div class="about-logo">
+            M
+        </div>
+
+        <h3>
+            درباره مدیا 💜
+        </h3>
+
+        <p>
+            مدیا یک پیام‌رسان مدرن برای
+            گفتگو و ارتباط با دیگران است.
+        </p>
+
+        <div class="about-version">
+            Media Messenger • v1.0
+        </div>
+
+
+        <div class="rules">
+
+            <strong>
+                📜 قوانین مدیا
+            </strong>
+
+            <p>
+                احترام به کاربران الزامی است.
+                ارسال محتوای غیرقانونی، مزاحمت،
+                جعل هویت و سوءاستفاده از برنامه
+                ممنوع است.
+            </p>
+
+            <p>
+                رعایت حریم خصوصی دیگر کاربران
+                الزامی است.
+            </p>
+
+            <strong>
+                👑 سازنده: King Bad
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <button
+        class="logout-button"
+        id="logoutButton"
+        type="button"
+    >
+        خروج از حساب
+    </button>
+
+</aside>
+
+
+<script src="/static/app.js?v=2"></script>
+
+</body>
+</html>
