@@ -753,12 +753,9 @@ def update_presence(
 
 @app.get("/")
 def home():
-
-    return {
-        "message": "Media Messenger server is running!",
-        "status": "online",
-        "version": "1.0.0"
-    }
+    return FileResponse(
+        BASE_DIR / "frontend" / "index.html"
+    )
 
 
 # =========================

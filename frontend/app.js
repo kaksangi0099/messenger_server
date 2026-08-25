@@ -54,7 +54,6 @@ const profileName = document.getElementById("profileName");
 const profileUsername = document.getElementById("profileUsername");
 
 const logoutButton = document.getElementById("logoutButton");
-
 const chatPage = document.getElementById("chatPage");
 const backButton = document.getElementById("backButton");
 
@@ -85,6 +84,7 @@ const aboutSetting = document.getElementById("aboutSetting");
 ========================= */
 
 let currentUser = null;
+let activeChatUsername = null;
 
 
 /* =========================
@@ -757,45 +757,215 @@ newChatButton.addEventListener(
 
 
 /* =========================
-   SEND MESSAGE
+   REAL CHAT / SEND MESSAGE
 ========================= */
 
-function sendMessage() {
+async function loadChatMessages(username) {
 
-    const text =
-        messageInput.value.trim();
+    if (!username || !currentUser) {
+        return;
+    }
 
+    activeChatUsername = username;
+
+    messages.innerHTML = `
+        <div style="text-align:center;padding:20px;color:#999;">
+            در حال دریافت پیام‌ها...
+        </div>
+    `;
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/messages/${encodeURIComponent(username)}`,
+            {
+                headers: {
+                    "Authorization": "Bearer " + getToken()
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            messages.innerHTML = "";
+            alert(data.detail || "پیام‌ها دریافت نشدند.");
+            return;
+        }
+
+        messages.innerHTML = "";
+
+        (data.messages || []).forEach(renderMessage);
+
+        messages.scrollTop = messages.scrollHeight;
+
+    } catch (error) {
+
+        console.error("Load messages error:", error);
+
+        messages.innerHTML = `
+            <div style="text-align:center;padding:20px;color:#999;">
+                اتصال به سرور برقرار نشد.
+            </div>
+        `;
+    }
+}
+
+
+function renderMessage(message) {
+
+    const bubble = document.createElement("div");
+
+    const mine =
+        Number(message.sender_id) === Number(currentUser.id);
+
+    bubble.style.maxWidth = "75%";
+    bubble.style.width = "fit-content";
+    bubble.style.margin = mine
+        ? "8px 0 8px auto"
+        : "8px auto 8px 0";
+    bubble.style.padding = "10px 14px";
+    bubble.style.borderRadius = mine
+        ? "17px 17px 4px 17px"
+        : "17px 17px 17px 4px";
+    bubble.style.lineHeight = "1.7";
+    bubble.style.wordBreak = "break-word";
+
+    if (mine) {
+        bubble.style.color = "white";
+        bubble.style.background =
+            "linear-gradient(135deg,#8b5cf6,#6d28d9)";
+    } else {
+        bubble.style.color = "#222";
+        bubble.style.background = "#eeeeee";
+    }
+
+    if (message.text) {
+
+        const text = document.createElement("div");
+        text.textContent = message.text;
+        bubble.appendChild(text);
+    }
+
+    if (message.media_url) {
+
+        const url = message.media_url.startsWith("http")
+            ? message.media_url
+            : API_URL + message.media_url;
+
+        if (message.media_type === "image") {
+
+            const img = document.createElement("img");
+
+            img.src = url;
+            img.style.maxWidth = "240px";
+            img.style.maxHeight = "320px";
+            img.style.borderRadius = "12px";
+            img.style.display = "block";
+            img.style.marginTop = message.text ? "8px" : "0";
+
+            bubble.appendChild(img);
+
+        } else if (message.media_type === "video") {
+
+            const video = document.createElement("video");
+
+            video.src = url;
+            video.controls = true;
+            video.style.maxWidth = "260px";
+            video.style.borderRadius = "12px";
+            video.style.display = "block";
+            video.style.marginTop = message.text ? "8px" : "0";
+
+            bubble.appendChild(video);
+        }
+    }
+
+    const time = document.createElement("div");
+
+    time.textContent = formatLastSeen(message.created_at);
+
+    time.style.fontSize = "10px";
+    time.style.opacity = "0.65";
+    time.style.marginTop = "3px";
+
+    bubble.appendChild(time);
+
+    messages.appendChild(bubble);
+}
+
+
+async function sendMessage() {
+
+    const text = messageInput.value.trim();
 
     if (!text) {
         return;
     }
 
+    if (!activeChatUsername) {
 
-    const bubble =
-        document.createElement("div");
+        alert("اول یک کاربر را برای گفتگو انتخاب کنید.");
 
+        return;
+    }
 
-    bubble.style.maxWidth = "75%";
-    bubble.style.width = "fit-content";
-    bubble.style.margin = "8px 0 8px auto";
-    bubble.style.padding = "11px 15px";
-    bubble.style.borderRadius = "17px 17px 4px 17px";
-    bubble.style.color = "white";
-    bubble.style.background =
-        "linear-gradient(135deg,#8b5cf6,#6d28d9)";
-    bubble.style.lineHeight = "1.7";
-    bubble.textContent = text;
+    const oldText = messageInput.value;
 
+    sendButton.disabled = true;
 
-    messages.appendChild(
-        bubble
-    );
+    try {
 
+        const params = new URLSearchParams();
 
-    messageInput.value = "";
+        params.set(
+            "receiver_username",
+            activeChatUsername
+        );
 
-    messages.scrollTop =
-        messages.scrollHeight;
+        params.set("text", text);
+
+        const response = await fetch(
+            `${API_URL}/messages?${params.toString()}`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Authorization": "Bearer " + getToken()
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            alert(
+                data.detail ||
+                "پیام ارسال نشد."
+            );
+
+            return;
+        }
+
+        messageInput.value = "";
+
+        await loadChatMessages(activeChatUsername);
+
+    } catch (error) {
+
+        console.error("Send message error:", error);
+
+        messageInput.value = oldText;
+
+        alert("ارتباط با سرور برقرار نشد.");
+
+    } finally {
+
+        sendButton.disabled = false;
+
+        messageInput.focus();
+    }
 }
 
 
@@ -809,9 +979,7 @@ messageInput.addEventListener(
     "keydown",
     event => {
 
-        if (
-            event.key === "Enter"
-        ) {
+        if (event.key === "Enter") {
 
             event.preventDefault();
 
@@ -1364,6 +1532,8 @@ if (userProfileMessage) {
 
             closeUserProfile();
 
+            activeChatUsername = selectedProfile.username;
+
             openChat(
                 selectedProfile.name,
                 "@" +
@@ -1373,6 +1543,10 @@ if (userProfileMessage) {
             if (realSearchInput) {
                 realSearchInput.value = "";
             }
+
+            loadChatMessages(
+                selectedProfile.username
+            );
         }
     );
 }
