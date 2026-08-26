@@ -1077,6 +1077,7 @@ document.addEventListener(
     event => {
 
         if (
+            emojiPicker &&
             !emojiPicker.contains(
                 event.target
             ) &&
