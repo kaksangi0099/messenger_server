@@ -590,8 +590,8 @@ function updateProfile() {
    SETTINGS
 ========================= */
 
-if (fileButton) {
-    fileButton.addEventListener(
+if (profileButton && settingsPanel) {
+    profileButton.addEventListener(
         "click",
         () => {
             settingsPanel.classList.add(
