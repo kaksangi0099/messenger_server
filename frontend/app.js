@@ -134,12 +134,12 @@ function showRegisterScreen() {
 }
 
 
-showRegister.addEventListener(
+if (showRegister) showRegister.addEventListener(
     "click",
     showRegisterScreen
 );
 
-showLogin.addEventListener(
+if (showLogin) showLogin.addEventListener(
     "click",
     showLoginScreen
 );
@@ -221,7 +221,7 @@ function checkPassword(password) {
 }
 
 
-registerPassword.addEventListener(
+if (registerPassword) registerPassword.addEventListener(
     "input",
     () => {
 
@@ -263,7 +263,7 @@ function checkPasswordMatch() {
 }
 
 
-registerPassword2.addEventListener(
+if (registerPassword2) registerPassword2.addEventListener(
     "input",
     checkPasswordMatch
 );
@@ -284,7 +284,7 @@ function validGmail(email) {
    REGISTER
 ========================= */
 
-registerButton.addEventListener(
+if (registerButton) registerButton.addEventListener(
     "click",
     async () => {
 
@@ -449,7 +449,7 @@ registerButton.addEventListener(
    LOGIN
 ========================= */
 
-loginButton.addEventListener(
+if (loginButton) loginButton.addEventListener(
     "click",
     async () => {
 
@@ -590,7 +590,7 @@ function updateProfile() {
    SETTINGS
 ========================= */
 
-profileButton.addEventListener(
+if (profileButton) proif (fileButton) fileButton.addEventListener(
     "click",
     () => {
 
@@ -601,7 +601,7 @@ profileButton.addEventListener(
 );
 
 
-closeSettings.addEventListener(
+if (closeSettings) closeSettings.addEventListener(
     "click",
     () => {
 
@@ -616,7 +616,7 @@ closeSettings.addEventListener(
    SETTINGS BUTTONS
 ========================= */
 
-accountSetting.addEventListener(
+if (accountSetting) accountSetting.addEventListener(
     "click",
     () => {
 
@@ -627,7 +627,7 @@ accountSetting.addEventListener(
 );
 
 
-notificationSetting.addEventListener(
+if (notificationSetting) notificationSetting.addEventListener(
     "click",
     () => {
 
@@ -638,7 +638,7 @@ notificationSetting.addEventListener(
 );
 
 
-privacySetting.addEventListener(
+if (privacySetting) privacySetting.addEventListener(
     "click",
     () => {
 
@@ -649,7 +649,7 @@ privacySetting.addEventListener(
 );
 
 
-appearanceSetting.addEventListener(
+if (appearanceSetting) appearanceSetting.addEventListener(
     "click",
     () => {
 
@@ -660,7 +660,7 @@ appearanceSetting.addEventListener(
 );
 
 
-aboutSetting.addEventListener(
+if (aboutSetting) aboutSetting.addEventListener(
     "click",
     () => {
 
@@ -680,7 +680,7 @@ aboutSetting.addEventListener(
    LOGOUT
 ========================= */
 
-logoutButton.addEventListener(
+if (logoutButton) logoutButton.addEventListener(
     "click",
     () => {
 
@@ -735,7 +735,7 @@ function closeChat() {
 }
 
 
-backButton.addEventListener(
+if (backButton) backButton.addEventListener(
     "click",
     closeChat
 );
@@ -954,13 +954,13 @@ async function sendMessage() {
 }
 
 
-sendButton.addEventListener(
+if (sendButton) sendButton.addEventListener(
     "click",
     sendMessage
 );
 
 
-messageInput.addEventListener(
+if (messageInput) messageInput.addEventListener(
     "keydown",
     event => {
 
@@ -1058,7 +1058,7 @@ function createEmojiPicker() {
 }
 
 
-emojiButton.addEventListener(
+if (emojiButton) emojiButton.addEventListener(
     "click",
     event => {
 
@@ -1094,7 +1094,7 @@ document.addEventListener(
    MEDIA / FILE
 ========================= */
 
-mediaButton.addEventListener(
+if (mediaButton) mediaButton.addEventListener(
     "click",
     () => {
 
@@ -1113,7 +1113,7 @@ mediaButton.addEventListener(
 );
 
 
-fileButton.addEventListener(
+if (fileButton) fileButton.addEventListener(
     "click",
     () => {
 
@@ -1481,7 +1481,7 @@ function closeUserProfile() {
 
 if (userProfileClose) {
 
-    userProfileClose.addEventListener(
+    if (userProfileClose) userProfileClose.addEventListener(
         "click",
         closeUserProfile
     );
@@ -1490,7 +1490,7 @@ if (userProfileClose) {
 
 if (userProfileModal) {
 
-    userProfileModal.addEventListener(
+    if (userProfileModal) userProfileModal.addEventListener(
         "click",
         event => {
 
@@ -1507,7 +1507,7 @@ if (userProfileModal) {
 
 if (userProfileMessage) {
 
-    userProfileMessage.addEventListener(
+    if (userProfileMessage) userProfileMessage.addEventListener(
         "click",
         () => {
 
