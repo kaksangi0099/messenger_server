@@ -27,10 +27,7 @@ MEDIA_DIR.mkdir(exist_ok=True)
 
 DB_FILE = DATA_DIR / "media.db"
 
-SECRET_KEY = os.getenv(
-    "MEDIA_SECRET_KEY",
-    secrets.token_urlsafe(32)
-)
+SECRET_KEY = "R0Jb7g8QYNt9n-BJdBarhuvGlpvi4bBHzJTXm3qYcpj3LKQ6CnQzZe0hQ5qfqWMpE8mvNaP0GUBWnNfRmH7m8w"
 
 ALGORITHM = "HS256"
 
