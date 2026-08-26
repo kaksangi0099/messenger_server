@@ -590,7 +590,7 @@ function updateProfile() {
    SETTINGS
 ========================= */
 
-if (profileButton) profileButton.addEventListener(
+if (profileButton) proif (fileButton) fileButton.addEventListener(
     "click",
     () => {
 
@@ -954,13 +954,13 @@ async function sendMessage() {
 }
 
 
-if (sendButton) sendButton.addEventListener(
+if (sendButton) if (sendButton) sendButton.addEventListener(
     "click",
     sendMessage
 );
 
 
-if (messageInput) messageInput.addEventListener(
+if (messageInput) if (messageInput) messageInput.addEventListener(
     "keydown",
     event => {
 
@@ -1058,7 +1058,7 @@ function createEmojiPicker() {
 }
 
 
-if (emojiButton) emojiButton.addEventListener(
+if (emojiButton) if (emojiButton) emojiButton.addEventListener(
     "click",
     event => {
 
@@ -1094,7 +1094,7 @@ document.addEventListener(
    MEDIA / FILE
 ========================= */
 
-if (mediaButton) mediaButton.addEventListener(
+if (mediaButton) if (mediaButton) mediaButton.addEventListener(
     "click",
     () => {
 
@@ -1113,7 +1113,7 @@ if (mediaButton) mediaButton.addEventListener(
 );
 
 
-if (fileButton) fileButton.addEventListener(
+if (fileButton) if (fileButton) fileButton.addEventListener(
     "click",
     () => {
 
