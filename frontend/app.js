@@ -68,7 +68,6 @@ const emojiGrid = document.getElementById("emojiGrid");
 const mediaButton = document.getElementById("mediaButton");
 const fileButton = document.getElementById("fileButton");
 
-const newChatButton = document.getElementById("newChatButton");
 const chatTitle = document.getElementById("chatTitle");
 const chatStatus = document.getElementById("chatStatus");
 
@@ -739,20 +738,6 @@ function closeChat() {
 backButton.addEventListener(
     "click",
     closeChat
-);
-
-
-newChatButton.addEventListener(
-    "click",
-    () => {
-
-        openChat(
-            "گفتگوی جدید",
-            "آماده گفتگو"
-        );
-
-        messageInput.focus();
-    }
 );
 
 
