@@ -1247,7 +1247,10 @@ if (realSearchInput) {
 
 async function searchUsers(q) {
 
+    console.log("SEARCH START:", q, "USER:", currentUser);
+
     if (!currentUser) {
+        console.log("SEARCH STOP: currentUser is null");
         return;
     }
 
