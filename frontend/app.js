@@ -590,15 +590,16 @@ function updateProfile() {
    SETTINGS
 ========================= */
 
-fileButton.addEventListener(
-    "click",
-    () => {
-
-        settingsPanel.classList.add(
-            "open"
-        );
-    }
-);
+if (fileButton) {
+    fileButton.addEventListener(
+        "click",
+        () => {
+            settingsPanel.classList.add(
+                "open"
+            );
+        }
+    );
+}
 
 
 if (closeSettings) closeSettings.addEventListener(
