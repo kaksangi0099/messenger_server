@@ -1796,6 +1796,21 @@ window.addEventListener("DOMContentLoaded", () => {
                 item.querySelector("span").textContent =
                     "@" + user.username;
 
+                item.addEventListener("click", async () => {
+
+                    const usernameValue = user.username;
+
+                    if (!usernameValue) {
+                        return;
+                    }
+
+                    console.log("FINAL SEARCH OPEN PROFILE:", usernameValue);
+
+                    if (typeof openUserProfile === "function") {
+                        await openUserProfile(usernameValue);
+                    }
+                });
+
                 list.appendChild(item);
             });
 
