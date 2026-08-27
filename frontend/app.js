@@ -1294,6 +1294,8 @@ async function searchUsers(q) {
             return;
         }
 
+        console.log("SEARCH RESULT:", data.users);
+
         renderSearchResults(
             data.users || []
         );
