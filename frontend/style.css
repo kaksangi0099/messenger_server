@@ -1100,3 +1100,118 @@ button {
     }
 }
 
+
+/* =========================
+   SEARCH RESULT - CLEAN UI
+========================= */
+
+.real-search-user {
+    appearance: none;
+    -webkit-appearance: none;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    width: 100%;
+    min-height: 76px;
+    padding: 10px 16px !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(0,0,0,.07) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    direction: rtl;
+    text-align: right;
+    gap: 13px;
+    box-sizing: border-box;
+}
+
+.real-search-user .chat-avatar {
+    flex: 0 0 52px !important;
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 20px !important;
+    font-weight: 700;
+    color: #fff !important;
+    overflow: hidden;
+}
+
+.real-search-user .chat-item-info {
+    flex: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    overflow: hidden;
+}
+
+.real-search-user .search-user-name {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 16px !important;
+    line-height: 22px !important;
+    font-weight: 700 !important;
+    color: #222 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.real-search-user .search-user-username {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 13px !important;
+    line-height: 19px !important;
+    font-weight: 400 !important;
+    color: #8b8b96 !important;
+    direction: ltr !important;
+    text-align: left !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.real-search-user:hover {
+    background: rgba(120,80,190,.06) !important;
+}
+
+.real-search-user:active {
+    background: rgba(120,80,190,.12) !important;
+}
+
+@media (max-width: 600px) {
+
+    .real-search-user {
+        min-height: 72px;
+        padding: 9px 13px !important;
+    }
+
+    .real-search-user .chat-avatar {
+        flex-basis: 50px !important;
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
+        min-height: 50px !important;
+    }
+
+    .real-search-user .search-user-name {
+        font-size: 15.5px !important;
+    }
+
+    .real-search-user .search-user-username {
+        font-size: 12.5px !important;
+    }
+}
+

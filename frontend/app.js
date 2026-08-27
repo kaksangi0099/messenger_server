@@ -1350,16 +1350,26 @@ function renderSearchResults(users) {
 
         const avatar = document.createElement("div");
         avatar.className = "chat-avatar";
-        avatar.textContent =
-            user.role === "owner" ? "👑" : "👤";
+
+        if (user.role === "owner") {
+            avatar.textContent = "👑";
+        } else {
+            const firstLetter =
+                (user.name || user.username || "ک").trim().charAt(0);
+
+            avatar.textContent = firstLetter.toUpperCase();
+        }
 
         const info = document.createElement("div");
         info.className = "chat-item-info";
 
         const name = document.createElement("strong");
-        name.textContent = user.name || user.username || "کاربر";
+        name.className = "search-user-name";
+        name.textContent =
+            user.name || user.username || "کاربر";
 
         const username = document.createElement("span");
+        username.className = "search-user-username";
         username.textContent =
             "@" + (user.username || "");
 
@@ -1369,10 +1379,24 @@ function renderSearchResults(users) {
         item.appendChild(avatar);
         item.appendChild(info);
 
-        item.addEventListener("click", () => {
-            if (typeof openUserProfile === "function") {
-                openUserProfile(user.username);
+        item.addEventListener("click", async () => {
+
+            const usernameValue = user.username;
+
+            if (!usernameValue) {
+                return;
             }
+
+            // بستن نتایج جستجو
+            if (realSearchInput) {
+                realSearchInput.value = "";
+            }
+
+            // باز کردن چت
+            if (typeof loadChatMessages === "function") {
+                await loadChatMessages(usernameValue);
+            }
+
         });
 
         list.appendChild(item);
