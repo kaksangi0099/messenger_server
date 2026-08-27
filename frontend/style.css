@@ -1323,3 +1323,116 @@ button {
     overflow-y: auto;
 }
 
+
+/* =========================
+   FINAL TELEGRAM SEARCH UI
+========================= */
+
+.real-search-user {
+    width: 100% !important;
+    min-height: 74px !important;
+    padding: 9px 14px !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(120, 90, 180, 0.10) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 13px !important;
+    direction: rtl !important;
+    text-align: right !important;
+    box-sizing: border-box !important;
+    cursor: pointer;
+}
+
+.real-search-user:hover {
+    background: rgba(120, 80, 190, 0.07) !important;
+}
+
+.real-search-user:active {
+    background: rgba(120, 80, 190, 0.13) !important;
+}
+
+.real-search-user .chat-avatar {
+    flex: 0 0 52px !important;
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 21px !important;
+    font-weight: 700 !important;
+    color: white !important;
+    overflow: hidden !important;
+}
+
+.real-search-user .chat-item-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    overflow: hidden !important;
+}
+
+.real-search-user .search-user-name {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 16px !important;
+    line-height: 22px !important;
+    font-weight: 700 !important;
+    color: #222 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.real-search-user .search-user-username {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 13px !important;
+    line-height: 19px !important;
+    font-weight: 400 !important;
+    color: #888894 !important;
+    direction: ltr !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+@media (max-width: 600px) {
+    .real-search-user {
+        min-height: 72px !important;
+        padding: 9px 13px !important;
+        gap: 12px !important;
+    }
+
+    .real-search-user .chat-avatar {
+        flex-basis: 50px !important;
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
+        min-height: 50px !important;
+    }
+
+    .real-search-user .search-user-name {
+        font-size: 15.5px !important;
+    }
+
+    .real-search-user .search-user-username {
+        font-size: 12.5px !important;
+    }
+}
+
