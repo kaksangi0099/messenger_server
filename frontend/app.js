@@ -1269,6 +1269,9 @@ if (realSearchInput) {
 
 async function searchUsers(q) {
 
+    alert("SEARCH اجرا شد: " + q);
+
+
     console.log("SEARCH START:", q);
 
     const token = getToken();
