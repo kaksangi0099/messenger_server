@@ -1024,6 +1024,11 @@ const emojis = [
 
 function createEmojiPicker() {
 
+    if (!emojiGrid) {
+        console.warn("Emoji grid not found");
+        return;
+    }
+
     emojiGrid.innerHTML = "";
 
 
@@ -1065,9 +1070,11 @@ if (emojiButton) emojiButton.addEventListener(
 
         event.stopPropagation();
 
-        emojiPicker.classList.toggle(
-            "hidden"
-        );
+        if (emojiPicker) {
+            emojiPicker.classList.toggle(
+                "hidden"
+            );
+        }
     }
 );
 
