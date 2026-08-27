@@ -1420,14 +1420,11 @@ function renderSearchResults(users) {
                 return;
             }
 
-            // بستن نتایج جستجو
-            if (realSearchInput) {
-                realSearchInput.value = "";
-            }
+            console.log("OPEN PROFILE:", usernameValue);
 
-            // باز کردن چت
-            if (typeof loadChatMessages === "function") {
-                await loadChatMessages(usernameValue);
+            // باز کردن پروفایل کاربر
+            if (typeof openUserProfile === "function") {
+                await openUserProfile(usernameValue);
             }
 
         });
