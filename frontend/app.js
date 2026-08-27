@@ -1211,33 +1211,39 @@ function getToken() {
     return localStorage.getItem("media_token");
 }
 
-
 /* =========================
    SEARCH
 ========================= */
 
 let searchTimer = null;
 
+function runUserSearch() {
+    if (!realSearchInput) {
+        console.error("SEARCH: searchInput not found");
+        return;
+    }
+
+    const q = realSearchInput.value.trim();
+
+    clearTimeout(searchTimer);
+
+    if (!q) {
+        restoreEmptyChatList();
+        return;
+    }
+
+    searchUsers(q);
+}
+
 if (realSearchInput) {
 
     realSearchInput.addEventListener(
         "input",
         () => {
-
             clearTimeout(searchTimer);
 
-            const q =
-                realSearchInput.value.trim();
-
-            if (!q) {
-
-                restoreEmptyChatList();
-
-                return;
-            }
-
             searchTimer = setTimeout(
-                () => searchUsers(q),
+                runUserSearch,
                 250
             );
         }
@@ -1248,20 +1254,11 @@ if (realSearchInput) {
         event => {
             if (event.key === "Enter") {
                 event.preventDefault();
-
-                clearTimeout(searchTimer);
-
-                const q =
-                    realSearchInput.value.trim();
-
-                if (q) {
-                    searchUsers(q);
-                }
+                runUserSearch();
             }
         }
     );
 }
-
 
 async function searchUsers(q) {
 
