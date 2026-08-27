@@ -1265,10 +1265,12 @@ if (realSearchInput) {
 
 async function searchUsers(q) {
 
-    console.log("SEARCH START:", q, "USER:", currentUser);
+    console.log("SEARCH START:", q);
 
-    if (!currentUser) {
-        console.log("SEARCH STOP: currentUser is null");
+    const token = getToken();
+
+    if (!token) {
+        console.error("SEARCH STOP: token is missing");
         return;
     }
 
