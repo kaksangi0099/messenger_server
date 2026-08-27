@@ -1412,20 +1412,21 @@ function renderSearchResults(users) {
         item.appendChild(avatar);
         item.appendChild(info);
 
-        item.addEventListener("click", async () => {
+        item.addEventListener("click", async (event) => {
+
+            event.preventDefault();
+            event.stopPropagation();
 
             const usernameValue = user.username;
 
             if (!usernameValue) {
+                console.error("PROFILE: username missing");
                 return;
             }
 
             console.log("OPEN PROFILE:", usernameValue);
 
-            // باز کردن پروفایل کاربر
-            if (typeof openUserProfile === "function") {
-                await openUserProfile(usernameValue);
-            }
+            await openUserProfile(usernameValue);
 
         });
 
