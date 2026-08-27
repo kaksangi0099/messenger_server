@@ -981,3 +981,122 @@ button {
     margin-top: 22px;
 }
 
+
+/* =========================
+   TELEGRAM STYLE SEARCH USERS
+========================= */
+
+.real-search-user {
+    width: 100%;
+    min-height: 72px;
+    padding: 10px 14px;
+    margin: 0;
+    border: 0;
+    border-bottom: 1px solid rgba(120, 90, 180, 0.10);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    direction: rtl;
+    text-align: right;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    box-sizing: border-box;
+}
+
+.real-search-user:hover {
+    background: rgba(120, 80, 190, 0.07);
+}
+
+.real-search-user:active {
+    background: rgba(120, 80, 190, 0.13);
+}
+
+/* Avatar */
+
+.real-search-user .chat-avatar {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    color: white;
+    box-shadow: 0 3px 10px rgba(109, 40, 217, 0.20);
+}
+
+/* Name + username container */
+
+.real-search-user .chat-item-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    overflow: hidden;
+}
+
+/* Display name */
+
+.real-search-user .chat-item-info strong {
+    width: 100%;
+    font-size: 16px;
+    line-height: 21px;
+    font-weight: 700;
+    color: #202124;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* @username */
+
+.real-search-user .chat-item-info span {
+    width: 100%;
+    font-size: 13px;
+    line-height: 18px;
+    color: #8a8a95;
+    direction: ltr;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Owner */
+
+.real-search-user .chat-avatar:has(+ .chat-item-info) {
+    flex-shrink: 0;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    .real-search-user {
+        min-height: 70px;
+        padding: 9px 12px;
+        gap: 12px;
+    }
+
+    .real-search-user .chat-avatar {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        font-size: 22px;
+    }
+
+    .real-search-user .chat-item-info strong {
+        font-size: 15.5px;
+    }
+
+    .real-search-user .chat-item-info span {
+        font-size: 12.5px;
+    }
+}
+
