@@ -1457,6 +1457,8 @@ function restoreEmptyChatList() {
 
 async function openUserProfile(username) {
 
+    console.log("PROFILE FUNCTION START:", username);
+
     try {
 
         const response =
