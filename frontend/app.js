@@ -1319,62 +1319,65 @@ async function searchUsers(q) {
 
 function renderSearchResults(users) {
 
-    if (!realChatList) {
+    const list = document.getElementById("chatList");
+
+    if (!list) {
+        console.error("SEARCH: chatList not found");
         return;
     }
 
-    realChatList.innerHTML = "";
+    list.innerHTML = "";
 
-    if (!users.length) {
-
-        realChatList.innerHTML = `
+    if (!Array.isArray(users) || users.length === 0) {
+        list.innerHTML = `
             <div class="empty-chat-list">
                 <div class="empty-list-icon">🔎</div>
                 <strong>کاربری پیدا نشد</strong>
                 <span>نام یا نام کاربری دیگری امتحان کنید.</span>
             </div>
         `;
-
         return;
     }
 
     users.forEach(user => {
 
-        const item =
-            document.createElement("button");
+        const item = document.createElement("button");
 
         item.type = "button";
+        item.className = "chat-item real-search-user";
 
-        item.className =
-            "chat-item real-search-user";
+        const avatar = document.createElement("div");
+        avatar.className = "chat-avatar";
+        avatar.textContent =
+            user.role === "owner" ? "👑" : "👤";
 
-        item.innerHTML = `
-            <div class="chat-avatar">
-                ${user.role === "owner" ? "👑" : "👤"}
-            </div>
+        const info = document.createElement("div");
+        info.className = "chat-item-info";
 
-            <div class="chat-item-info">
-                <strong>
-                    ${escapeHtml(user.name)}
-                </strong>
+        const name = document.createElement("strong");
+        name.textContent = user.name || user.username || "کاربر";
 
-                <span>
-                    @${escapeHtml(user.username)}
-                </span>
-            </div>
-        `;
+        const username = document.createElement("span");
+        username.textContent =
+            "@" + (user.username || "");
 
-        item.addEventListener(
-            "click",
-            () => openUserProfile(
-                user.username
-            )
-        );
+        info.appendChild(name);
+        info.appendChild(username);
 
-        realChatList.appendChild(item);
+        item.appendChild(avatar);
+        item.appendChild(info);
+
+        item.addEventListener("click", () => {
+            if (typeof openUserProfile === "function") {
+                openUserProfile(user.username);
+            }
+        });
+
+        list.appendChild(item);
     });
-}
 
+    console.log("SEARCH DISPLAYED:", users.length);
+}
 
 function restoreEmptyChatList() {
 
