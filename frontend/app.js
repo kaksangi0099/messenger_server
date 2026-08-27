@@ -733,6 +733,12 @@ function closeChat() {
     chatPage.classList.remove(
         "open"
     );
+
+    activeChatUsername = null;
+
+    if (messageInput) {
+        messageInput.value = "";
+    }
 }
 
 
@@ -753,6 +759,33 @@ async function loadChatMessages(username) {
     }
 
     activeChatUsername = username;
+
+    // Always open the chat page
+    openChat(
+        username,
+        "@" + username
+    );
+
+    // Close settings/profile overlays if open
+    if (settingsPanel) {
+        settingsPanel.classList.remove("open");
+    }
+
+    if (userProfileModal) {
+        userProfileModal.classList.remove("open");
+        userProfileModal.classList.remove("show");
+    }
+
+    // Update chat header
+    if (chatTitle) {
+        chatTitle.textContent =
+            activeChatUsername;
+    }
+
+    if (chatStatus) {
+        chatStatus.textContent =
+            "در حال اتصال...";
+    }
 
     messages.innerHTML = `
         <div style="text-align:center;padding:20px;color:#999;">

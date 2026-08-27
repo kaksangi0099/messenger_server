@@ -381,16 +381,64 @@
         <div
             class="messages"
             id="messages"
+        ></div>
+
+        <!-- MESSAGE COMPOSER -->
+
+        <div class="message-composer" id="messageComposer">
+
+            <button
+                type="button"
+                class="composer-button"
+                id="emojiButton"
+                title="ایموجی"
+            >
+                😊
+            </button>
+
+            <button
+                type="button"
+                class="composer-button"
+                id="mediaButton"
+                title="ارسال تصویر"
+            >
+                📷
+            </button>
+
+            <input
+                type="file"
+                id="fileButton"
+                accept="image/*,video/*"
+                hidden
+            >
+
+            <input
+                type="text"
+                id="messageInput"
+                class="message-input"
+                placeholder="پیام بنویسید..."
+                autocomplete="off"
+            >
+
+            <button
+                type="button"
+                class="send-button"
+                id="sendButton"
+                title="ارسال"
+            >
+                ➤
+            </button>
+
+        </div>
+
+        <div
+            class="emoji-picker"
+            id="emojiPicker"
         >
-
-
-
-
             <div
                 class="emoji-grid"
                 id="emojiGrid"
             ></div>
-
         </div>
 
     </main>
