@@ -1242,6 +1242,24 @@ if (realSearchInput) {
             );
         }
     );
+
+    realSearchInput.addEventListener(
+        "keydown",
+        event => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+
+                clearTimeout(searchTimer);
+
+                const q =
+                    realSearchInput.value.trim();
+
+                if (q) {
+                    searchUsers(q);
+                }
+            }
+        }
+    );
 }
 
 
