@@ -1475,15 +1475,22 @@ async function openUserProfile(username) {
         const data =
             await response.json();
 
+        console.log("PROFILE RESPONSE STATUS:", response.status);
+        console.log("PROFILE RESPONSE DATA:", data);
+
         if (!response.ok) {
 
             alert(
-                data.detail ||
-                "پروفایل قابل دریافت نیست."
+                "خطای پروفایل: HTTP " +
+                response.status +
+                "\n" +
+                (data.detail || "پروفایل قابل دریافت نیست.")
             );
 
             return;
         }
+
+        console.log("PROFILE SUCCESS:", data);
 
         selectedProfile = data;
 
