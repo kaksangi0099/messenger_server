@@ -70,6 +70,41 @@ const fileButton = document.getElementById("fileButton");
 
 const chatTitle = document.getElementById("chatTitle");
 const chatStatus = document.getElementById("chatStatus");
+const chatHeaderAvatar =
+    document.getElementById("chatHeaderAvatar");
+
+/* =========================
+   CHAT HEADER PROFILE
+========================= */
+
+const chatHeaderInfo =
+    document.querySelector(".chat-header-info");
+
+function openActiveChatProfile() {
+
+    if (!activeChatUsername) {
+        return;
+    }
+
+    openUserProfile(activeChatUsername);
+}
+
+if (chatHeaderAvatar) {
+    chatHeaderAvatar.addEventListener(
+        "click",
+        openActiveChatProfile
+    );
+}
+
+if (chatHeaderInfo) {
+    chatHeaderInfo.style.cursor = "pointer";
+
+    chatHeaderInfo.addEventListener(
+        "click",
+        openActiveChatProfile
+    );
+}
+
 
 const accountSetting = document.getElementById("accountSetting");
 const notificationSetting = document.getElementById("notificationSetting");
@@ -560,6 +595,13 @@ function openApplication() {
 
     updateProfile();
 
+    // بارگذاری گفتگوهای قبلی بعد از آماده شدن کامل رابط
+    setTimeout(() => {
+        if (typeof loadRecentChats === "function") {
+            loadRecentChats();
+        }
+    }, 0);
+
     createEmojiPicker();
 
 }
@@ -763,7 +805,7 @@ async function loadChatMessages(username) {
     // Always open the chat page
     openChat(
         username,
-        "@" + username
+        "در حال دریافت اطلاعات..."
     );
 
     // Close settings/profile overlays if open
@@ -776,15 +818,8 @@ async function loadChatMessages(username) {
         userProfileModal.classList.remove("show");
     }
 
-    // Update chat header
     if (chatTitle) {
-        chatTitle.textContent =
-            activeChatUsername;
-    }
-
-    if (chatStatus) {
-        chatStatus.textContent =
-            "در حال اتصال...";
+        chatTitle.textContent = username;
     }
 
     messages.innerHTML = `
@@ -795,6 +830,103 @@ async function loadChatMessages(username) {
 
     try {
 
+        /*
+         * اول پروفایل کاربر را می‌گیریم تا
+         * نام واقعی و وضعیت آنلاین نمایش داده شود.
+         */
+        const profileResponse = await fetch(
+            `${API_URL}/profile/${encodeURIComponent(username)}`,
+            {
+                headers: {
+                    "Authorization": "Bearer " + getToken()
+                }
+            }
+        );
+
+        if (!profileResponse.ok) {
+            throw new Error("PROFILE_REQUEST_FAILED");
+        }
+
+        const profile = await profileResponse.json();
+
+        /*
+         * عکس پروفایل در هدر
+         */
+        if (chatHeaderAvatar) {
+
+            chatHeaderAvatar.innerHTML = "";
+
+            if (profile.avatar_url) {
+
+                const avatarImg =
+                    document.createElement("img");
+
+                avatarImg.src =
+                    profile.avatar_url.startsWith("http")
+                        ? profile.avatar_url
+                        : API_URL + profile.avatar_url;
+
+                avatarImg.alt =
+                    profile.name ||
+                    profile.username ||
+                    "کاربر";
+
+                avatarImg.style.width = "100%";
+                avatarImg.style.height = "100%";
+                avatarImg.style.objectFit = "cover";
+                avatarImg.style.borderRadius = "50%";
+
+                chatHeaderAvatar.appendChild(
+                    avatarImg
+                );
+
+            } else {
+
+                chatHeaderAvatar.textContent =
+                    createDefaultAvatar(
+                        profile.name ||
+                        profile.username ||
+                        "کاربر"
+                    );
+            }
+        }
+
+        /*
+         * نام واقعی کاربر در هدر
+         */
+        if (chatTitle) {
+            chatTitle.textContent =
+                profile.name ||
+                profile.username ||
+                username;
+        }
+
+        /*
+         * وضعیت واقعی کاربر
+         */
+        if (chatStatus) {
+
+            if (profile.is_online) {
+
+                chatStatus.textContent =
+                    "🟢 آنلاین";
+
+            } else if (profile.last_seen) {
+
+                chatStatus.textContent =
+                    "آخرین بازدید: " +
+                    formatLastSeen(profile.last_seen);
+
+            } else {
+
+                chatStatus.textContent =
+                    "آخرین بازدید مشخص نیست";
+            }
+        }
+
+        /*
+         * دریافت پیام‌ها
+         */
         const response = await fetch(
             `${API_URL}/messages/${encodeURIComponent(username)}`,
             {
@@ -820,7 +952,12 @@ async function loadChatMessages(username) {
 
     } catch (error) {
 
-        console.error("Load messages error:", error);
+        console.error("Load chat error:", error);
+
+        if (chatStatus) {
+            chatStatus.textContent =
+                "در حال اتصال...";
+        }
 
         messages.innerHTML = `
             <div style="text-align:center;padding:20px;color:#999;">
@@ -2545,3 +2682,368 @@ if (accountShowEmail) {
     );
 }
 
+
+/* =========================
+   ACCOUNT SAVE / AVATAR
+========================= */
+
+const saveAccountButton =
+    document.getElementById("saveAccountButton");
+
+const changeAvatarButton =
+    document.getElementById("changeAvatarButton");
+
+const accountAvatarInput =
+    document.getElementById("accountAvatarInput");
+
+const removeAvatarButton =
+    document.getElementById("removeAvatarButton");
+
+
+/* CHANGE AVATAR */
+
+if (changeAvatarButton && accountAvatarInput) {
+
+    changeAvatarButton.addEventListener(
+        "click",
+        () => {
+            accountAvatarInput.click();
+        }
+    );
+
+}
+
+
+/* SELECT AVATAR */
+
+if (accountAvatarInput) {
+
+    accountAvatarInput.addEventListener(
+        "change",
+        async () => {
+
+            const file =
+                accountAvatarInput.files?.[0];
+
+            if (!file) {
+                return;
+            }
+
+            if (!file.type.startsWith("image/")) {
+
+                alert("لطفاً یک عکس انتخاب کنید.");
+
+                accountAvatarInput.value = "";
+
+                return;
+            }
+
+            try {
+
+                if (accountSaveStatus) {
+                    accountSaveStatus.textContent =
+                        "در حال آپلود عکس...";
+                }
+
+                const uploaded =
+                    await uploadMedia(file);
+
+                if (!uploaded?.url) {
+                    throw new Error(
+                        "آدرس عکس دریافت نشد."
+                    );
+                }
+
+                const response =
+                    await fetch(
+                        `${API_URL}/profile`,
+                        {
+                            method: "PUT",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+
+                                "Authorization":
+                                    "Bearer " + getToken()
+                            },
+
+                            body: JSON.stringify({
+                                avatar_url:
+                                    uploaded.url
+                            })
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.detail ||
+                        "ذخیره عکس انجام نشد."
+                    );
+                }
+
+                const avatarUrl =
+                    uploaded.url.startsWith("http")
+                        ? uploaded.url
+                        : API_URL + uploaded.url;
+
+                if (accountAvatarPreview) {
+                    accountAvatarPreview.src =
+                        avatarUrl;
+                }
+
+                if (accountSaveStatus) {
+                    accountSaveStatus.textContent =
+                        "عکس پروفایل با موفقیت تغییر کرد. ✓";
+                }
+
+                accountAvatarInput.value = "";
+
+                await loadMyAccountProfile();
+
+            } catch (error) {
+
+                console.error(
+                    "Avatar upload error:",
+                    error
+                );
+
+                if (accountSaveStatus) {
+                    accountSaveStatus.textContent =
+                        error.message ||
+                        "آپلود عکس انجام نشد.";
+                }
+
+            }
+        }
+    );
+
+}
+
+
+/* REMOVE AVATAR */
+
+if (removeAvatarButton) {
+
+    removeAvatarButton.addEventListener(
+        "click",
+        async () => {
+
+            try {
+
+                removeAvatarButton.disabled =
+                    true;
+
+                if (accountSaveStatus) {
+                    accountSaveStatus.textContent =
+                        "در حال حذف عکس...";
+                }
+
+                const response =
+                    await fetch(
+                        `${API_URL}/profile`,
+                        {
+                            method: "PUT",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+
+                                "Authorization":
+                                    "Bearer " + getToken()
+                            },
+
+                            body: JSON.stringify({
+                                avatar_url: ""
+                            })
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.detail ||
+                        "حذف عکس انجام نشد."
+                    );
+                }
+
+                if (accountAvatarPreview) {
+
+                    accountAvatarPreview.src =
+                        createDefaultAvatar(
+                            currentUser?.name ||
+                            "کاربر"
+                        );
+                }
+
+                if (accountSaveStatus) {
+                    accountSaveStatus.textContent =
+                        "عکس پروفایل حذف شد. ✓";
+                }
+
+                await loadMyAccountProfile();
+
+            } catch (error) {
+
+                console.error(
+                    "Remove avatar error:",
+                    error
+                );
+
+                if (accountSaveStatus) {
+                    accountSaveStatus.textContent =
+                        error.message ||
+                        "حذف عکس انجام نشد.";
+                }
+
+            } finally {
+
+                removeAvatarButton.disabled =
+                    false;
+            }
+        }
+    );
+
+}
+
+
+/* SAVE ACCOUNT */
+
+if (saveAccountButton) {
+
+    saveAccountButton.addEventListener(
+        "click",
+        async () => {
+
+            try {
+
+                const name =
+                    accountName?.value.trim() || "";
+
+                const bio =
+                    accountBio?.value.trim() || "";
+
+                const showEmail =
+                    Boolean(
+                        accountShowEmail?.checked
+                    );
+
+                if (name.length < 2) {
+
+                    if (accountSaveStatus) {
+                        accountSaveStatus.textContent =
+                            "نام باید حداقل ۲ کاراکتر باشد.";
+                    }
+
+                    accountName?.focus();
+
+                    return;
+                }
+
+                if (bio.length > 160) {
+
+                    if (accountSaveStatus) {
+                        accountSaveStatus.textContent =
+                            "بیو نمی‌تواند بیشتر از ۱۶۰ کاراکتر باشد.";
+                    }
+
+                    return;
+                }
+
+                saveAccountButton.disabled =
+                    true;
+
+                if (accountSaveStatus) {
+                    accountSaveStatus.textContent =
+                        "در حال ذخیره تغییرات...";
+                }
+
+                const response =
+                    await fetch(
+                        `${API_URL}/profile`,
+                        {
+                            method: "PUT",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+
+                                "Authorization":
+                                    "Bearer " + getToken()
+                            },
+
+                            body: JSON.stringify({
+                                name: name,
+                                bio: bio,
+                                show_email:
+                                    showEmail
+                            })
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.detail ||
+                        "ذخیره تغییرات انجام نشد."
+                    );
+                }
+
+                if (currentUser) {
+
+                    currentUser.name =
+                        name;
+
+                    saveUser(currentUser);
+                }
+
+                if (accountEmail) {
+
+                    accountEmail.textContent =
+                        showEmail
+                            ? (
+                                currentUser?.email ||
+                                "ایمیل حساب"
+                            )
+                            : "ایمیل مخفی است";
+                }
+
+                if (accountSaveStatus) {
+                    accountSaveStatus.textContent =
+                        "تغییرات با موفقیت ذخیره شد. ✓";
+                }
+
+                await loadRecentChats();
+
+            } catch (error) {
+
+                console.error(
+                    "Save account error:",
+                    error
+                );
+
+                if (accountSaveStatus) {
+                    accountSaveStatus.textContent =
+                        error.message ||
+                        "ذخیره تغییرات انجام نشد.";
+                }
+
+            } finally {
+
+                saveAccountButton.disabled =
+                    false;
+            }
+        }
+    );
+
+}
