@@ -659,15 +659,7 @@ if (closeSettings) closeSettings.addEventListener(
    SETTINGS BUTTONS
 ========================= */
 
-if (accountSetting) accountSetting.addEventListener(
-    "click",
-    () => {
 
-        alert(
-            "بخش اطلاعات حساب در نسخه بعدی کامل می‌شود."
-        );
-    }
-);
 
 
 if (notificationSetting) notificationSetting.addEventListener(
@@ -802,13 +794,13 @@ async function loadChatMessages(username) {
 
     activeChatUsername = username;
 
-    // Always open the chat page
+    // باز کردن چت
     openChat(
         username,
-        "در حال دریافت اطلاعات..."
+        "در حال دریافت پیام‌ها..."
     );
 
-    // Close settings/profile overlays if open
+    // بستن پنل‌های اضافی
     if (settingsPanel) {
         settingsPanel.classList.remove("open");
     }
@@ -818,22 +810,26 @@ async function loadChatMessages(username) {
         userProfileModal.classList.remove("show");
     }
 
-    if (chatTitle) {
-        chatTitle.textContent = username;
+    // نمایش موقت پیام‌ها
+    if (messages) {
+        messages.innerHTML = `
+            <div style="text-align:center;padding:20px;color:#999;">
+                در حال دریافت پیام‌ها...
+            </div>
+        `;
     }
 
-    messages.innerHTML = `
-        <div style="text-align:center;padding:20px;color:#999;">
-            در حال دریافت پیام‌ها...
-        </div>
-    `;
+    /*
+     * =========================
+     * PROFILE
+     * =========================
+     *
+     * خراب شدن پروفایل نباید
+     * جلوی دریافت پیام‌ها را بگیرد.
+     */
 
     try {
 
-        /*
-         * اول پروفایل کاربر را می‌گیریم تا
-         * نام واقعی و وضعیت آنلاین نمایش داده شود.
-         */
         const profileResponse = await fetch(
             `${API_URL}/profile/${encodeURIComponent(username)}`,
             {
@@ -843,95 +839,139 @@ async function loadChatMessages(username) {
             }
         );
 
-        if (!profileResponse.ok) {
-            throw new Error("PROFILE_REQUEST_FAILED");
-        }
+        if (profileResponse.ok) {
 
-        const profile = await profileResponse.json();
+            const profile = await profileResponse.json();
 
-        /*
-         * عکس پروفایل در هدر
-         */
-        if (chatHeaderAvatar) {
+            // عکس هدر
+            if (chatHeaderAvatar) {
 
-            chatHeaderAvatar.innerHTML = "";
+                chatHeaderAvatar.innerHTML = "";
 
-            if (profile.avatar_url) {
+                if (profile.avatar_url) {
 
-                const avatarImg =
-                    document.createElement("img");
+                    const avatarImg =
+                        document.createElement("img");
 
-                avatarImg.src =
-                    profile.avatar_url.startsWith("http")
-                        ? profile.avatar_url
-                        : API_URL + profile.avatar_url;
+                    avatarImg.src =
+                        profile.avatar_url.startsWith("http")
+                            ? profile.avatar_url
+                            : API_URL + profile.avatar_url;
 
-                avatarImg.alt =
-                    profile.name ||
-                    profile.username ||
-                    "کاربر";
-
-                avatarImg.style.width = "100%";
-                avatarImg.style.height = "100%";
-                avatarImg.style.objectFit = "cover";
-                avatarImg.style.borderRadius = "50%";
-
-                chatHeaderAvatar.appendChild(
-                    avatarImg
-                );
-
-            } else {
-
-                chatHeaderAvatar.textContent =
-                    createDefaultAvatar(
+                    avatarImg.alt =
                         profile.name ||
                         profile.username ||
-                        "کاربر"
+                        "کاربر";
+
+                    avatarImg.style.width = "100%";
+                    avatarImg.style.height = "100%";
+                    avatarImg.style.objectFit = "cover";
+                    avatarImg.style.borderRadius = "50%";
+
+                    chatHeaderAvatar.appendChild(
+                        avatarImg
                     );
+
+                } else {
+
+                    chatHeaderAvatar.textContent =
+                        createDefaultAvatar(
+                            profile.name ||
+                            profile.username ||
+                            "کاربر"
+                        );
+                }
+            }
+
+            // نام
+            if (chatTitle) {
+                chatTitle.textContent =
+                    profile.name ||
+                    profile.username ||
+                    username;
+            }
+
+            // وضعیت
+            if (chatStatus) {
+
+                if (profile.is_online) {
+
+                    chatStatus.textContent =
+                        "🟢 آنلاین";
+
+                } else if (profile.last_seen) {
+
+                    chatStatus.textContent =
+                        "آخرین بازدید: " +
+                        formatLastSeen(profile.last_seen);
+
+                } else {
+
+                    chatStatus.textContent =
+                        "آخرین بازدید مشخص نیست";
+                }
+            }
+
+        } else {
+
+            console.warn(
+                "Profile unavailable:",
+                profileResponse.status
+            );
+
+            if (chatTitle) {
+                chatTitle.textContent = username;
+            }
+
+            if (chatStatus) {
+                chatStatus.textContent =
+                    "@" + username;
             }
         }
 
-        /*
-         * نام واقعی کاربر در هدر
-         */
+    } catch (profileError) {
+
+        console.warn(
+            "Profile request failed, loading messages anyway:",
+            profileError
+        );
+
         if (chatTitle) {
-            chatTitle.textContent =
-                profile.name ||
-                profile.username ||
-                username;
+            chatTitle.textContent = username;
         }
 
-        /*
-         * وضعیت واقعی کاربر
-         */
         if (chatStatus) {
+            chatStatus.textContent =
+                "@" + username;
+        }
+    }
 
-            if (profile.is_online) {
 
-                chatStatus.textContent =
-                    "🟢 آنلاین";
+    /*
+     * =========================
+     * MESSAGES
+     * =========================
+     *
+     * این قسمت مستقل از پروفایل است.
+     */
 
-            } else if (profile.last_seen) {
+    try {
 
-                chatStatus.textContent =
-                    "آخرین بازدید: " +
-                    formatLastSeen(profile.last_seen);
+        const token = getToken();
 
-            } else {
+        if (!token) {
 
-                chatStatus.textContent =
-                    "آخرین بازدید مشخص نیست";
-            }
+            throw new Error(
+                "NO_TOKEN"
+            );
         }
 
-        /*
-         * دریافت پیام‌ها
-         */
         const response = await fetch(
             `${API_URL}/messages/${encodeURIComponent(username)}`,
             {
                 headers: {
-                    "Authorization": "Bearer " + getToken()
+                    "Authorization":
+                        "Bearer " + token
                 }
             }
         );
@@ -939,34 +979,74 @@ async function loadChatMessages(username) {
         const data = await response.json();
 
         if (!response.ok) {
-            messages.innerHTML = "";
-            alert(data.detail || "پیام‌ها دریافت نشدند.");
+
+            console.error(
+                "Messages API error:",
+                response.status,
+                data
+            );
+
+            if (messages) {
+                messages.innerHTML = `
+                    <div style="text-align:center;padding:20px;color:#999;">
+                        ${escapeHtml(
+                            data.detail ||
+                            "پیام‌ها دریافت نشدند."
+                        )}
+                    </div>
+                `;
+            }
+
             return;
         }
 
-        messages.innerHTML = "";
+        if (messages) {
 
-        (data.messages || []).forEach(renderMessage);
+            messages.innerHTML = "";
 
-        messages.scrollTop = messages.scrollHeight;
+            const chatMessages =
+                data.messages || [];
+
+            if (chatMessages.length === 0) {
+
+                messages.innerHTML = `
+                    <div style="text-align:center;padding:30px;color:#999;">
+                        هنوز پیامی وجود ندارد 💜
+                    </div>
+                `;
+
+            } else {
+
+                chatMessages.forEach(
+                    renderMessage
+                );
+
+                messages.scrollTop =
+                    messages.scrollHeight;
+            }
+        }
 
     } catch (error) {
 
-        console.error("Load chat error:", error);
+        console.error(
+            "Load messages error:",
+            error
+        );
 
         if (chatStatus) {
             chatStatus.textContent =
-                "در حال اتصال...";
+                "خطا در اتصال";
         }
 
-        messages.innerHTML = `
-            <div style="text-align:center;padding:20px;color:#999;">
-                اتصال به سرور برقرار نشد.
-            </div>
-        `;
+        if (messages) {
+            messages.innerHTML = `
+                <div style="text-align:center;padding:20px;color:#999;">
+                    اتصال به سرور برقرار نشد.
+                </div>
+            `;
+        }
     }
 }
-
 
 function formatFileSize(bytes) {
 
