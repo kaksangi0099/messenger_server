@@ -446,6 +446,123 @@
 </div>
 
 
+
+<!-- ================= ACCOUNT SETTINGS ================= -->
+
+<div class="sub-settings-panel" id="accountPanel">
+
+    <div class="sub-settings-header">
+        <button id="closeAccountPanel" type="button">×</button>
+        <h2>اطلاعات حساب</h2>
+    </div>
+
+    <div class="account-profile-editor">
+
+        <button
+            class="account-avatar-button"
+            id="changeAvatarButton"
+            type="button"
+        >
+            <img
+                id="accountAvatarPreview"
+                src=""
+                alt="عکس پروفایل"
+            >
+            <span>📷</span>
+        </button>
+
+        <input
+            id="accountAvatarInput"
+            type="file"
+            accept="image/*"
+            hidden
+        >
+
+        <button
+            id="removeAvatarButton"
+            class="remove-avatar-button"
+            type="button"
+        >
+            حذف عکس پروفایل
+        </button>
+
+    </div>
+
+    <div class="account-form">
+
+        <label for="accountName">
+            نام
+        </label>
+
+        <input
+            id="accountName"
+            type="text"
+            maxlength="80"
+            placeholder="نام شما"
+        >
+
+        <label for="accountUsername">
+            نام کاربری
+        </label>
+
+        <input
+            id="accountUsername"
+            type="text"
+            readonly
+        >
+
+        <small class="account-hint">
+            نام کاربری فعلاً از بخش ثبت‌نام گرفته می‌شود.
+        </small>
+
+        <label for="accountBio">
+            بیو
+        </label>
+
+        <textarea
+            id="accountBio"
+            maxlength="160"
+            rows="4"
+            placeholder="چند کلمه درباره خودتان..."
+        ></textarea>
+
+        <label class="account-switch-row">
+
+            <span>
+                نمایش ایمیل در پروفایل
+            </span>
+
+            <input
+                id="accountShowEmail"
+                type="checkbox"
+            >
+
+        </label>
+
+        <div
+            class="account-email-box"
+            id="accountEmail"
+        >
+            ایمیل حساب
+        </div>
+
+        <button
+            class="primary-button account-save-button"
+            id="saveAccountButton"
+            type="button"
+        >
+            ذخیره تغییرات
+        </button>
+
+        <div
+            class="account-save-status"
+            id="accountSaveStatus"
+        ></div>
+
+    </div>
+
+</div>
+
 <!-- ================= SETTINGS ================= -->
 
 <aside

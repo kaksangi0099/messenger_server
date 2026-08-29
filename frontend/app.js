@@ -831,182 +831,675 @@ async function loadChatMessages(username) {
 }
 
 
+function formatFileSize(bytes) {
+
+    const size = Number(bytes || 0);
+
+    if (size < 1024) {
+        return size + " B";
+    }
+
+    if (size < 1024 * 1024) {
+        return (size / 1024).toFixed(1) + " KB";
+    }
+
+    if (size < 1024 * 1024 * 1024) {
+        return (size / (1024 * 1024)).toFixed(1) + " MB";
+    }
+
+    return (size / (1024 * 1024 * 1024)).toFixed(1) + " GB";
+}
+
+
 function renderMessage(message) {
 
     const bubble = document.createElement("div");
 
+    bubble.className = "message-bubble";
+
     const mine =
         Number(message.sender_id) === Number(currentUser.id);
 
-    bubble.style.maxWidth = "75%";
+    bubble.style.maxWidth = "78%";
     bubble.style.width = "fit-content";
     bubble.style.margin = mine
-        ? "8px 0 8px auto"
-        : "8px auto 8px 0";
-    bubble.style.padding = "10px 14px";
+        ? "6px 8px 6px auto"
+        : "6px auto 6px 8px";
+
+    bubble.style.padding = "9px 11px";
     bubble.style.borderRadius = mine
-        ? "17px 17px 4px 17px"
-        : "17px 17px 17px 4px";
-    bubble.style.lineHeight = "1.7";
+        ? "18px 18px 5px 18px"
+        : "18px 18px 18px 5px";
+
+    bubble.style.lineHeight = "1.55";
     bubble.style.wordBreak = "break-word";
+    bubble.style.boxShadow = "0 1px 2px rgba(0,0,0,.08)";
 
     if (mine) {
-        bubble.style.color = "white";
+
+        bubble.style.color = "#ffffff";
         bubble.style.background =
             "linear-gradient(135deg,#8b5cf6,#6d28d9)";
+
     } else {
-        bubble.style.color = "#222";
-        bubble.style.background = "#eeeeee";
+
+        bubble.style.color = "#222222";
+        bubble.style.background = "#f1edff";
     }
+
+
+    /* TEXT */
 
     if (message.text) {
 
-        const text = document.createElement("div");
-        text.textContent = message.text;
-        bubble.appendChild(text);
+        const textElement =
+            document.createElement("div");
+
+        textElement.textContent =
+            message.text;
+
+        textElement.style.whiteSpace =
+            "pre-wrap";
+
+        bubble.appendChild(
+            textElement
+        );
     }
+
+
+    /* MEDIA */
 
     if (message.media_url) {
 
-        const url = message.media_url.startsWith("http")
-            ? message.media_url
-            : API_URL + message.media_url;
+        const url =
+            message.media_url.startsWith("http")
+                ? message.media_url
+                : API_URL + message.media_url;
+
+
+        /* IMAGE */
 
         if (message.media_type === "image") {
 
-            const img = document.createElement("img");
+            const img =
+                document.createElement("img");
 
             img.src = url;
-            img.style.maxWidth = "240px";
-            img.style.maxHeight = "320px";
-            img.style.borderRadius = "12px";
+
+            img.alt =
+                message.media_filename ||
+                "image";
+
+            img.loading = "lazy";
+
             img.style.display = "block";
-            img.style.marginTop = message.text ? "8px" : "0";
+            img.style.maxWidth = "280px";
+            img.style.maxHeight = "380px";
+            img.style.width = "auto";
+            img.style.height = "auto";
+            img.style.borderRadius = "14px";
+            img.style.objectFit = "cover";
+            img.style.marginTop =
+                message.text ? "7px" : "0";
+
+            img.style.cursor = "pointer";
+
+            img.addEventListener(
+                "click",
+                () => {
+                    window.open(
+                        url,
+                        "_blank"
+                    );
+                }
+            );
 
             bubble.appendChild(img);
+        }
 
-        } else if (message.media_type === "video") {
 
-            const video = document.createElement("video");
+        /* VIDEO */
+
+        else if (
+            message.media_type === "video"
+        ) {
+
+            const video =
+                document.createElement("video");
 
             video.src = url;
+
             video.controls = true;
-            video.style.maxWidth = "260px";
-            video.style.borderRadius = "12px";
+            video.preload = "metadata";
+
             video.style.display = "block";
-            video.style.marginTop = message.text ? "8px" : "0";
+            video.style.maxWidth = "280px";
+            video.style.maxHeight = "380px";
+            video.style.borderRadius = "14px";
+
+            video.style.marginTop =
+                message.text ? "7px" : "0";
 
             bubble.appendChild(video);
         }
+
+
+        /* FILE */
+
+        else if (
+            message.media_type === "file"
+        ) {
+
+            const fileCard =
+                document.createElement("a");
+
+            fileCard.href = url;
+            fileCard.target = "_blank";
+            fileCard.rel = "noopener noreferrer";
+
+            fileCard.style.display = "flex";
+            fileCard.style.alignItems = "center";
+            fileCard.style.gap = "10px";
+
+            fileCard.style.minWidth = "220px";
+            fileCard.style.maxWidth = "280px";
+
+            fileCard.style.padding =
+                "10px";
+
+            fileCard.style.marginTop =
+                message.text ? "7px" : "0";
+
+            fileCard.style.borderRadius =
+                "13px";
+
+            fileCard.style.textDecoration =
+                "none";
+
+            fileCard.style.background =
+                mine
+                    ? "rgba(255,255,255,.15)"
+                    : "rgba(109,40,217,.08)";
+
+
+            const icon =
+                document.createElement("div");
+
+            icon.textContent = "📎";
+
+            icon.style.fontSize =
+                "27px";
+
+            fileCard.appendChild(icon);
+
+
+            const info =
+                document.createElement("div");
+
+            info.style.minWidth = "0";
+            info.style.flex = "1";
+
+
+            const filename =
+                document.createElement("div");
+
+            filename.textContent =
+                message.media_filename ||
+                "فایل";
+
+            filename.style.fontWeight =
+                "600";
+
+            filename.style.fontSize =
+                "14px";
+
+            filename.style.whiteSpace =
+                "nowrap";
+
+            filename.style.overflow =
+                "hidden";
+
+            filename.style.textOverflow =
+                "ellipsis";
+
+
+            const size =
+                document.createElement("div");
+
+            size.textContent =
+                formatFileSize(
+                    message.media_size
+                );
+
+            size.style.fontSize =
+                "11px";
+
+            size.style.opacity =
+                "0.7";
+
+            size.style.marginTop =
+                "2px";
+
+
+            info.appendChild(filename);
+            info.appendChild(size);
+
+            fileCard.appendChild(info);
+
+            bubble.appendChild(fileCard);
+        }
     }
 
-    const time = document.createElement("div");
 
-    time.textContent = formatLastSeen(message.created_at);
+    /* TIME */
 
-    time.style.fontSize = "10px";
-    time.style.opacity = "0.65";
-    time.style.marginTop = "3px";
+    const time =
+        document.createElement("div");
+
+    time.textContent =
+        formatLastSeen(
+            message.created_at
+        );
+
+    time.style.fontSize =
+        "10px";
+
+    time.style.opacity =
+        "0.65";
+
+    time.style.marginTop =
+        "4px";
+
+    time.style.textAlign =
+        mine ? "right" : "left";
 
     bubble.appendChild(time);
 
-    messages.appendChild(bubble);
+
+    messages.appendChild(
+        bubble
+    );
 }
 
 
-async function sendMessage() {
+/* =========================
+   UPLOAD MEDIA
+========================= */
 
-    const text = messageInput.value.trim();
+async function uploadMedia(file) {
 
-    if (!text) {
-        return;
+    if (!file) {
+        return null;
     }
+
+    if (!currentUser) {
+        alert("ابتدا وارد حساب شوید.");
+        return null;
+    }
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "file",
+        file
+    );
+
+
+    const response =
+        await fetch(
+            `${API_URL}/upload`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Authorization":
+                        "Bearer " + getToken()
+                },
+
+                body: formData
+            }
+        );
+
+
+    let data = {};
+
+    try {
+        data = await response.json();
+    } catch {
+        data = {};
+    }
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.detail ||
+            "آپلود فایل انجام نشد."
+        );
+    }
+
+
+    return data;
+}
+
+
+/* =========================
+   SEND MESSAGE
+========================= */
+
+async function sendMessage(
+    uploadedMedia = null
+) {
+
+    const text =
+        messageInput.value.trim();
+
 
     if (!activeChatUsername) {
 
-        alert("اول یک کاربر را برای گفتگو انتخاب کنید.");
+        alert(
+            "اول یک کاربر را برای گفتگو انتخاب کنید."
+        );
 
         return;
     }
 
-    const oldText = messageInput.value;
+
+    if (!text && !uploadedMedia) {
+        return;
+    }
+
+
+    const oldText =
+        messageInput.value;
+
 
     sendButton.disabled = true;
 
+
     try {
 
-        const params = new URLSearchParams();
+        const params =
+            new URLSearchParams();
+
 
         params.set(
             "receiver_username",
             activeChatUsername
         );
 
-        params.set("text", text);
 
-        const response = await fetch(
-            `${API_URL}/messages?${params.toString()}`,
-            {
-                method: "POST",
-
-                headers: {
-                    "Authorization": "Bearer " + getToken()
-                }
-            }
+        params.set(
+            "text",
+            text
         );
 
-        const data = await response.json();
+
+        if (uploadedMedia) {
+
+            params.set(
+                "media_url",
+                uploadedMedia.url
+            );
+
+            params.set(
+                "media_type",
+                uploadedMedia.type
+            );
+
+            params.set(
+                "media_filename",
+                uploadedMedia.filename ||
+                "file"
+            );
+
+            params.set(
+                "media_size",
+                String(
+                    uploadedMedia.size || 0
+                )
+            );
+        }
+
+
+        const response =
+            await fetch(
+                `${API_URL}/messages?${params.toString()}`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Authorization":
+                            "Bearer " + getToken()
+                    }
+                }
+            );
+
+
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+
 
         if (!response.ok) {
 
-            alert(
+            throw new Error(
                 data.detail ||
                 "پیام ارسال نشد."
             );
-
-            return;
         }
+
 
         messageInput.value = "";
 
-        await loadChatMessages(activeChatUsername);
+
+        const sentTo =
+            activeChatUsername;
+
+
+        await loadChatMessages(
+            sentTo
+        );
+
+
+        await loadRecentChats();
+
 
     } catch (error) {
 
-        console.error("Send message error:", error);
+        console.error(
+            "Send message error:",
+            error
+        );
 
-        messageInput.value = oldText;
 
-        alert("ارتباط با سرور برقرار نشد.");
+        messageInput.value =
+            oldText;
+
+
+        alert(
+            error.message ||
+            "ارسال پیام انجام نشد."
+        );
+
 
     } finally {
 
-        sendButton.disabled = false;
+        sendButton.disabled =
+            false;
 
         messageInput.focus();
     }
 }
 
 
-if (sendButton) sendButton.addEventListener(
-    "click",
-    sendMessage
-);
+/* =========================
+   TEXT SEND BUTTON
+========================= */
+
+if (sendButton) {
+
+    sendButton.addEventListener(
+        "click",
+        () => sendMessage()
+    );
+}
 
 
-if (messageInput) messageInput.addEventListener(
-    "keydown",
-    event => {
+if (messageInput) {
 
-        if (event.key === "Enter") {
+    messageInput.addEventListener(
+        "keydown",
+        event => {
 
-            event.preventDefault();
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
 
-            sendMessage();
+                event.preventDefault();
+
+                sendMessage();
+            }
         }
-    }
-);
+    );
+}
 
+
+/* =========================
+   FILE PICKER
+========================= */
+
+function chooseMediaFile(
+    accept
+) {
+
+    const input =
+        document.createElement(
+            "input"
+        );
+
+    input.type = "file";
+
+    input.accept = accept;
+
+    input.style.display = "none";
+
+    document.body.appendChild(
+        input
+    );
+
+
+    input.addEventListener(
+        "change",
+        async () => {
+
+            const file =
+                input.files &&
+                input.files[0];
+
+
+            input.remove();
+
+
+            if (!file) {
+                return;
+            }
+
+
+            if (!activeChatUsername) {
+
+                alert(
+                    "ابتدا یک کاربر را برای گفتگو انتخاب کنید."
+                );
+
+                return;
+            }
+
+
+            try {
+
+                sendButton.disabled =
+                    true;
+
+
+                const uploaded =
+                    await uploadMedia(
+                        file
+                    );
+
+
+                if (!uploaded) {
+                    return;
+                }
+
+
+                await sendMessage(
+                    uploaded
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Media upload error:",
+                    error
+                );
+
+                alert(
+                    error.message ||
+                    "ارسال فایل انجام نشد."
+                );
+
+
+            } finally {
+
+                sendButton.disabled =
+                    false;
+            }
+        }
+    );
+
+
+    input.click();
+}
+
+
+/* =========================
+   MEDIA BUTTONS
+========================= */
+
+if (mediaButton) {
+
+    mediaButton.addEventListener(
+        "click",
+        () => {
+
+            chooseMediaFile(
+                "image/*,video/*"
+            );
+        }
+    );
+}
+
+
+if (fileButton) {
+
+    fileButton.addEventListener(
+        "click",
+        () => {
+
+            chooseMediaFile(
+                "*/*"
+            );
+        }
+    );
+}
 
 /* =========================
    EMOJIS
@@ -1128,45 +1621,6 @@ document.addEventListener(
                 "hidden"
             );
         }
-    }
-);
-
-
-/* =========================
-   MEDIA / FILE
-========================= */
-
-if (mediaButton) mediaButton.addEventListener(
-    "click",
-    () => {
-
-        const input =
-            document.createElement(
-                "input"
-            );
-
-        input.type = "file";
-
-        input.accept =
-            "image/*,video/*";
-
-        input.click();
-    }
-);
-
-
-if (fileButton) fileButton.addEventListener(
-    "click",
-    () => {
-
-        const input =
-            document.createElement(
-                "input"
-            );
-
-        input.type = "file";
-
-        input.click();
     }
 );
 
@@ -1436,19 +1890,208 @@ function renderSearchResults(users) {
     console.log("SEARCH DISPLAYED:", users.length);
 }
 
-function restoreEmptyChatList() {
+async function restoreEmptyChatList() {
 
     if (!realChatList) {
+        return;
+    }
+
+    await loadRecentChats();
+}
+
+
+async function loadRecentChats() {
+
+    if (!realChatList) {
+        return;
+    }
+
+    const token = getToken();
+
+    if (!token) {
         return;
     }
 
     realChatList.innerHTML = `
         <div class="empty-chat-list">
             <div class="empty-list-icon">💬</div>
-            <strong>هنوز گفتگویی ندارید</strong>
-            <span>یک گفتگوی جدید شروع کنید.</span>
+            <strong>در حال دریافت گفتگوها...</strong>
         </div>
     `;
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/chats`,
+            {
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail || "گفتگوها دریافت نشدند."
+            );
+        }
+
+        renderRecentChats(data.chats || []);
+
+    } catch (error) {
+
+        console.error(
+            "Recent chats error:",
+            error
+        );
+
+        realChatList.innerHTML = `
+            <div class="empty-chat-list">
+                <div class="empty-list-icon">💬</div>
+                <strong>هنوز گفتگویی ندارید</strong>
+                <span>یک گفتگوی جدید شروع کنید.</span>
+            </div>
+        `;
+    }
+}
+
+
+function renderRecentChats(chats) {
+
+    if (!realChatList) {
+        return;
+    }
+
+    realChatList.innerHTML = "";
+
+    if (!Array.isArray(chats) || chats.length === 0) {
+
+        realChatList.innerHTML = `
+            <div class="empty-chat-list">
+                <div class="empty-list-icon">💬</div>
+                <strong>هنوز گفتگویی ندارید</strong>
+                <span>یک گفتگوی جدید شروع کنید.</span>
+            </div>
+        `;
+
+        return;
+    }
+
+    chats.forEach(chat => {
+
+        const item = document.createElement("button");
+
+        item.type = "button";
+        item.className = "chat-item recent-chat-item";
+
+        const avatar = document.createElement("div");
+
+        avatar.className = "chat-avatar";
+
+        if (chat.avatar_url) {
+
+            const avatarUrl =
+                chat.avatar_url.startsWith("http")
+                    ? chat.avatar_url
+                    : API_URL + chat.avatar_url;
+
+            const img = document.createElement("img");
+
+            img.src = avatarUrl;
+            img.alt = chat.name || "کاربر";
+            img.loading = "lazy";
+
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover";
+            img.style.display = "block";
+            img.style.borderRadius = "50%";
+
+            avatar.appendChild(img);
+
+        } else if (chat.role === "owner") {
+
+            avatar.textContent = "👑";
+
+        } else {
+
+            const letter =
+                (
+                    chat.name ||
+                    chat.username ||
+                    "ک"
+                )
+                .trim()
+                .charAt(0);
+
+            avatar.textContent =
+                letter.toUpperCase();
+        }
+
+        const info = document.createElement("div");
+
+        info.className =
+            "chat-item-info";
+
+        const name = document.createElement("strong");
+
+        name.className =
+            "recent-chat-name";
+
+        name.textContent =
+            chat.name ||
+            chat.username ||
+            "کاربر";
+
+        const preview = document.createElement("span");
+
+        preview.className =
+            "recent-chat-preview";
+
+        preview.textContent =
+            chat.last_message ||
+            "پیامی وجود ندارد";
+
+        info.appendChild(name);
+        info.appendChild(preview);
+
+        const time = document.createElement("span");
+
+        time.className =
+            "recent-chat-time";
+
+        if (chat.last_message_at) {
+
+            time.textContent =
+                formatLastSeen(
+                    chat.last_message_at
+                );
+        }
+
+        item.appendChild(avatar);
+        item.appendChild(info);
+        item.appendChild(time);
+
+        item.addEventListener(
+            "click",
+            async event => {
+
+                event.preventDefault();
+
+                if (!chat.username) {
+                    return;
+                }
+
+                await loadChatMessages(
+                    chat.username
+                );
+            }
+        );
+
+        realChatList.appendChild(item);
+    });
 }
 
 
@@ -1710,3 +2353,195 @@ function formatLastSeen(dateString) {
         return "نامشخص";
     }
 }
+
+
+/* =========================
+   ACCOUNT PROFILE EDITOR
+========================= */
+
+const accountPanel =
+    document.getElementById("accountPanel");
+
+const closeAccountPanel =
+    document.getElementById("closeAccountPanel");
+
+const accountName =
+    document.getElementById("accountName");
+
+const accountUsername =
+    document.getElementById("accountUsername");
+
+const accountBio =
+    document.getElementById("accountBio");
+
+const accountShowEmail =
+    document.getElementById("accountShowEmail");
+
+const accountEmail =
+    document.getElementById("accountEmail");
+
+const accountAvatarPreview =
+    document.getElementById("accountAvatarPreview");
+
+const accountSaveStatus =
+    document.getElementById("accountSaveStatus");
+
+
+async function loadMyAccountProfile() {
+
+    if (!currentUser || !currentUser.username) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/profile/${encodeURIComponent(currentUser.username)}`,
+                {
+                    headers: {
+                        "Authorization":
+                            "Bearer " + getToken()
+                    }
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail ||
+                "پروفایل دریافت نشد."
+            );
+        }
+
+
+        if (accountName) {
+            accountName.value =
+                data.name || "";
+        }
+
+
+        if (accountUsername) {
+            accountUsername.value =
+                data.username || "";
+        }
+
+
+        if (accountBio) {
+            accountBio.value =
+                data.bio || "";
+        }
+
+
+        if (accountShowEmail) {
+            accountShowEmail.checked =
+                Boolean(data.email);
+        }
+
+
+        if (accountEmail) {
+            accountEmail.textContent =
+                data.email ||
+                "ایمیل مخفی است";
+        }
+
+
+        if (accountAvatarPreview) {
+
+            if (data.avatar_url) {
+
+                accountAvatarPreview.src =
+                    data.avatar_url.startsWith("http")
+                        ? data.avatar_url
+                        : API_URL + data.avatar_url;
+
+            } else {
+
+                accountAvatarPreview.src =
+                    createDefaultAvatar(
+                        data.name
+                    );
+            }
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Account profile load error:",
+            error
+        );
+
+        if (accountSaveStatus) {
+            accountSaveStatus.textContent =
+                "دریافت اطلاعات حساب انجام نشد.";
+        }
+    }
+}
+
+
+/* OPEN ACCOUNT PANEL */
+
+if (accountSetting) {
+
+    accountSetting.addEventListener(
+        "click",
+        async () => {
+
+            if (!accountPanel) {
+                return;
+            }
+
+            accountPanel.classList.add("open");
+
+            await loadMyAccountProfile();
+        }
+    );
+}
+
+
+/* CLOSE ACCOUNT PANEL */
+
+if (closeAccountPanel) {
+
+    closeAccountPanel.addEventListener(
+        "click",
+        () => {
+
+            if (accountPanel) {
+                accountPanel.classList.remove("open");
+            }
+
+        }
+    );
+}
+
+
+/* EMAIL PREVIEW */
+
+if (accountShowEmail) {
+
+    accountShowEmail.addEventListener(
+        "change",
+        () => {
+
+            if (!accountEmail) {
+                return;
+            }
+
+            if (accountShowEmail.checked) {
+
+                accountEmail.textContent =
+                    currentUser?.email ||
+                    "ایمیل حساب";
+
+            } else {
+
+                accountEmail.textContent =
+                    "ایمیل مخفی است";
+            }
+        }
+    );
+}
+

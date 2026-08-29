@@ -1436,3 +1436,238 @@ button {
     }
 }
 
+
+/* =========================
+   FINAL AVATAR + MEDIA FIX
+========================= */
+
+.chat-avatar {
+    overflow: hidden !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+}
+
+.chat-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+}
+
+.message-bubble img,
+.message-bubble video {
+    display: block !important;
+    width: auto !important;
+    max-width: 100% !important;
+    max-height: 360px !important;
+    height: auto !important;
+    object-fit: contain !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+}
+
+
+/* =========================
+   ACCOUNT SETTINGS PANEL
+========================= */
+
+.sub-settings-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    background: #f8f7ff;
+    transform: translateX(100%);
+    transition: transform .25s ease;
+    overflow-y: auto;
+    direction: rtl;
+}
+
+.sub-settings-panel.open {
+    transform: translateX(0);
+}
+
+.sub-settings-header {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,.12);
+}
+
+.sub-settings-header h2 {
+    margin: 0;
+    font-size: 19px;
+}
+
+.sub-settings-header button {
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,.15);
+    color: white;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.account-profile-editor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 20px 18px;
+}
+
+.account-avatar-button {
+    position: relative;
+    width: 112px;
+    height: 112px;
+    padding: 0;
+    border: 4px solid white;
+    border-radius: 50%;
+    background: #7c3aed;
+    box-shadow: 0 5px 20px rgba(124,58,237,.25);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.account-avatar-button img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.account-avatar-button span {
+    position: absolute;
+    left: 5px;
+    bottom: 5px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #7c3aed;
+    border: 2px solid white;
+    font-size: 15px;
+}
+
+.remove-avatar-button {
+    margin-top: 10px;
+    border: 0;
+    background: transparent;
+    color: #dc2626;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.account-form {
+    padding: 0 18px 35px;
+}
+
+.account-form label {
+    display: block;
+    margin: 18px 4px 7px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #343047;
+}
+
+.account-form input[type="text"],
+.account-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #ddd6fe;
+    border-radius: 13px;
+    padding: 12px 13px;
+    background: white;
+    color: #242033;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.account-form textarea {
+    resize: vertical;
+    min-height: 95px;
+}
+
+.account-form input:focus,
+.account-form textarea:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(124,58,237,.10);
+}
+
+.account-hint {
+    display: block;
+    margin: 7px 5px 0;
+    color: #8a849d;
+    font-size: 11px;
+}
+
+.account-switch-row {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 13px;
+    margin-top: 18px !important;
+    border-radius: 13px;
+    background: white;
+    border: 1px solid #eeeaff;
+}
+
+.account-switch-row input {
+    width: 20px;
+    height: 20px;
+    accent-color: #7c3aed;
+}
+
+.account-email-box {
+    margin-top: 8px;
+    padding: 11px 13px;
+    border-radius: 12px;
+    background: #f1edff;
+    color: #6d28d9;
+    font-size: 13px;
+    direction: ltr;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+.account-save-button {
+    width: 100%;
+    margin-top: 24px;
+    border: 0;
+    border-radius: 13px;
+    padding: 13px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.account-save-status {
+    min-height: 20px;
+    margin-top: 10px;
+    text-align: center;
+    font-size: 12px;
+    color: #6d28d9;
+}
+
+@media (min-width: 700px) {
+    .sub-settings-panel {
+        left: 50%;
+        right: auto;
+        width: 520px;
+        border-left: 1px solid #e5e0f5;
+        box-shadow: -5px 0 25px rgba(0,0,0,.08);
+    }
+}
+

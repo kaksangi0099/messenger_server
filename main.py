@@ -112,6 +112,8 @@ def init_db():
         text TEXT,
         media_url TEXT,
         media_type TEXT,
+        media_filename TEXT,
+        media_size INTEGER DEFAULT 0,
         created_at TEXT NOT NULL
     );
 
@@ -480,6 +482,7 @@ class ProfileUpdateRequest(BaseModel):
     name: str | None = None
     bio: str | None = None
     show_email: bool | None = None
+    avatar_url: str | None = None
 
 
 def ensure_profile(user_id: int):
@@ -664,6 +667,19 @@ def update_profile(
             """,
             (
                 1 if data.show_email else 0,
+                user["id"]
+            )
+        )
+
+    if data.avatar_url is not None:
+        connection.execute(
+            """
+            UPDATE profiles
+            SET avatar_url = ?
+            WHERE user_id = ?
+            """,
+            (
+                data.avatar_url.strip() or None,
                 user["id"]
             )
         )
@@ -1157,53 +1173,39 @@ def unblock_user(
 @app.post("/upload")
 async def upload_media(
     file: UploadFile = File(...),
-    authorization: str | None = Header(
-        default=None
-    )
+    authorization: str | None = Header(default=None)
 ):
+    user = get_current_user(authorization)
 
-    user = get_current_user(
-        authorization
-    )
-
-    filename = file.filename or ""
-
-    extension = Path(
-        filename
-    ).suffix.lower()
+    filename = file.filename or "file"
+    extension = Path(filename).suffix.lower()
 
     allowed_images = {
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".webp",
-        ".gif"
+        ".jpg", ".jpeg", ".png", ".webp", ".gif"
     }
 
     allowed_videos = {
-        ".mp4",
-        ".webm",
-        ".mov",
-        ".mkv"
+        ".mp4", ".webm", ".mov", ".mkv"
     }
 
-    if extension not in (
-        allowed_images |
-        allowed_videos
-    ):
+    # فایل‌های معمولی
+    allowed_files = {
+        ".pdf", ".txt", ".zip", ".rar",
+        ".doc", ".docx", ".xls", ".xlsx",
+        ".ppt", ".pptx", ".csv"
+    }
 
+    if extension in allowed_images:
+        media_type = "image"
+    elif extension in allowed_videos:
+        media_type = "video"
+    elif extension in allowed_files:
+        media_type = "file"
+    else:
         raise HTTPException(
             status_code=400,
             detail="فرمت فایل پشتیبانی نمی‌شود."
         )
-
-    if extension in allowed_images:
-
-        media_type = "image"
-
-    else:
-
-        media_type = "video"
 
     safe_name = (
         f"{user['id']}_"
@@ -1212,25 +1214,33 @@ async def upload_media(
     )
 
     target = MEDIA_DIR / safe_name
+    total_size = 0
 
-    with target.open("wb") as output:
+    try:
+        with target.open("wb") as output:
+            while True:
+                chunk = await file.read(1024 * 1024)
 
-        while True:
+                if not chunk:
+                    break
 
-            chunk = await file.read(
-                1024 * 1024
-            )
+                total_size += len(chunk)
+                output.write(chunk)
 
-            if not chunk:
-                break
-
-            output.write(chunk)
+    except Exception:
+        if target.exists():
+            target.unlink()
+        raise HTTPException(
+            status_code=500,
+            detail="آپلود فایل انجام نشد."
+        )
 
     return {
         "message": "Upload successful",
         "url": f"/media/{safe_name}",
         "type": media_type,
-        "filename": filename
+        "filename": filename,
+        "size": total_size
     }
 
 
@@ -1244,6 +1254,8 @@ async def send_message(
     text: str = "",
     media_url: str | None = None,
     media_type: str | None = None,
+    media_filename: str | None = None,
+    media_size: int = 0,
     authorization: str | None = Header(
         default=None
     )
@@ -1300,9 +1312,11 @@ async def send_message(
             text,
             media_url,
             media_type,
+            media_filename,
+            media_size,
             created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             sender["id"],
@@ -1310,6 +1324,8 @@ async def send_message(
             text.strip(),
             media_url,
             media_type,
+            media_filename,
+            media_size,
             datetime.now(
                 timezone.utc
             ).isoformat()
@@ -1373,6 +1389,8 @@ def get_messages(
             text,
             media_url,
             media_type,
+            media_filename,
+            media_size,
             created_at
         FROM messages
         WHERE
@@ -1402,6 +1420,98 @@ def get_messages(
             dict(row)
             for row in rows
         ]
+    }
+
+
+
+# =========================
+# RECENT CHATS
+# =========================
+
+@app.get("/chats")
+def get_recent_chats(
+    authorization: str | None = Header(default=None)
+):
+    current = get_current_user(authorization)
+
+    connection = db()
+
+    rows = connection.execute(
+        """
+        SELECT
+            u.id,
+            u.name,
+            u.username,
+            u.role,
+            u.premium_level,
+            p.avatar_url,
+            lm.text AS last_message,
+            lm.media_url,
+            lm.media_type,
+            lm.created_at AS last_message_at
+        FROM users u
+
+        JOIN (
+            SELECT
+                CASE
+                    WHEN sender_id = ? THEN receiver_id
+                    ELSE sender_id
+                END AS other_id,
+                MAX(id) AS last_id
+            FROM messages
+            WHERE
+                sender_id = ?
+                OR receiver_id = ?
+            GROUP BY other_id
+        ) recent
+            ON recent.other_id = u.id
+
+        JOIN messages lm
+            ON lm.id = recent.last_id
+
+        LEFT JOIN profiles p
+            ON p.user_id = u.id
+
+        ORDER BY recent.last_id DESC
+        """,
+        (
+            current["id"],
+            current["id"],
+            current["id"]
+        )
+    ).fetchall()
+
+    connection.close()
+
+    chats = []
+
+    for row in rows:
+
+        last_message = row["last_message"] or ""
+
+        if not last_message:
+            if row["media_type"] == "image":
+                last_message = "📷 عکس"
+            elif row["media_type"] == "video":
+                last_message = "🎬 ویدیو"
+            elif row["media_url"]:
+                last_message = "📎 فایل"
+            else:
+                last_message = "پیام"
+
+        chats.append({
+            "id": row["id"],
+            "name": row["name"],
+            "username": row["username"],
+            "role": row["role"],
+            "premium_level": row["premium_level"],
+            "avatar_url": row["avatar_url"],
+            "last_message": last_message,
+            "last_message_at": row["last_message_at"]
+        })
+
+    return {
+        "chats": chats
     }
 
 
