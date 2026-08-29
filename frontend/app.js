@@ -978,6 +978,9 @@ async function loadChatMessages(username) {
 
         const data = await response.json();
 
+        console.log("MESSAGES API STATUS:", response.status);
+        console.log("MESSAGES API DATA:", data);
+
         if (!response.ok) {
 
             console.error(
