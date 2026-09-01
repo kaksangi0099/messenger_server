@@ -702,7 +702,15 @@ function closePrivacyPanel() {
 if (privacySetting) {
     privacySetting.addEventListener(
         "click",
-        openPrivacyPanel
+        () => {
+            openPrivacyPanel();
+
+            setTimeout(() => {
+                if (typeof openMediaPrivacy === "function") {
+                    openMediaPrivacy();
+                }
+            }, 0);
+        }
     );
 }
 
@@ -3457,14 +3465,7 @@ async function openMediaPrivacy() {
 }
 
 
-if (privacySetting) {
 
-    privacySetting.addEventListener(
-        "click",
-        openMediaPrivacy
-    );
-
-}
 
 
 if (closePrivacySubPanel) {
