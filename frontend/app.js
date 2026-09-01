@@ -2358,8 +2358,22 @@ async function openUserProfile(username) {
 
         selectedProfile = data;
 
-        userProfileName.textContent =
-            data.name || "کاربر مدیا";
+        userProfileName.innerHTML = "";
+
+        const profileName = document.createElement("span");
+        profileName.className = "media-owner-name";
+        profileName.textContent = data.name || "کاربر مدیا";
+
+        if (data.role === "owner") {
+            const badge = document.createElement("span");
+            badge.className = "media-owner-badge";
+            badge.textContent = "🔥";
+            badge.title = "مالک مدیا";
+
+            profileName.appendChild(badge);
+        }
+
+        userProfileName.appendChild(profileName);
 
         userProfileUsername.textContent =
             "@" + (data.username || "");
@@ -2414,6 +2428,27 @@ async function openUserProfile(username) {
             userProfileEmailRow.classList.add(
                 "hidden"
             );
+        }
+
+
+        // گیفت کوتاه هنگام باز شدن پروفایل
+        const oldGift = userProfileModal.querySelector(".media-gift");
+        if (oldGift) oldGift.remove();
+
+        const gift = document.createElement("div");
+        gift.className = "media-gift";
+        gift.textContent = data.role === "owner" ? "💎" : "🎁";
+
+        const avatarWrap = userProfileModal.querySelector(
+            ".user-profile-avatar-wrap"
+        );
+
+        if (avatarWrap) {
+            avatarWrap.appendChild(gift);
+
+            setTimeout(() => {
+                gift.remove();
+            }, 550);
         }
 
         userProfileModal.classList.add(
