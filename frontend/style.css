@@ -2096,3 +2096,198 @@ button {
         transform: translate(-50%,-85%) scale(1.45) rotate(0deg);
     }
 }
+
+
+/* ===== MEDIA SUPPORT FINAL ===== */
+
+.user-profile-card {
+    background:
+        radial-gradient(
+            circle at 50% -10%,
+            rgba(124,58,237,.20),
+            transparent 42%
+        ),
+        var(--card);
+
+    border: 1px solid rgba(124,58,237,.10);
+
+    box-shadow:
+        0 28px 90px rgba(40,15,90,.32),
+        0 0 35px rgba(124,58,237,.08);
+
+    animation:
+        mediaSupportProfile .24s ease-out;
+}
+
+@keyframes mediaSupportProfile {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* نام پشتیبانی */
+
+.media-owner-name {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    direction: ltr;
+    font-weight: 850;
+}
+
+/* قلب پریمیوم اختصاصی */
+
+.media-owner-fire {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 29px;
+    height: 29px;
+
+    margin: 0 2px;
+
+    border-radius: 50%;
+
+    font-size: 19px;
+    line-height: 1;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(255,80,80,.18),
+            rgba(124,58,237,.08)
+        );
+
+    box-shadow:
+        0 0 9px rgba(255,70,70,.28),
+        0 0 18px rgba(124,58,237,.18);
+
+    animation:
+        mediaPremiumFire .75s ease-in-out infinite alternate;
+}
+
+@keyframes mediaPremiumFire {
+    0% {
+        transform: scale(.92) rotate(-4deg);
+        filter: brightness(.9);
+    }
+
+    50% {
+        transform: scale(1.08) rotate(3deg);
+        filter: brightness(1.18);
+    }
+
+    100% {
+        transform: scale(1.16) rotate(-2deg);
+        filter: brightness(1.35);
+    }
+}
+
+/* امضای پشتیبانی */
+
+.user-profile-card::after {
+    content: "✦ پشتیبانی رسمی Медиа ✦";
+
+    display: block;
+
+    width: fit-content;
+
+    margin: 15px auto 0;
+    padding: 6px 14px;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    color: #6d28d9;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(124,58,237,.10),
+            rgba(56,189,248,.08)
+        );
+
+    border: 1px solid rgba(124,58,237,.08);
+}
+
+/* گیفت خیلی کوتاه */
+
+.media-gift {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    z-index: 50;
+
+    pointer-events: none;
+
+    font-size: 52px;
+
+    opacity: 0;
+
+    transform:
+        translate(-50%, -50%)
+        scale(.25);
+
+    animation:
+        mediaSupportGift .55s cubic-bezier(.2,.8,.2,1)
+        forwards;
+}
+
+@keyframes mediaSupportGift {
+
+    0% {
+        opacity: 0;
+        transform:
+            translate(-50%, -50%)
+            scale(.2)
+            rotate(-15deg);
+    }
+
+    25% {
+        opacity: 1;
+        transform:
+            translate(-50%, -53%)
+            scale(1.2)
+            rotate(5deg);
+    }
+
+    55% {
+        opacity: 1;
+        transform:
+            translate(-50%, -58%)
+            scale(1)
+            rotate(-2deg);
+    }
+
+    100% {
+        opacity: 0;
+        transform:
+            translate(-50%, -85%)
+            scale(1.35)
+            rotate(0);
+    }
+}
+
+/* آواتار پشتیبانی */
+
+.user-profile-card:has(.media-owner-fire)
+.user-profile-avatar {
+    border-color: rgba(124,58,237,.30);
+
+    box-shadow:
+        0 0 0 7px rgba(124,58,237,.06),
+        0 0 30px rgba(124,58,237,.22),
+        0 12px 35px rgba(70,30,140,.22);
+}

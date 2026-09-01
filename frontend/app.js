@@ -2362,15 +2362,29 @@ async function openUserProfile(username) {
 
         const profileName = document.createElement("span");
         profileName.className = "media-owner-name";
-        profileName.textContent = data.name || "کاربر مدیا";
 
         if (data.role === "owner") {
-            const badge = document.createElement("span");
-            badge.className = "media-owner-badge";
-            badge.textContent = "🔥";
-            badge.title = "مالک مدیا";
+            profileName.appendChild(
+                document.createTextNode(
+                    "𓆩 Медиа"
+                )
+            );
 
-            profileName.appendChild(badge);
+            const fire = document.createElement("span");
+            fire.className = "media-owner-fire";
+            fire.textContent = "❤️‍🔥";
+            fire.title = "پشتیبانی رسمی مدیا";
+
+            profileName.appendChild(fire);
+
+            profileName.appendChild(
+                document.createTextNode(
+                    "поддержка 𓆪"
+                )
+            );
+        } else {
+            profileName.textContent =
+                data.name || "کاربر مدیا";
         }
 
         userProfileName.appendChild(profileName);
@@ -2431,17 +2445,28 @@ async function openUserProfile(username) {
         }
 
 
-        // گیفت کوتاه هنگام باز شدن پروفایل
-        const oldGift = userProfileModal.querySelector(".media-gift");
-        if (oldGift) oldGift.remove();
+        // گیفت کوتاه پروفایل
+        const oldGift =
+            userProfileModal.querySelector(".media-gift");
 
-        const gift = document.createElement("div");
+        if (oldGift) {
+            oldGift.remove();
+        }
+
+        const gift =
+            document.createElement("div");
+
         gift.className = "media-gift";
-        gift.textContent = data.role === "owner" ? "💎" : "🎁";
 
-        const avatarWrap = userProfileModal.querySelector(
-            ".user-profile-avatar-wrap"
-        );
+        gift.textContent =
+            data.role === "owner"
+                ? "✨"
+                : "🎁";
+
+        const avatarWrap =
+            userProfileModal.querySelector(
+                ".user-profile-avatar-wrap"
+            );
 
         if (avatarWrap) {
             avatarWrap.appendChild(gift);
