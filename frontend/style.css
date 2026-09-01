@@ -2404,3 +2404,103 @@ button {
         0 0 20px rgba(168,85,247,.18);
 }
 
+
+/* =========================================
+   MEDIA ROYAL SUPPORT - PREMIUM PROFILE
+========================================= */
+
+.user-profile-modal.royal-owner-profile .user-profile-card {
+    border: 1px solid rgba(139, 92, 246, .45) !important;
+    box-shadow:
+        0 25px 80px rgba(76, 29, 149, .35),
+        0 0 40px rgba(139, 92, 246, .25) !important;
+}
+
+.user-profile-modal.royal-owner-profile .user-profile-avatar-wrap {
+    position: relative !important;
+    width: 134px !important;
+    height: 134px !important;
+    margin: 0 auto 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.user-profile-modal.royal-owner-profile .user-profile-avatar-wrap::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: 0 !important;
+    border-radius: 50% !important;
+    background: conic-gradient(
+        #4c1d95,
+        #7c3aed,
+        #c084fc,
+        #8b5cf6,
+        #4c1d95
+    ) !important;
+    animation: mediaRoyalRing 4s linear infinite !important;
+    box-shadow:
+        0 0 12px rgba(124, 58, 237, .7),
+        0 0 30px rgba(168, 85, 247, .35) !important;
+}
+
+.user-profile-modal.royal-owner-profile .user-profile-avatar {
+    position: relative !important;
+    z-index: 2 !important;
+    width: 116px !important;
+    height: 116px !important;
+    border: 4px solid #fff !important;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, .25) !important;
+}
+
+.user-profile-modal.royal-owner-profile .user-profile-card h2 {
+    position: relative !important;
+    z-index: 3 !important;
+}
+
+.user-profile-modal.royal-owner-profile .royal-support-name {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    direction: ltr !important;
+    font-weight: 900 !important;
+}
+
+.user-profile-modal.royal-owner-profile .royal-crown {
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: .78em !important;
+    background: linear-gradient(
+        135deg,
+        #4c1d95,
+        #8b5cf6,
+        #c084fc
+    ) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    filter: drop-shadow(0 0 5px rgba(124, 58, 237, .5)) !important;
+}
+
+.user-profile-modal.royal-owner-profile .royal-name {
+    background: linear-gradient(
+        90deg,
+        #5b21b6,
+        #9333ea,
+        #7c3aed,
+        #a855f7
+    ) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+@keyframes mediaRoyalRing {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
