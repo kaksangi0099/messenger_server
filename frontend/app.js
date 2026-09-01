@@ -749,8 +749,16 @@ function openChat(
     status = "پشتیبانی رسمی برنامه"
 ) {
 
-    chatTitle.textContent =
-        title;
+    if (activeChatUsername === "media_1234") {
+        chatTitle.innerHTML =
+            '<span class="royal-crown">♛</span>' +
+            '<span class="royal-name">Медиа Поддержка</span>' +
+            '<span class="royal-crown">♛</span>';
+        chatTitle.classList.add("royal-support-name");
+    } else {
+        chatTitle.textContent = title;
+        chatTitle.classList.remove("royal-support-name");
+    }
 
     chatStatus.textContent =
         status;
@@ -2072,8 +2080,16 @@ function renderSearchResults(users) {
 
         const name = document.createElement("strong");
         name.className = "search-user-name";
-        name.textContent =
-            user.name || user.username || "کاربر";
+        if (user.role === "owner") {
+            name.innerHTML =
+                '<span class="royal-crown">♛</span>' +
+                '<span class="royal-name">Медиа Поддержка</span>' +
+                '<span class="royal-crown">♛</span>';
+            name.classList.add("royal-support-name");
+        } else {
+            name.textContent =
+                user.name || user.username || "کاربر";
+        }
 
         const username = document.createElement("span");
         username.className = "search-user-username";
