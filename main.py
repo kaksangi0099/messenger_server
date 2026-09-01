@@ -126,6 +126,17 @@ def init_db():
         is_online INTEGER NOT NULL DEFAULT 0
     );
 
+    CREATE TABLE IF NOT EXISTS privacy_settings (
+        user_id INTEGER PRIMARY KEY,
+        online_visibility TEXT NOT NULL DEFAULT 'everyone',
+        profile_visibility TEXT NOT NULL DEFAULT 'everyone',
+        email_visibility TEXT NOT NULL DEFAULT 'nobody',
+        message_permission TEXT NOT NULL DEFAULT 'everyone',
+        last_seen_visibility TEXT NOT NULL DEFAULT 'everyone',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS blocks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER UNIQUE NOT NULL,
@@ -474,9 +485,239 @@ def require_owner(
 
 
 
+def ensure_privacy_settings(user_id):
+    connection = db()
+    now = datetime.now(timezone.utc).isoformat()
+
+    connection.execute(
+        """
+        INSERT OR IGNORE INTO privacy_settings
+        (user_id, created_at, updated_at)
+        VALUES (?, ?, ?)
+        """,
+        (user_id, now, now)
+    )
+
+    connection.commit()
+    connection.close()
+
+
+@app.get("/privacy")
+def get_privacy(
+    authorization: str | None = Header(default=None)
+):
+    user = get_current_user(authorization)
+    ensure_privacy_settings(user["id"])
+
+    connection = db()
+    row = connection.execute(
+        """
+        SELECT
+            online_visibility,
+            profile_visibility,
+            email_visibility,
+            message_permission,
+            last_seen_visibility
+        FROM privacy_settings
+        WHERE user_id = ?
+        """,
+        (user["id"],)
+    ).fetchone()
+    connection.close()
+
+    return dict(row)
+
+
+@app.put("/privacy")
+def update_privacy(
+    data: PrivacyUpdateRequest,
+    authorization: str | None = Header(default=None)
+):
+    user = get_current_user(authorization)
+
+    allowed = {
+        "everyone",
+        "nobody",
+        "contacts"
+    }
+
+    values = [
+        data.online_visibility,
+        data.profile_visibility,
+        data.email_visibility,
+        data.message_permission,
+        data.last_seen_visibility
+    ]
+
+    if any(value not in allowed for value in values):
+        raise HTTPException(
+            status_code=400,
+            detail="گزینه حریم خصوصی نامعتبر است."
+        )
+
+    ensure_privacy_settings(user["id"])
+
+    connection = db()
+    connection.execute(
+        """
+        UPDATE privacy_settings
+        SET
+            online_visibility = ?,
+            profile_visibility = ?,
+            email_visibility = ?,
+            message_permission = ?,
+            last_seen_visibility = ?,
+            updated_at = ?
+        WHERE user_id = ?
+        """,
+        (
+            data.online_visibility,
+            data.profile_visibility,
+            data.email_visibility,
+            data.message_permission,
+            data.last_seen_visibility,
+            datetime.now(timezone.utc).isoformat(),
+            user["id"]
+        )
+    )
+    connection.commit()
+    connection.close()
+
+    return {
+        "message": "تنظیمات حریم خصوصی ذخیره شد."
+    }
+
+
+@app.post("/change-password")
+def change_password(
+    data: ChangePasswordRequest,
+    authorization: str | None = Header(default=None)
+):
+    user = get_current_user(authorization)
+
+    if not verify_password(
+        data.current_password,
+        user["password"]
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="رمز عبور فعلی اشتباه است."
+        )
+
+    if not valid_password(data.new_password):
+        raise HTTPException(
+            status_code=400,
+            detail="رمز جدید باید حداقل ۸ کاراکتر و شامل حروف بزرگ، کوچک، عدد و نماد باشد."
+        )
+
+    if data.current_password == data.new_password:
+        raise HTTPException(
+            status_code=400,
+            detail="رمز جدید باید با رمز فعلی متفاوت باشد."
+        )
+
+    connection = db()
+
+    connection.execute(
+        """
+        UPDATE users
+        SET password = ?
+        WHERE id = ?
+        """,
+        (
+            hash_password(data.new_password),
+            user["id"]
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+    return {
+        "message": "رمز عبور با موفقیت تغییر کرد."
+    }
+
+
+@app.get("/sessions")
+def get_sessions(
+    authorization: str | None = Header(default=None)
+):
+    user = get_current_user(authorization)
+
+    connection = db()
+
+    rows = connection.execute(
+        """
+        SELECT id, created_at, token
+        FROM sessions
+        WHERE user_id = ?
+        ORDER BY id DESC
+        """,
+        (user["id"],)
+    ).fetchall()
+
+    connection.close()
+
+    current_token = authorization[7:]
+
+    return {
+        "sessions": [
+            {
+                "id": row["id"],
+                "created_at": row["created_at"],
+                "current": row["token"] == current_token
+            }
+            for row in rows
+        ]
+    }
+
+
+@app.delete("/sessions/others")
+def delete_other_sessions(
+    authorization: str | None = Header(default=None)
+):
+    user = get_current_user(authorization)
+
+    current_token = authorization[7:]
+
+    connection = db()
+
+    connection.execute(
+        """
+        DELETE FROM sessions
+        WHERE user_id = ?
+        AND token != ?
+        """,
+        (
+            user["id"],
+            current_token
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+    return {
+        "message": "نشست‌های دیگر خارج شدند."
+    }
+
+
 # =========================
 # PROFILE API
 # =========================
+
+class PrivacyUpdateRequest(BaseModel):
+    online_visibility: str = "everyone"
+    profile_visibility: str = "everyone"
+    email_visibility: str = "nobody"
+    message_permission: str = "everyone"
+    last_seen_visibility: str = "everyone"
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
 
 class ProfileUpdateRequest(BaseModel):
     name: str | None = None
@@ -932,6 +1173,22 @@ def login(
         )
 
     token = create_token(user)
+
+    connection = db()
+    connection.execute(
+        """
+        INSERT INTO sessions
+        (user_id, token, created_at)
+        VALUES (?, ?, ?)
+        """,
+        (
+            user["id"],
+            token,
+            datetime.now(timezone.utc).isoformat()
+        )
+    )
+    connection.commit()
+    connection.close()
 
     return {
         "message": "Login successful",

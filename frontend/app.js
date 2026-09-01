@@ -3313,3 +3313,527 @@ if (saveAccountButton) {
     );
 
 }
+
+
+/* =========================================
+   MEDIA PRIVACY / SECURITY
+========================================= */
+
+const privacySubPanel =
+    document.getElementById("privacySubPanel");
+
+const closePrivacySubPanel =
+    document.getElementById("closePrivacySubPanel");
+
+const savePrivacyButton =
+    document.getElementById("savePrivacyButton");
+
+const privacySaveStatus =
+    document.getElementById("privacySaveStatus");
+
+const privacyOnline =
+    document.getElementById("privacyOnline");
+
+const privacyProfile =
+    document.getElementById("privacyProfile");
+
+const privacyEmail =
+    document.getElementById("privacyEmail");
+
+const privacyMessages =
+    document.getElementById("privacyMessages");
+
+const privacyLastSeen =
+    document.getElementById("privacyLastSeen");
+
+const changePasswordButton =
+    document.getElementById("changePasswordButton");
+
+const activeSessionsButton =
+    document.getElementById("activeSessionsButton");
+
+const passwordDialog =
+    document.getElementById("passwordDialog");
+
+const closePasswordDialog =
+    document.getElementById("closePasswordDialog");
+
+const savePasswordButton =
+    document.getElementById("savePasswordButton");
+
+const currentPasswordInput =
+    document.getElementById("currentPasswordInput");
+
+const newPasswordInput =
+    document.getElementById("newPasswordInput");
+
+const newPassword2Input =
+    document.getElementById("newPassword2Input");
+
+const passwordSaveStatus =
+    document.getElementById("passwordSaveStatus");
+
+const sessionsDialog =
+    document.getElementById("sessionsDialog");
+
+const closeSessionsDialog =
+    document.getElementById("closeSessionsDialog");
+
+const sessionsList =
+    document.getElementById("sessionsList");
+
+const logoutOtherSessionsButton =
+    document.getElementById("logoutOtherSessionsButton");
+
+const sessionsSaveStatus =
+    document.getElementById("sessionsSaveStatus");
+
+
+function mediaAuthHeaders() {
+
+    const token =
+        localStorage.getItem("media_token") ||
+        localStorage.getItem("token") ||
+        localStorage.getItem("access_token");
+
+    return {
+        "Content-Type": "application/json",
+        ...(token
+            ? {"Authorization": "Bearer " + token}
+            : {})
+    };
+}
+
+
+async function openMediaPrivacy() {
+
+    if (!privacySubPanel) return;
+
+    privacySubPanel.classList.remove("hidden");
+
+    try {
+
+        const response = await fetch(
+            "/privacy",
+            {
+                headers: mediaAuthHeaders()
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("privacy_load_failed");
+        }
+
+        const data = await response.json();
+
+        if (privacyOnline)
+            privacyOnline.value =
+                data.online_visibility || "everyone";
+
+        if (privacyProfile)
+            privacyProfile.value =
+                data.profile_visibility || "everyone";
+
+        if (privacyEmail)
+            privacyEmail.value =
+                data.email_visibility || "nobody";
+
+        if (privacyMessages)
+            privacyMessages.value =
+                data.message_permission || "everyone";
+
+        if (privacyLastSeen)
+            privacyLastSeen.value =
+                data.last_seen_visibility || "everyone";
+
+    } catch (error) {
+
+        if (privacySaveStatus) {
+            privacySaveStatus.textContent =
+                "❌ دریافت تنظیمات انجام نشد.";
+        }
+
+    }
+}
+
+
+if (privacySetting) {
+
+    privacySetting.addEventListener(
+        "click",
+        openMediaPrivacy
+    );
+
+}
+
+
+if (closePrivacySubPanel) {
+
+    closePrivacySubPanel.addEventListener(
+        "click",
+        () => {
+            privacySubPanel.classList.add("hidden");
+        }
+    );
+
+}
+
+
+if (savePrivacyButton) {
+
+    savePrivacyButton.addEventListener(
+        "click",
+        async () => {
+
+            savePrivacyButton.disabled = true;
+
+            if (privacySaveStatus)
+                privacySaveStatus.textContent =
+                    "در حال ذخیره...";
+
+            try {
+
+                const response = await fetch(
+                    "/privacy",
+                    {
+                        method: "PUT",
+                        headers: mediaAuthHeaders(),
+                        body: JSON.stringify({
+                            online_visibility:
+                                privacyOnline.value,
+
+                            profile_visibility:
+                                privacyProfile.value,
+
+                            email_visibility:
+                                privacyEmail.value,
+
+                            message_permission:
+                                privacyMessages.value,
+
+                            last_seen_visibility:
+                                privacyLastSeen.value
+                        })
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.detail ||
+                        "save_failed"
+                    );
+                }
+
+                if (privacySaveStatus)
+                    privacySaveStatus.textContent =
+                        "✅ تغییرات با موفقیت ذخیره شد.";
+
+            } catch (error) {
+
+                if (privacySaveStatus)
+                    privacySaveStatus.textContent =
+                        "❌ " +
+                        (error.message ||
+                        "ذخیره انجام نشد.");
+
+            } finally {
+
+                savePrivacyButton.disabled = false;
+
+            }
+
+        }
+    );
+
+}
+
+
+if (changePasswordButton) {
+
+    changePasswordButton.addEventListener(
+        "click",
+        () => {
+
+            passwordDialog.classList.remove(
+                "hidden"
+            );
+
+            if (passwordSaveStatus)
+                passwordSaveStatus.textContent = "";
+
+        }
+    );
+
+}
+
+
+if (closePasswordDialog) {
+
+    closePasswordDialog.addEventListener(
+        "click",
+        () => {
+            passwordDialog.classList.add(
+                "hidden"
+            );
+        }
+    );
+
+}
+
+
+if (savePasswordButton) {
+
+    savePasswordButton.addEventListener(
+        "click",
+        async () => {
+
+            const current =
+                currentPasswordInput.value;
+
+            const next =
+                newPasswordInput.value;
+
+            const repeat =
+                newPassword2Input.value;
+
+            if (!current || !next || !repeat) {
+
+                passwordSaveStatus.textContent =
+                    "❌ همه فیلدها را کامل کنید.";
+
+                return;
+
+            }
+
+            if (next !== repeat) {
+
+                passwordSaveStatus.textContent =
+                    "❌ تکرار رمز جدید یکسان نیست.";
+
+                return;
+
+            }
+
+            savePasswordButton.disabled = true;
+
+            passwordSaveStatus.textContent =
+                "در حال تغییر رمز...";
+
+            try {
+
+                const response = await fetch(
+                    "/change-password",
+                    {
+                        method: "POST",
+                        headers: mediaAuthHeaders(),
+                        body: JSON.stringify({
+                            current_password:
+                                current,
+
+                            new_password:
+                                next
+                        })
+                    }
+                );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.detail ||
+                        "تغییر رمز انجام نشد."
+                    );
+                }
+
+                passwordSaveStatus.textContent =
+                    "✅ رمز عبور با موفقیت تغییر کرد.";
+
+                currentPasswordInput.value = "";
+                newPasswordInput.value = "";
+                newPassword2Input.value = "";
+
+            } catch (error) {
+
+                passwordSaveStatus.textContent =
+                    "❌ " +
+                    (error.message ||
+                    "خطا در تغییر رمز.");
+
+            } finally {
+
+                savePasswordButton.disabled = false;
+
+            }
+
+        }
+    );
+
+}
+
+
+async function loadMediaSessions() {
+
+    sessionsList.innerHTML =
+        '<div class="sessions-loading">در حال دریافت نشست‌ها...</div>';
+
+    try {
+
+        const response = await fetch(
+            "/sessions",
+            {
+                headers: mediaAuthHeaders()
+            }
+        );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail ||
+                "دریافت نشست‌ها انجام نشد."
+            );
+        }
+
+        if (!data.sessions ||
+            data.sessions.length === 0) {
+
+            sessionsList.innerHTML =
+                '<div class="sessions-empty">نشست فعالی ثبت نشده است.</div>';
+
+            return;
+        }
+
+        sessionsList.innerHTML =
+            data.sessions.map(
+                session => `
+                    <div class="session-item">
+                        <div class="session-icon">
+                            📱
+                        </div>
+                        <div class="session-info">
+                            <strong>
+                                ${session.current
+                                    ? "این دستگاه"
+                                    : "نشست فعال"}
+                            </strong>
+                            <small>
+                                ${session.created_at
+                                    ? new Date(
+                                        session.created_at
+                                      ).toLocaleString(
+                                        "fa-IR"
+                                      )
+                                    : "زمان نامشخص"}
+                            </small>
+                        </div>
+                        <span class="session-badge">
+                            ${session.current
+                                ? "فعلی"
+                                : "فعال"}
+                        </span>
+                    </div>
+                `
+            ).join("");
+
+    } catch (error) {
+
+        sessionsList.innerHTML =
+            `<div class="sessions-empty">
+                ❌ ${error.message || "خطا در دریافت نشست‌ها"}
+            </div>`;
+
+    }
+
+}
+
+
+if (activeSessionsButton) {
+
+    activeSessionsButton.addEventListener(
+        "click",
+        async () => {
+
+            sessionsDialog.classList.remove(
+                "hidden"
+            );
+
+            await loadMediaSessions();
+
+        }
+    );
+
+}
+
+
+if (closeSessionsDialog) {
+
+    closeSessionsDialog.addEventListener(
+        "click",
+        () => {
+            sessionsDialog.classList.add(
+                "hidden"
+            );
+        }
+    );
+
+}
+
+
+if (logoutOtherSessionsButton) {
+
+    logoutOtherSessionsButton.addEventListener(
+        "click",
+        async () => {
+
+            logoutOtherSessionsButton.disabled = true;
+
+            sessionsSaveStatus.textContent =
+                "در حال خروج...";
+
+            try {
+
+                const response = await fetch(
+                    "/sessions/others",
+                    {
+                        method: "DELETE",
+                        headers: mediaAuthHeaders()
+                    }
+                );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.detail ||
+                        "عملیات انجام نشد."
+                    );
+                }
+
+                sessionsSaveStatus.textContent =
+                    "✅ نشست‌های دیگر خارج شدند.";
+
+                await loadMediaSessions();
+
+            } catch (error) {
+
+                sessionsSaveStatus.textContent =
+                    "❌ " +
+                    (error.message ||
+                    "خطا در خروج نشست‌ها.");
+
+            } finally {
+
+                logoutOtherSessionsButton.disabled =
+                    false;
+
+            }
+
+        }
+    );
+
+}

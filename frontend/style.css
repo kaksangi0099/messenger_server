@@ -2782,3 +2782,386 @@ button {
     }
 }
 
+
+
+/* =========================================
+   MEDIA PRIVACY / SECURITY UI
+========================================= */
+
+.media-subpanel {
+    position: fixed;
+    z-index: 10050;
+    inset: 0;
+    overflow-y: auto;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(168,85,247,.16),
+            transparent 35%
+        ),
+        #faf8ff;
+}
+
+.media-subpanel.hidden,
+.media-dialog.hidden {
+    display: none !important;
+}
+
+.media-subpanel-header {
+    height: 72px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 18px;
+    background: rgba(255,255,255,.94);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(15px);
+}
+
+.media-subpanel-header button,
+.media-dialog-close {
+    border: 0;
+    cursor: pointer;
+}
+
+.media-subpanel-header button {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #f0e8ff;
+    color: #6d28d9;
+    font-size: 28px;
+}
+
+.media-subpanel-header h3 {
+    font-size: 20px;
+}
+
+.privacy-card,
+.privacy-security-card {
+    width: min(620px, calc(100% - 30px));
+    margin: 18px auto;
+}
+
+.privacy-card {
+    padding: 20px;
+    border-radius: 25px;
+    background: white;
+    box-shadow: 0 15px 45px rgba(91,33,182,.12);
+}
+
+.privacy-title {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 10px;
+}
+
+.privacy-title > span {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: linear-gradient(145deg,#ede9fe,#ddd6fe);
+    font-size: 23px;
+}
+
+.privacy-title strong,
+.privacy-title small {
+    display: block;
+}
+
+.privacy-title strong {
+    font-size: 17px;
+}
+
+.privacy-title small {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.privacy-row {
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 4px;
+    border-bottom: 1px solid #eee9f7;
+}
+
+.privacy-row > span {
+    flex: 1;
+}
+
+.privacy-row strong,
+.privacy-row small {
+    display: block;
+}
+
+.privacy-row strong {
+    font-size: 14px;
+}
+
+.privacy-row small {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.privacy-row select {
+    min-width: 105px;
+    padding: 9px 10px;
+    border: 1px solid #e2d8f4;
+    border-radius: 12px;
+    outline: none;
+    background: #faf8ff;
+    color: #5b21b6;
+    font-weight: 700;
+}
+
+.privacy-save-button {
+    width: 100%;
+    min-height: 50px;
+    margin-top: 18px;
+    border: 0;
+    border-radius: 16px;
+    cursor: pointer;
+    color: white;
+    font-size: 14px;
+    font-weight: 800;
+    background: linear-gradient(135deg,#6d28d9,#a855f7);
+    box-shadow: 0 10px 25px rgba(109,40,217,.22);
+}
+
+.privacy-save-button:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+.privacy-save-status {
+    min-height: 22px;
+    margin-top: 10px;
+    text-align: center;
+    color: #6d28d9;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.privacy-security-card {
+    overflow: hidden;
+    border-radius: 22px;
+    background: white;
+    box-shadow: 0 12px 35px rgba(91,33,182,.09);
+}
+
+.privacy-action {
+    width: 100%;
+    min-height: 76px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 12px 15px;
+    border: 0;
+    border-bottom: 1px solid #eee9f7;
+    background: white;
+    text-align: right;
+    cursor: pointer;
+}
+
+.privacy-action:last-child {
+    border-bottom: 0;
+}
+
+.privacy-action:hover {
+    background: #faf7ff;
+}
+
+.privacy-action-icon {
+    width: 45px;
+    height: 45px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: #eee5ff;
+    font-size: 21px;
+}
+
+.privacy-action span:nth-child(2) {
+    flex: 1;
+}
+
+.privacy-action strong,
+.privacy-action small {
+    display: block;
+}
+
+.privacy-action strong {
+    font-size: 14px;
+}
+
+.privacy-action small {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.privacy-action b {
+    color: #a29aac;
+    font-size: 24px;
+}
+
+.media-dialog {
+    position: fixed;
+    z-index: 11000;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(25,10,50,.58);
+    backdrop-filter: blur(9px);
+}
+
+.media-dialog-card {
+    position: relative;
+    width: min(420px,100%);
+    padding: 28px 22px 22px;
+    border-radius: 27px;
+    background: white;
+    box-shadow: 0 25px 80px rgba(40,15,90,.35);
+    text-align: center;
+}
+
+.media-dialog-close {
+    position: absolute;
+    top: 11px;
+    left: 13px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #f0e8ff;
+    color: #6d28d9;
+    font-size: 25px;
+}
+
+.dialog-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: linear-gradient(145deg,#ede9fe,#d8b4fe);
+    font-size: 27px;
+}
+
+.media-dialog-card h3 {
+    margin-bottom: 7px;
+}
+
+.media-dialog-card p {
+    margin-bottom: 17px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.media-dialog-card input {
+    width: 100%;
+    height: 48px;
+    margin-bottom: 10px;
+    padding: 0 14px;
+    border: 1px solid #e2d8f4;
+    border-radius: 14px;
+    outline: none;
+    background: #faf8ff;
+    box-sizing: border-box;
+}
+
+.sessions-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    text-align: right;
+}
+
+.session-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 8px;
+    border-bottom: 1px solid #eee9f7;
+}
+
+.session-icon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 13px;
+    background: #eee5ff;
+}
+
+.session-info {
+    flex: 1;
+}
+
+.session-info strong,
+.session-info small {
+    display: block;
+}
+
+.session-info strong {
+    font-size: 13px;
+}
+
+.session-info small {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.session-badge {
+    padding: 5px 8px;
+    border-radius: 9px;
+    background: #eee5ff;
+    color: #6d28d9;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.sessions-loading,
+.sessions-empty {
+    padding: 25px 10px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+@media (max-width: 600px) {
+
+    .privacy-card,
+    .privacy-security-card {
+        width: calc(100% - 20px);
+        margin: 12px auto;
+    }
+
+    .privacy-card {
+        padding: 16px;
+    }
+
+    .privacy-row {
+        min-height: 66px;
+    }
+
+    .privacy-row select {
+        min-width: 94px;
+    }
+
+}

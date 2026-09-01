@@ -1067,5 +1067,170 @@
 
 <script src="/static/app.js?v=35"></script>
 
+
+<!-- MEDIA PRIVACY PANEL -->
+<div class="media-subpanel hidden" id="privacySubPanel">
+
+    <div class="media-subpanel-header">
+        <button type="button" id="closePrivacySubPanel">‹</button>
+        <h3>حریم خصوصی</h3>
+    </div>
+
+    <div class="privacy-card">
+
+        <div class="privacy-title">
+            <span>🔐</span>
+            <div>
+                <strong>حریم خصوصی مدیا</strong>
+                <small>کنترل کن چه کسانی اطلاعاتت را ببینند</small>
+            </div>
+        </div>
+
+        <label class="privacy-row">
+            <span>
+                <strong>وضعیت آنلاین</strong>
+                <small>چه کسانی آنلاین بودنت را ببینند؟</small>
+            </span>
+            <select id="privacyOnline">
+                <option value="everyone">همه</option>
+                <option value="contacts">مخاطبین</option>
+                <option value="nobody">هیچ‌کس</option>
+            </select>
+        </label>
+
+        <label class="privacy-row">
+            <span>
+                <strong>پروفایل</strong>
+                <small>نمایش اطلاعات پروفایل</small>
+            </span>
+            <select id="privacyProfile">
+                <option value="everyone">همه</option>
+                <option value="contacts">مخاطبین</option>
+                <option value="nobody">هیچ‌کس</option>
+            </select>
+        </label>
+
+        <label class="privacy-row">
+            <span>
+                <strong>ایمیل</strong>
+                <small>چه کسانی ایمیلت را ببینند؟</small>
+            </span>
+            <select id="privacyEmail">
+                <option value="everyone">همه</option>
+                <option value="contacts">مخاطبین</option>
+                <option value="nobody">هیچ‌کس</option>
+            </select>
+        </label>
+
+        <label class="privacy-row">
+            <span>
+                <strong>پیام‌ها</strong>
+                <small>چه کسانی بتوانند برایت پیام بفرستند؟</small>
+            </span>
+            <select id="privacyMessages">
+                <option value="everyone">همه</option>
+                <option value="contacts">مخاطبین</option>
+                <option value="nobody">هیچ‌کس</option>
+            </select>
+        </label>
+
+        <label class="privacy-row">
+            <span>
+                <strong>آخرین بازدید</strong>
+                <small>نمایش آخرین زمان فعالیت</small>
+            </span>
+            <select id="privacyLastSeen">
+                <option value="everyone">همه</option>
+                <option value="contacts">مخاطبین</option>
+                <option value="nobody">هیچ‌کس</option>
+            </select>
+        </label>
+
+        <button type="button" class="privacy-save-button" id="savePrivacyButton">
+            💾 ذخیره تغییرات
+        </button>
+
+        <div class="privacy-save-status" id="privacySaveStatus"></div>
+
+    </div>
+
+    <div class="privacy-security-card">
+
+        <button type="button" class="privacy-action" id="changePasswordButton">
+            <span class="privacy-action-icon">🔑</span>
+            <span>
+                <strong>تغییر رمز عبور</strong>
+                <small>رمز عبور حساب خود را تغییر دهید</small>
+            </span>
+            <b>‹</b>
+        </button>
+
+        <button type="button" class="privacy-action" id="activeSessionsButton">
+            <span class="privacy-action-icon">📱</span>
+            <span>
+                <strong>نشست‌های فعال</strong>
+                <small>دستگاه‌های واردشده به حساب</small>
+            </span>
+            <b>‹</b>
+        </button>
+
+    </div>
+
+</div>
+
+
+<div class="media-dialog hidden" id="passwordDialog">
+    <div class="media-dialog-card">
+
+        <button type="button" class="media-dialog-close" id="closePasswordDialog">×</button>
+
+        <div class="dialog-icon">🔑</div>
+        <h3>تغییر رمز عبور</h3>
+        <p>رمز فعلی و رمز جدید را وارد کنید.</p>
+
+        <input id="currentPasswordInput"
+               type="password"
+               placeholder="رمز عبور فعلی">
+
+        <input id="newPasswordInput"
+               type="password"
+               placeholder="رمز عبور جدید">
+
+        <input id="newPassword2Input"
+               type="password"
+               placeholder="تکرار رمز عبور جدید">
+
+        <button type="button" class="privacy-save-button" id="savePasswordButton">
+            تغییر رمز
+        </button>
+
+        <div class="privacy-save-status" id="passwordSaveStatus"></div>
+
+    </div>
+</div>
+
+
+<div class="media-dialog hidden" id="sessionsDialog">
+    <div class="media-dialog-card sessions-dialog-card">
+
+        <button type="button" class="media-dialog-close" id="closeSessionsDialog">×</button>
+
+        <div class="dialog-icon">📱</div>
+        <h3>نشست‌های فعال</h3>
+        <p>حساب شما در این نشست‌ها فعال است.</p>
+
+        <div id="sessionsList" class="sessions-list">
+            <div class="sessions-loading">در حال دریافت نشست‌ها...</div>
+        </div>
+
+        <button type="button" class="privacy-save-button" id="logoutOtherSessionsButton">
+            🚪 خروج از نشست‌های دیگر
+        </button>
+
+        <div class="privacy-save-status" id="sessionsSaveStatus"></div>
+
+    </div>
+</div>
+
 </body>
 </html>
