@@ -673,15 +673,122 @@ if (notificationSetting) notificationSetting.addEventListener(
 );
 
 
-if (privacySetting) privacySetting.addEventListener(
-    "click",
-    () => {
+const privacyOverlay =
+    document.getElementById("privacyOverlay");
 
-        alert(
-            "تنظیمات حریم خصوصی مدیا."
-        );
+const closePrivacy =
+    document.getElementById("closePrivacy");
+
+function openPrivacyPanel() {
+
+    if (!privacyOverlay) {
+        return;
     }
-);
+
+    privacyOverlay.classList.add("open");
+
+    loadPrivacySettings();
+}
+
+function closePrivacyPanel() {
+
+    if (!privacyOverlay) {
+        return;
+    }
+
+    privacyOverlay.classList.remove("open");
+}
+
+if (privacySetting) {
+    privacySetting.addEventListener(
+        "click",
+        openPrivacyPanel
+    );
+}
+
+if (closePrivacy) {
+    closePrivacy.addEventListener(
+        "click",
+        closePrivacyPanel
+    );
+}
+
+if (privacyOverlay) {
+    privacyOverlay.addEventListener(
+        "click",
+        event => {
+            if (event.target === privacyOverlay) {
+                closePrivacyPanel();
+            }
+        }
+    );
+}
+
+function getPrivacyKey() {
+
+    if (currentUser && currentUser.username) {
+        return "media_privacy_" + currentUser.username;
+    }
+
+    return "media_privacy_default";
+}
+
+function loadPrivacySettings() {
+
+    const saved = JSON.parse(
+        localStorage.getItem(getPrivacyKey()) || "{}"
+    );
+
+    document
+        .querySelectorAll("[data-privacy]")
+        .forEach(select => {
+
+            const key =
+                select.dataset.privacy;
+
+            if (saved[key]) {
+                select.value = saved[key];
+            }
+        });
+}
+
+document
+    .querySelectorAll("[data-privacy]")
+    .forEach(select => {
+
+        select.addEventListener(
+            "change",
+            () => {
+
+                const key =
+                    getPrivacyKey();
+
+                const saved =
+                    JSON.parse(
+                        localStorage.getItem(key) || "{}"
+                    );
+
+                saved[select.dataset.privacy] =
+                    select.value;
+
+                localStorage.setItem(
+                    key,
+                    JSON.stringify(saved)
+                );
+
+                const status =
+                    document.getElementById(
+                        "privacySaveStatus"
+                    );
+
+                if (status) {
+                    status.textContent =
+                        "✓ تنظیمات ذخیره شد";
+                }
+            }
+        );
+    });
+
 
 
 if (appearanceSetting) appearanceSetting.addEventListener(

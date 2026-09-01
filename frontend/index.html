@@ -568,6 +568,155 @@
 
 </div>
 
+
+<!-- ================= PRIVACY PANEL ================= -->
+
+<div class="privacy-overlay" id="privacyOverlay">
+
+    <section class="privacy-panel">
+
+        <header class="privacy-header">
+
+            <button
+                type="button"
+                id="closePrivacy"
+                class="privacy-back"
+            >‹</button>
+
+            <div>
+                <h2>حریم خصوصی</h2>
+                <span>امنیت و کنترل حساب مدیا</span>
+            </div>
+
+            <div class="privacy-header-icon">🔐</div>
+
+        </header>
+
+        <div class="privacy-hero">
+            <div class="privacy-hero-icon">🛡️</div>
+
+            <div>
+                <strong>حریم خصوصی مدیا</strong>
+                <p>
+                    کنترل کن چه اطلاعاتی از حساب تو دیده شود.
+                </p>
+            </div>
+        </div>
+
+        <div class="privacy-section-title">
+            دیده‌شدن اطلاعات
+        </div>
+
+        <div class="privacy-card">
+
+            <div class="privacy-row">
+                <div class="privacy-row-icon purple">🟢</div>
+                <div class="privacy-row-text">
+                    <strong>آخرین بازدید و آنلاین بودن</strong>
+                    <small>تعیین کن چه کسانی وضعیت آنلاین تو را ببینند.</small>
+                </div>
+                <select class="privacy-select" data-privacy="online">
+                    <option value="everyone">همه کاربران</option>
+                    <option value="nobody">هیچ‌کس</option>
+                </select>
+            </div>
+
+            <div class="privacy-row">
+                <div class="privacy-row-icon pink">🖼️</div>
+                <div class="privacy-row-text">
+                    <strong>عکس پروفایل</strong>
+                    <small>نمایش عکس پروفایل برای کاربران.</small>
+                </div>
+                <select class="privacy-select" data-privacy="avatar">
+                    <option value="everyone">همه کاربران</option>
+                    <option value="nobody">هیچ‌کس</option>
+                </select>
+            </div>
+
+            <div class="privacy-row">
+                <div class="privacy-row-icon blue">✉️</div>
+                <div class="privacy-row-text">
+                    <strong>ایمیل</strong>
+                    <small>کنترل نمایش ایمیل حساب.</small>
+                </div>
+                <select class="privacy-select" data-privacy="email">
+                    <option value="everyone">همه کاربران</option>
+                    <option value="self">فقط خودم</option>
+                    <option value="nobody">هیچ‌کس</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="privacy-section-title">
+            پیام‌ها
+        </div>
+
+        <div class="privacy-card">
+
+            <div class="privacy-row">
+                <div class="privacy-row-icon green">💬</div>
+                <div class="privacy-row-text">
+                    <strong>چه کسانی می‌توانند پیام بدهند؟</strong>
+                    <small>دریافت پیام از کاربران دیگر.</small>
+                </div>
+                <select class="privacy-select" data-privacy="messages">
+                    <option value="everyone">همه کاربران</option>
+                    <option value="previous">افرادی که قبلاً پیام داده‌ام</option>
+                    <option value="nobody">هیچ‌کس</option>
+                </select>
+            </div>
+
+            <div class="privacy-row">
+                <div class="privacy-row-icon orange">🕐</div>
+                <div class="privacy-row-text">
+                    <strong>حذف خودکار پیام‌ها</strong>
+                    <small>پیام‌ها بعد از مدت انتخاب‌شده حذف شوند.</small>
+                </div>
+                <select class="privacy-select" data-privacy="autoDelete">
+                    <option value="off">خاموش</option>
+                    <option value="1day">۱ روز</option>
+                    <option value="1week">۱ هفته</option>
+                    <option value="1month">۱ ماه</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="privacy-section-title">
+            امنیت حساب
+        </div>
+
+        <div class="privacy-card">
+
+            <button type="button" class="privacy-action">
+                <span class="privacy-action-icon">🔑</span>
+                <span>
+                    <strong>تغییر رمز عبور</strong>
+                    <small>رمز عبور حساب خود را تغییر دهید.</small>
+                </span>
+                <b>‹</b>
+            </button>
+
+            <button type="button" class="privacy-action">
+                <span class="privacy-action-icon">📱</span>
+                <span>
+                    <strong>نشست‌های فعال</strong>
+                    <small>دستگاه‌های متصل به حساب.</small>
+                </span>
+                <b>‹</b>
+            </button>
+
+        </div>
+
+        <div class="privacy-save" id="privacySaveStatus">
+            ✓ تنظیمات به‌صورت محلی ذخیره می‌شوند
+        </div>
+
+    </section>
+
+</div>
+
 <!-- ================= SETTINGS ================= -->
 
 <aside
@@ -916,7 +1065,7 @@
 
 
 
-<script src="/static/app.js?v=34"></script>
+<script src="/static/app.js?v=35"></script>
 
 </body>
 </html>
