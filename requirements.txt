@@ -2,4 +2,4 @@ fastapi
 uvicorn
 python-jose
 python-multipart
-python-multipart
+psycopg[binary]
