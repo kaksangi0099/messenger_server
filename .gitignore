@@ -19,3 +19,4 @@ frontend/*.login-debug-backup
 frontend/*.current-backup
 frontend/*.current-broken
 frontend/index.backup.html
+migration_data.json
