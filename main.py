@@ -1248,20 +1248,13 @@ def me(
 
 @app.post("/admin/migrate-legacy")
 def migrate_legacy(
-    authorization: str | None = Header(default=None)
+    authorization: str | None = Header(default=None),
+    data: dict = Body(...)
 ):
     current_user = get_current_user(authorization)
 
     if current_user["role"] != "owner":
         raise HTTPException(status_code=403, detail="دسترسی فقط برای مالک است.")
-
-    migration_file = Path("migration_data.json")
-
-    if not migration_file.exists():
-        raise HTTPException(status_code=404, detail="migration_data.json پیدا نشد.")
-
-    with migration_file.open("r", encoding="utf-8") as f:
-        data = json.load(f)
 
     connection = db()
 
@@ -1277,14 +1270,9 @@ def migrate_legacy(
                     (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (id) DO NOTHING
                 """, (
-                    user["id"],
-                    user["name"],
-                    user["username"],
-                    user["email"],
-                    user["password"],
-                    user["role"],
-                    user["premium_level"],
-                    user["blocked"],
+                    user["id"], user["name"], user["username"],
+                    user["email"], user["password"], user["role"],
+                    user["premium_level"], user["blocked"],
                     user["created_at"],
                 ))
 
@@ -1295,12 +1283,9 @@ def migrate_legacy(
                     VALUES (%s, %s, %s, %s, %s, %s)
                     ON CONFLICT (user_id) DO NOTHING
                 """, (
-                    profile["user_id"],
-                    profile["avatar_url"],
-                    profile["bio"],
-                    profile["show_email"],
-                    profile["last_seen"],
-                    profile["is_online"],
+                    profile["user_id"], profile["avatar_url"],
+                    profile["bio"], profile["show_email"],
+                    profile["last_seen"], profile["is_online"],
                 ))
 
             for message in data.get("messages", []):
@@ -1311,14 +1296,10 @@ def migrate_legacy(
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (id) DO NOTHING
                 """, (
-                    message["id"],
-                    message["sender_id"],
-                    message["receiver_id"],
-                    message["text"],
-                    message["media_url"],
-                    message["media_type"],
-                    message["created_at"],
-                    message["media_filename"],
+                    message["id"], message["sender_id"],
+                    message["receiver_id"], message["text"],
+                    message["media_url"], message["media_type"],
+                    message["created_at"], message["media_filename"],
                     message["media_size"],
                 ))
 
@@ -1329,14 +1310,11 @@ def migrate_legacy(
                     VALUES (%s, %s, %s, %s, %s)
                     ON CONFLICT (id) DO NOTHING
                 """, (
-                    block["id"],
-                    block["user_id"],
-                    block["block_type"],
-                    block["block_until"],
+                    block["id"], block["user_id"],
+                    block["block_type"], block["block_until"],
                     block["created_at"],
                 ))
 
-            # Synchronize PostgreSQL identity sequences after importing legacy IDs.
             for table in ("users", "messages", "blocks"):
                 cursor.execute(f"""
                     SELECT setval(
