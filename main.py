@@ -1245,6 +1245,115 @@ def me(
 # OWNER - USERS
 # =========================
 
+
+@app.post("/admin/migrate-legacy")
+def migrate_legacy(
+    authorization: str | None = Header(default=None)
+):
+    current_user = get_current_user(authorization)
+
+    if current_user["role"] != "owner":
+        raise HTTPException(status_code=403, detail="دسترسی فقط برای مالک است.")
+
+    migration_file = Path("migration_data.json")
+
+    if not migration_file.exists():
+        raise HTTPException(status_code=404, detail="migration_data.json پیدا نشد.")
+
+    with migration_file.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    connection = db()
+
+    try:
+        with connection.cursor() as cursor:
+
+            for user in data.get("users", []):
+                cursor.execute("""
+                    INSERT INTO users
+                    (id, name, username, email, password, role,
+                     premium_level, blocked, created_at)
+                    VALUES
+                    (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (id) DO NOTHING
+                """, (
+                    user["id"],
+                    user["name"],
+                    user["username"],
+                    user["email"],
+                    user["password"],
+                    user["role"],
+                    user["premium_level"],
+                    user["blocked"],
+                    user["created_at"],
+                ))
+
+            for profile in data.get("profiles", []):
+                cursor.execute("""
+                    INSERT INTO profiles
+                    (user_id, avatar_url, bio, show_email, last_seen, is_online)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (user_id) DO NOTHING
+                """, (
+                    profile["user_id"],
+                    profile["avatar_url"],
+                    profile["bio"],
+                    profile["show_email"],
+                    profile["last_seen"],
+                    profile["is_online"],
+                ))
+
+            for message in data.get("messages", []):
+                cursor.execute("""
+                    INSERT INTO messages
+                    (id, sender_id, receiver_id, text, media_url,
+                     media_type, created_at, media_filename, media_size)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (id) DO NOTHING
+                """, (
+                    message["id"],
+                    message["sender_id"],
+                    message["receiver_id"],
+                    message["text"],
+                    message["media_url"],
+                    message["media_type"],
+                    message["created_at"],
+                    message["media_filename"],
+                    message["media_size"],
+                ))
+
+            for block in data.get("blocks", []):
+                cursor.execute("""
+                    INSERT INTO blocks
+                    (id, user_id, block_type, block_until, created_at)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON CONFLICT (id) DO NOTHING
+                """, (
+                    block["id"],
+                    block["user_id"],
+                    block["block_type"],
+                    block["block_until"],
+                    block["created_at"],
+                ))
+
+        connection.commit()
+
+        return {
+            "success": True,
+            "users": len(data.get("users", [])),
+            "profiles": len(data.get("profiles", [])),
+            "messages": len(data.get("messages", [])),
+            "blocks": len(data.get("blocks", []))
+        }
+
+    except Exception:
+        connection.rollback()
+        raise
+
+    finally:
+        connection.close()
+
+
 @app.get("/owner/users")
 def owner_users(
     authorization: str | None = Header(
