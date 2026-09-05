@@ -1336,6 +1336,16 @@ def migrate_legacy(
                     block["created_at"],
                 ))
 
+            # Synchronize PostgreSQL identity sequences after importing legacy IDs.
+            for table in ("users", "messages", "blocks"):
+                cursor.execute(f"""
+                    SELECT setval(
+                        pg_get_serial_sequence('{table}', 'id'),
+                        COALESCE((SELECT MAX(id) FROM {table}), 1),
+                        (SELECT COUNT(*) > 0 FROM {table})
+                    )
+                """)
+
         connection.commit()
 
         return {
