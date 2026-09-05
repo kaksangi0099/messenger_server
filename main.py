@@ -7,7 +7,7 @@ from psycopg.rows import dict_row
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Header
+from fastapi import FastAPI, HTTPException, UploadFile, File, Header, Body
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
