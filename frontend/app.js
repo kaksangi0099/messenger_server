@@ -673,65 +673,6 @@ if (notificationSetting) notificationSetting.addEventListener(
 );
 
 
-const privacyOverlay =
-    document.getElementById("privacyOverlay");
-
-const closePrivacy =
-    document.getElementById("closePrivacy");
-
-function openPrivacyPanel() {
-
-    if (!privacyOverlay) {
-        return;
-    }
-
-    privacyOverlay.classList.add("open");
-
-    loadPrivacySettings();
-}
-
-function closePrivacyPanel() {
-
-    if (!privacyOverlay) {
-        return;
-    }
-
-    privacyOverlay.classList.remove("open");
-}
-
-if (privacySetting) {
-    privacySetting.addEventListener(
-        "click",
-        () => {
-            openPrivacyPanel();
-
-            setTimeout(() => {
-                if (typeof openMediaPrivacy === "function") {
-                    openMediaPrivacy();
-                }
-            }, 0);
-        }
-    );
-}
-
-if (closePrivacy) {
-    closePrivacy.addEventListener(
-        "click",
-        closePrivacyPanel
-    );
-}
-
-if (privacyOverlay) {
-    privacyOverlay.addEventListener(
-        "click",
-        event => {
-            if (event.target === privacyOverlay) {
-                closePrivacyPanel();
-            }
-        }
-    );
-}
-
 function getPrivacyKey() {
 
     if (currentUser && currentUser.username) {
