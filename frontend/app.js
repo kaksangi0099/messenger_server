@@ -110,6 +110,16 @@ const accountSetting = document.getElementById("accountSetting");
 const notificationSetting = document.getElementById("notificationSetting");
 const privacySetting = document.getElementById("privacySetting");
 const appearanceSetting = document.getElementById("appearanceSetting");
+
+if (privacySetting) {
+    privacySetting.addEventListener(
+        "click",
+        () => {
+            openMediaPrivacy();
+        }
+    );
+}
+
 const aboutSetting = document.getElementById("aboutSetting");
 
 
