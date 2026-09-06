@@ -3677,6 +3677,8 @@ if (savePasswordButton) {
 
 async function loadMediaSessions() {
 
+    if (!sessionsList) return;
+
     sessionsList.innerHTML =
         '<div class="sessions-loading">در حال دریافت نشست‌ها...</div>';
 
@@ -3689,8 +3691,7 @@ async function loadMediaSessions() {
             }
         );
 
-        const data =
-            await response.json();
+        const data = await response.json();
 
         if (!response.ok) {
             throw new Error(
@@ -3708,37 +3709,65 @@ async function loadMediaSessions() {
             return;
         }
 
-        sessionsList.innerHTML =
-            data.sessions.map(
-                session => `
-                    <div class="session-item">
-                        <div class="session-icon">
-                            📱
-                        </div>
-                        <div class="session-info">
-                            <strong>
-                                ${session.current
-                                    ? "این دستگاه"
-                                    : "نشست فعال"}
-                            </strong>
-                            <small>
-                                ${session.created_at
-                                    ? new Date(
-                                        session.created_at
-                                      ).toLocaleString(
-                                        "fa-IR"
-                                      )
-                                    : "زمان نامشخص"}
-                            </small>
-                        </div>
-                        <span class="session-badge">
-                            ${session.current
-                                ? "فعلی"
-                                : "فعال"}
-                        </span>
-                    </div>
-                `
-            ).join("");
+        sessionsList.innerHTML = "";
+
+        data.sessions.forEach(session => {
+
+            const item = document.createElement("div");
+            item.className = "session-item";
+
+            const icon = document.createElement("div");
+            icon.className = "session-icon";
+            icon.textContent = session.device_name || "🌐";
+
+            const info = document.createElement("div");
+            info.className = "session-info";
+
+            const title = document.createElement("strong");
+            title.textContent = session.current
+                ? "این دستگاه"
+                : "نشست فعال";
+
+            const device = document.createElement("small");
+            device.textContent =
+                session.device_name ||
+                "🌐 دستگاه ناشناس";
+
+            const created = document.createElement("small");
+            created.textContent =
+                session.created_at
+                    ? "شروع: " +
+                      new Date(
+                          session.created_at
+                      ).toLocaleString("fa-IR")
+                    : "زمان شروع نامشخص";
+
+            const lastSeen = document.createElement("small");
+            lastSeen.textContent =
+                session.last_seen
+                    ? "آخرین فعالیت: " +
+                      new Date(
+                          session.last_seen
+                      ).toLocaleString("fa-IR")
+                    : "آخرین فعالیت نامشخص";
+
+            info.appendChild(title);
+            info.appendChild(device);
+            info.appendChild(created);
+            info.appendChild(lastSeen);
+
+            const badge = document.createElement("span");
+            badge.className = "session-badge";
+            badge.textContent = session.current
+                ? "فعلی"
+                : "فعال";
+
+            item.appendChild(icon);
+            item.appendChild(info);
+            item.appendChild(badge);
+
+            sessionsList.appendChild(item);
+        });
 
     } catch (error) {
 
