@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#7c3aed">
     <title>مدیا</title>
-    <link rel="stylesheet" href="/static/style.css?v=5">
+    <link rel="stylesheet" href="/static/style.css?v=7">
 </head>
 
 <body>
@@ -315,12 +315,49 @@
 
         </div>
 
-        <!-- HOMEPAGE ADVERTISEMENT -->
+        <!-- HOMEPAGE TEXT ADVERTISEMENTS -->
 
         <div
             id="homepageAdvertisement"
             class="homepage-ad-wrap hidden"
         ></div>
+
+
+        <!-- IMAGE AD POPUP -->
+
+        <div
+            id="imageAdPopup"
+            class="image-ad-popup hidden"
+            aria-hidden="true"
+        >
+
+            <div
+                class="image-ad-popup-backdrop"
+                id="imageAdPopupBackdrop"
+            ></div>
+
+            <div
+                class="image-ad-popup-card"
+                role="dialog"
+                aria-modal="true"
+                aria-label="تبلیغ"
+            >
+
+                <button
+                    type="button"
+                    id="imageAdPopupClose"
+                    class="image-ad-popup-close"
+                    aria-label="بستن تبلیغ"
+                >×</button>
+
+                <div
+                    id="imageAdPopupContent"
+                    class="image-ad-popup-content"
+                ></div>
+
+            </div>
+
+        </div>
 
 
     </aside>
@@ -1435,7 +1472,7 @@
     </div>
 </div>
 
-<script src="/static/app.js?v=38"></script>
+<script src="/static/app.js?v=40"></script>
 
 </body>
 </html>

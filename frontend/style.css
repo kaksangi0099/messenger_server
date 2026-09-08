@@ -4083,3 +4083,274 @@ button {
     }
 }
 
+
+/* =========================================================
+   IMAGE AD POPUP - GLASS STYLE
+   ========================================================= */
+
+.image-ad-popup {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 999999 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 20px !important;
+    box-sizing: border-box !important;
+}
+
+.image-ad-popup.hidden {
+    display: none !important;
+}
+
+.image-ad-popup-backdrop {
+    position: absolute !important;
+    inset: 0 !important;
+
+    background: rgba(10, 8, 20, 0.58) !important;
+
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.image-ad-popup-card {
+    position: relative !important;
+    z-index: 1 !important;
+
+    width: min(90vw, 400px) !important;
+    max-width: 400px !important;
+    max-height: 82vh !important;
+
+    overflow: hidden !important;
+
+    border-radius: 24px !important;
+
+    background: rgba(255, 255, 255, 0.13) !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+
+    box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+
+    backdrop-filter: blur(22px) !important;
+    -webkit-backdrop-filter: blur(22px) !important;
+
+    animation: imageAdPopupIn 0.25s ease-out !important;
+}
+
+.image-ad-popup-content {
+    width: 100% !important;
+    max-height: 82vh !important;
+    overflow: auto !important;
+    box-sizing: border-box !important;
+
+    padding: 14px !important;
+}
+
+.image-ad-popup-content img {
+    display: block !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 58vh !important;
+
+    object-fit: contain !important;
+
+    margin: 0 auto !important;
+
+    border-radius: 18px !important;
+}
+
+.image-ad-popup-close {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+
+    z-index: 5 !important;
+
+    width: 34px !important;
+    height: 34px !important;
+
+    padding: 0 !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: 50% !important;
+
+    background: rgba(0, 0, 0, 0.38) !important;
+    color: white !important;
+
+    font-size: 25px !important;
+    line-height: 30px !important;
+
+    cursor: pointer !important;
+
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.image-ad-popup-close:active {
+    transform: scale(0.94);
+}
+
+.image-ad-popup-title {
+    margin: 10px 4px 8px !important;
+
+    color: white !important;
+
+    font-size: 17px !important;
+    font-weight: 700 !important;
+
+    text-align: right !important;
+
+    word-break: break-word !important;
+}
+
+.image-ad-popup-text {
+    margin: 0 4px 12px !important;
+
+    color: rgba(255, 255, 255, 0.88) !important;
+
+    font-size: 13px !important;
+    line-height: 1.7 !important;
+
+    text-align: right !important;
+
+    word-break: break-word !important;
+}
+
+.image-ad-popup-action {
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+
+    min-height: 44px !important;
+
+    margin-top: 8px !important;
+
+    padding: 10px 16px !important;
+
+    box-sizing: border-box !important;
+
+    border-radius: 14px !important;
+
+    background: rgba(255, 255, 255, 0.18) !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+
+    color: white !important;
+
+    text-decoration: none !important;
+
+    font-size: 14px !important;
+    font-weight: 700 !important;
+
+    cursor: pointer !important;
+
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.image-ad-popup-action:active {
+    transform: scale(0.98);
+}
+
+@keyframes imageAdPopupIn {
+    from {
+        opacity: 0;
+        transform: scale(0.94) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@media (max-width: 600px) {
+
+    .image-ad-popup {
+        padding: 14px !important;
+    }
+
+    .image-ad-popup-card {
+        width: min(92vw, 380px) !important;
+        max-height: 80vh !important;
+        border-radius: 21px !important;
+    }
+
+    .image-ad-popup-content {
+        padding: 11px !important;
+    }
+
+    .image-ad-popup-content img {
+        max-height: 52vh !important;
+        border-radius: 15px !important;
+    }
+
+    .image-ad-popup-title {
+        font-size: 15px !important;
+    }
+
+    .image-ad-popup-text {
+        font-size: 12px !important;
+    }
+
+}
+
+
+/* =========================================================
+   TEXT AD - COLLAPSED / EXPANDED
+   ========================================================= */
+
+.homepage-ad-wrap .media-ad-text-collapsed {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+
+    overflow: hidden !important;
+
+    max-height: 3.4em !important;
+}
+
+.homepage-ad-wrap .media-ad-text-expanded {
+    display: block !important;
+
+    -webkit-line-clamp: unset !important;
+
+    overflow: visible !important;
+
+    max-height: none !important;
+}
+
+.homepage-ad-wrap .media-ad-more {
+    display: inline-flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    margin-top: 6px !important;
+    padding: 5px 11px !important;
+
+    border: 0 !important;
+    border-radius: 9px !important;
+
+    background: rgba(128, 80, 255, 0.15) !important;
+
+    color: inherit !important;
+
+    font-size: 11px !important;
+    font-weight: 700 !important;
+
+    cursor: pointer !important;
+}
+
+.homepage-ad-wrap .media-ad-more:active {
+    transform: scale(0.96);
+}
+

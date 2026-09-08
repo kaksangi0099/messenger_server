@@ -620,6 +620,11 @@ function openApplication() {
 
     createEmojiPicker();
 
+    // تبلیغ تصویری فقط هنگام ورود به برنامه
+    if (typeof loadActiveAdvertisement === "function") {
+        loadActiveAdvertisement(true);
+    }
+
 }
 
 
@@ -1758,7 +1763,7 @@ async function handleAdvertisementImage(file) {
    ACTIVE AD
 ------------------------- */
 
-async function loadActiveAdvertisement() {
+async function loadActiveAdvertisement(showPopup = false) {
 
     const container =
         document.getElementById(
@@ -1899,9 +1904,24 @@ async function loadActiveAdvertisement() {
                             ${escapeHtml(ad.title || "")}
                         </strong>
 
-                        <div class="media-ad-text">
+                        <div
+                            class="media-ad-text media-ad-text-collapsed"
+                        >
                             ${escapeHtml(ad.text || "")}
                         </div>
+
+                        ${
+                            ad.text && ad.text.length > 140
+                                ? `
+                                    <button
+                                        type="button"
+                                        class="media-ad-more"
+                                    >
+                                        ادامه
+                                    </button>
+                                `
+                                : ""
+                        }
 
                         ${
                             ad.target_url
@@ -1922,6 +1942,40 @@ async function loadActiveAdvertisement() {
 
                 </div>
             `;
+
+            const moreButton =
+                slides.querySelector(
+                    ".media-ad-more"
+                );
+
+            const adText =
+                slides.querySelector(
+                    ".media-ad-text"
+                );
+
+            if (moreButton && adText) {
+
+                moreButton.addEventListener(
+                    "click",
+                    () => {
+
+                        const expanded =
+                            adText.classList.toggle(
+                                "media-ad-text-expanded"
+                            );
+
+                        adText.classList.toggle(
+                            "media-ad-text-collapsed",
+                            !expanded
+                        );
+
+                        moreButton.textContent =
+                            expanded
+                                ? "بستن"
+                                : "ادامه";
+                    }
+                );
+            }
 
             dots.forEach((dot, dotIndex) => {
                 dot.classList.toggle(
@@ -1991,6 +2045,26 @@ async function loadActiveAdvertisement() {
         renderAdvertisement(0);
 
         restartAdvertisementTimer();
+
+        /* -------------------------
+           IMAGE AD POPUP
+        ------------------------- */
+
+        if (showPopup) {
+
+            const popupAd =
+                ads.find(
+                    ad =>
+                        ad.image_url &&
+                        Number(ad.popup_dismissed) !== 1
+                );
+
+            if (popupAd) {
+                showImageAdvertisementPopup(
+                    popupAd
+                );
+            }
+        }
 
         /* -------------------------
            MOBILE SWIPE
@@ -5335,3 +5409,193 @@ if (logoutOtherSessionsButton) {
     );
 
 }
+
+/* =========================================================
+   IMAGE AD POPUP
+   ========================================================= */
+
+let imageAdPopupTimer = null;
+let imageAdPopupAdvertisementId = null;
+let imageAdPopupClosedByUser = false;
+
+function hideImageAdvertisementPopup(dismiss = false) {
+
+    const popup =
+        document.getElementById("imageAdPopup");
+
+    if (!popup) {
+        return;
+    }
+
+    if (imageAdPopupTimer) {
+        clearTimeout(imageAdPopupTimer);
+        imageAdPopupTimer = null;
+    }
+
+    popup.classList.add("hidden");
+    popup.setAttribute("aria-hidden", "true");
+
+    if (
+        dismiss &&
+        imageAdPopupAdvertisementId
+    ) {
+
+        const token = getToken();
+
+        if (token) {
+
+            fetch(
+                `${API_URL}/advertisement/${imageAdPopupAdvertisementId}/dismiss`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Authorization":
+                            "Bearer " + token
+                    }
+                }
+            ).catch(() => {});
+        }
+    }
+
+    imageAdPopupAdvertisementId = null;
+}
+
+
+function showImageAdvertisementPopup(ad) {
+
+    const popup =
+        document.getElementById("imageAdPopup");
+
+    const content =
+        document.getElementById(
+            "imageAdPopupContent"
+        );
+
+    if (!popup || !content || !ad) {
+        return;
+    }
+
+    if (!ad.image_url) {
+        return;
+    }
+
+    if (Number(ad.popup_dismissed) === 1) {
+        return;
+    }
+
+    imageAdPopupAdvertisementId = ad.id;
+    imageAdPopupClosedByUser = false;
+
+    const freshImageUrl =
+        ad.image_url +
+        (ad.image_url.includes("?") ? "&" : "?") +
+        "popup_view=" + Date.now();
+
+    content.innerHTML = `
+
+        <img
+            src="${escapeHtml(freshImageUrl)}"
+            alt="تبلیغ"
+        >
+
+        ${
+            ad.title
+                ? `
+                    <div class="image-ad-popup-title">
+                        ${escapeHtml(ad.title)}
+                    </div>
+                `
+                : ""
+        }
+
+        ${
+            ad.text
+                ? `
+                    <div class="image-ad-popup-text">
+                        ${escapeHtml(ad.text)}
+                    </div>
+                `
+                : ""
+        }
+
+        ${
+            ad.target_url
+                ? `
+                    <a
+                        class="image-ad-popup-action"
+                        href="${escapeHtml(ad.target_url)}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        همین حالا
+                    </a>
+                `
+                : ""
+        }
+
+    `;
+
+    popup.classList.remove("hidden");
+    popup.setAttribute("aria-hidden", "false");
+
+    if (imageAdPopupTimer) {
+        clearTimeout(imageAdPopupTimer);
+    }
+
+    imageAdPopupTimer = setTimeout(
+        () => {
+            hideImageAdvertisementPopup(false);
+        },
+        30000
+    );
+}
+
+
+function setupImageAdvertisementPopup() {
+
+    const closeButton =
+        document.getElementById(
+            "imageAdPopupClose"
+        );
+
+    const backdrop =
+        document.getElementById(
+            "imageAdPopupBackdrop"
+        );
+
+    if (closeButton) {
+
+        closeButton.addEventListener(
+            "click",
+            () => {
+
+                imageAdPopupClosedByUser = true;
+
+                hideImageAdvertisementPopup(
+                    true
+                );
+
+            }
+        );
+    }
+
+    if (backdrop) {
+
+        backdrop.addEventListener(
+            "click",
+            () => {
+
+                imageAdPopupClosedByUser = true;
+
+                hideImageAdvertisementPopup(
+                    true
+                );
+
+            }
+        );
+    }
+}
+
+
+setupImageAdvertisementPopup();
+
