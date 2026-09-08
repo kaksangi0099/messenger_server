@@ -1761,36 +1761,26 @@ async function loadActiveAdvertisement() {
         return;
     }
 
-    const token =
-        getToken();
+    const token = getToken();
 
     if (!token) {
-
         container.innerHTML = "";
-
-        container.classList.add(
-            "hidden"
-        );
-
+        container.classList.add("hidden");
         return;
     }
 
-
     try {
 
-        const response =
-            await fetch(
-                `${API_URL}/advertisement`,
-                {
-                    method: "GET",
-
-                    headers: {
-                        "Authorization":
-                            "Bearer " + token
-                    }
+        const response = await fetch(
+            `${API_URL}/advertisement`,
+            {
+                method: "GET",
+                headers: {
+                    "Authorization":
+                        "Bearer " + token
                 }
-            );
-
+            }
+        );
 
         let data = {};
 
@@ -1800,79 +1790,265 @@ async function loadActiveAdvertisement() {
             data = {};
         }
 
-
         if (!response.ok) {
             throw new Error(
                 data.detail ||
-                "دریافت تبلیغ انجام نشد."
+                "دریافت تبلیغات انجام نشد."
             );
         }
 
+        const ads =
+            Array.isArray(data.advertisements)
+                ? data.advertisements
+                : [];
 
-        const ad =
-            data.advertisement;
-
-
-        if (!ad) {
-
+        if (!ads.length) {
             container.innerHTML = "";
-
-            container.classList.add(
-                "hidden"
-            );
-
+            container.classList.add("hidden");
             return;
         }
 
+        let currentIndex = 0;
 
         container.innerHTML = `
-            <div class="media-ad-card">
+            <div class="media-ad-slider">
 
-                <div class="media-ad-label">
-                    📢 تبلیغ
-                </div>
+                <div class="media-ad-slides"></div>
 
                 ${
-                    ad.image_url
+                    ads.length > 1
                         ? `
-                            <img
-                                class="media-ad-image"
-                                src="${escapeHtml(ad.image_url)}"
-                                alt="تبلیغ"
-                            >
+                            <div class="media-ad-dots">
+                                ${ads.map((_, index) => `
+                                    <button
+                                        type="button"
+                                        class="media-ad-dot ${
+                                            index === 0
+                                                ? "active"
+                                                : ""
+                                        }"
+                                        data-ad-index="${index}"
+                                        aria-label="تبلیغ ${index + 1}"
+                                    ></button>
+                                `).join("")}
+                            </div>
                         `
                         : ""
                 }
 
-                <div class="media-ad-content">
+            </div>
+        `;
 
-                    <strong class="media-ad-title">
-                        ${escapeHtml(ad.title || "")}
-                    </strong>
+        const slides =
+            container.querySelector(
+                ".media-ad-slides"
+            );
 
-                    <div class="media-ad-text">
-                        ${escapeHtml(ad.text || "")}
+        const dots =
+            Array.from(
+                container.querySelectorAll(
+                    ".media-ad-dot"
+                )
+            );
+
+        function renderAdvertisement(index) {
+
+            if (!ads[index]) {
+                return;
+            }
+
+            const ad = ads[index];
+
+            slides.innerHTML = `
+                <div class="media-ad-card">
+
+                    <div class="media-ad-label">
+                        📢 تبلیغ
                     </div>
 
                     ${
-                        ad.target_url
+                        ad.image_url
                             ? `
-                                <a
-                                    class="media-ad-link"
-                                    href="${escapeHtml(ad.target_url)}"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <img
+                                    class="media-ad-image"
+                                    src="${escapeHtml(ad.image_url)}"
+                                    alt="تبلیغ"
                                 >
-                                    مشاهده
-                                </a>
                             `
                             : ""
                     }
 
-                </div>
+                    <div class="media-ad-content">
 
-            </div>
-        `;
+                        <strong class="media-ad-title">
+                            ${escapeHtml(ad.title || "")}
+                        </strong>
+
+                        <div class="media-ad-text">
+                            ${escapeHtml(ad.text || "")}
+                        </div>
+
+                        ${
+                            ad.target_url
+                                ? `
+                                    <a
+                                        class="media-ad-link"
+                                        href="${escapeHtml(ad.target_url)}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        مشاهده
+                                    </a>
+                                `
+                                : ""
+                        }
+
+                    </div>
+
+                </div>
+            `;
+
+            dots.forEach((dot, dotIndex) => {
+                dot.classList.toggle(
+                    "active",
+                    dotIndex === index
+                );
+            });
+        }
+
+        function showAdvertisement(index) {
+
+            if (!ads.length) {
+                return;
+            }
+
+            currentIndex =
+                (index + ads.length) %
+                ads.length;
+
+            renderAdvertisement(
+                currentIndex
+            );
+        }
+
+        dots.forEach(dot => {
+
+            dot.addEventListener(
+                "click",
+                () => {
+
+                    const index =
+                        Number(
+                            dot.dataset.adIndex
+                        );
+
+                    showAdvertisement(index);
+                    restartAdvertisementTimer();
+                }
+            );
+
+        });
+
+        let advertisementTimer = null;
+
+        function restartAdvertisementTimer() {
+
+            if (advertisementTimer) {
+                clearInterval(
+                    advertisementTimer
+                );
+            }
+
+            if (ads.length > 1) {
+
+                advertisementTimer =
+                    setInterval(
+                        () => {
+                            showAdvertisement(
+                                currentIndex + 1
+                            );
+                        },
+                        5000
+                    );
+            }
+        }
+
+        renderAdvertisement(0);
+
+        restartAdvertisementTimer();
+
+        /* -------------------------
+           MOBILE SWIPE
+        ------------------------- */
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        const slider =
+            container.querySelector(
+                ".media-ad-slider"
+            );
+
+        if (slider) {
+
+            slider.addEventListener(
+                "touchstart",
+                (event) => {
+
+                    const touch =
+                        event.touches[0];
+
+                    touchStartX =
+                        touch.clientX;
+
+                    touchStartY =
+                        touch.clientY;
+                },
+                { passive: true }
+            );
+
+            slider.addEventListener(
+                "touchend",
+                (event) => {
+
+                    const touch =
+                        event.changedTouches[0];
+
+                    const diffX =
+                        touch.clientX -
+                        touchStartX;
+
+                    const diffY =
+                        touch.clientY -
+                        touchStartY;
+
+                    /* فقط حرکت افقی */
+                    if (
+                        Math.abs(diffX) < 45 ||
+                        Math.abs(diffX) <
+                            Math.abs(diffY)
+                    ) {
+                        return;
+                    }
+
+                    if (diffX < 0) {
+
+                        showAdvertisement(
+                            currentIndex + 1
+                        );
+
+                    } else {
+
+                        showAdvertisement(
+                            currentIndex - 1
+                        );
+                    }
+
+                    restartAdvertisementTimer();
+                },
+                { passive: true }
+            );
+        }
 
         container.classList.remove(
             "hidden"
@@ -1881,18 +2057,14 @@ async function loadActiveAdvertisement() {
     } catch (error) {
 
         console.error(
-            "ACTIVE AD ERROR:",
+            "ACTIVE ADS ERROR:",
             error
         );
 
         container.innerHTML = "";
-
-        container.classList.add(
-            "hidden"
-        );
+        container.classList.add("hidden");
     }
 }
-
 
 /* -------------------------
    PROFILE OWNER AD
@@ -1941,8 +2113,15 @@ async function loadOwnerProfileAdvertisement() {
         const data =
             await response.json();
 
+        const advertisements =
+            Array.isArray(data.advertisements)
+                ? data.advertisements
+                : [];
+
         const ad =
-            data.advertisement;
+            advertisements.length
+                ? advertisements[0]
+                : null;
 
 
         if (!ad) {

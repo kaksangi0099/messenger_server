@@ -3314,3 +3314,115 @@ button {
     border-radius: 14px;
 }
 
+
+/* =========================
+   ADVERTISEMENT SLIDER
+========================= */
+
+.media-ad-slider {
+    width: 100%;
+    position: relative;
+}
+
+.media-ad-slides {
+    width: 100%;
+    overflow: hidden;
+}
+
+.media-ad-card {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 18px;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.12);
+    box-sizing: border-box;
+    animation: mediaAdFadeIn .35s ease;
+}
+
+@keyframes mediaAdFadeIn {
+    from {
+        opacity: .35;
+        transform: translateX(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.media-ad-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    direction: ltr;
+}
+
+.media-ad-dot {
+    width: 7px;
+    height: 7px;
+    min-width: 7px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,.35);
+    cursor: pointer;
+    transition:
+        width .25s ease,
+        opacity .25s ease,
+        transform .25s ease;
+}
+
+.media-ad-dot.active {
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    background: rgba(255,255,255,.9);
+    transform: scale(1.05);
+}
+
+.media-ad-content {
+    padding: 10px 14px 14px;
+}
+
+.media-ad-title {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.media-ad-text {
+    line-height: 1.7;
+    word-break: break-word;
+}
+
+.media-ad-image {
+    display: block;
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+}
+
+.media-ad-link {
+    display: inline-block;
+    margin-top: 10px;
+    text-decoration: none;
+}
+
+/* موبایل */
+@media (max-width: 600px) {
+
+    .media-ad-card {
+        border-radius: 16px;
+    }
+
+    .media-ad-image {
+        max-height: 260px;
+    }
+
+    .media-ad-dots {
+        margin-top: 7px;
+    }
+}
+

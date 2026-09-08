@@ -324,7 +324,7 @@ def get_active_advertisement(
 
     connection = db()
 
-    row = connection.execute(
+    rows = connection.execute(
         """
         SELECT
             id,
@@ -335,17 +335,15 @@ def get_active_advertisement(
         FROM advertisements
         WHERE is_active = 1
         ORDER BY updated_at DESC, id DESC
-        LIMIT 1
         """
-    ).fetchone()
+    ).fetchall()
 
     connection.close()
 
-    if not row:
-        return {"advertisement": None}
-
     return {
-        "advertisement": dict(row)
+        "advertisements": [
+            dict(row) for row in rows
+        ]
     }
 
 
