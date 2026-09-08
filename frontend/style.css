@@ -3567,9 +3567,9 @@ button {
 
     -webkit-box-orient: vertical;
 
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: unset;
 
-    overflow: hidden;
+    overflow: visible;
 
     word-break: break-word;
 }
@@ -3701,7 +3701,9 @@ button {
         font-size: 10px;
         line-height: 14px;
 
-        -webkit-line-clamp: 2;
+        -webkit-line-clamp: unset;
+        overflow: visible;
+        max-height: none;
     }
 
     .homepage-ad-wrap .media-ad-link {
@@ -3994,7 +3996,9 @@ button {
         font-size: 10px;
         line-height: 14px;
 
-        -webkit-line-clamp: 2;
+        -webkit-line-clamp: unset;
+        overflow: visible;
+        max-height: none;
     }
 
     .homepage-ad-wrap .media-ad-link {

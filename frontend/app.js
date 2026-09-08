@@ -1218,6 +1218,14 @@ function editAdvertisement(ad) {
     advertisementImageUrl =
         ad.image_url || null;
 
+    // برای جلوگیری از نمایش نسخه قدیمی تصویر
+    if (advertisementImageUrl) {
+        advertisementImageUrl =
+            advertisementImageUrl +
+            (advertisementImageUrl.includes("?") ? "&" : "?") +
+            "ad_edit=" + Date.now();
+    }
+
 
     const title =
         document.getElementById(
@@ -1859,6 +1867,13 @@ async function loadActiveAdvertisement() {
 
             const ad = ads[index];
 
+            const freshImageUrl =
+                ad.image_url
+                    ? ad.image_url +
+                      (ad.image_url.includes("?") ? "&" : "?") +
+                      "ad_view=" + Date.now()
+                    : null;
+
             slides.innerHTML = `
                 <div class="media-ad-card">
 
@@ -1871,7 +1886,7 @@ async function loadActiveAdvertisement() {
                             ? `
                                 <img
                                     class="media-ad-image"
-                                    src="${escapeHtml(ad.image_url)}"
+                                    src="${escapeHtml(freshImageUrl)}"
                                     alt="تبلیغ"
                                 >
                             `
