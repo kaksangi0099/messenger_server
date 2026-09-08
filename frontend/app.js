@@ -1880,6 +1880,10 @@ async function loadActiveAdvertisement(showPopup = false) {
                     : null;
 
             slides.innerHTML = `
+                <div class="ad-sheet-handle"
+                     aria-label="برای باز کردن تبلیغ بکشید بالا">
+                </div>
+
                 <div class="media-ad-card">
 
                     <div class="media-ad-label">
@@ -5599,3 +5603,110 @@ function setupImageAdvertisementPopup() {
 
 setupImageAdvertisementPopup();
 
+
+
+/* =========================================================
+   AD BOTTOM SHEET TOUCH
+   ========================================================= */
+
+(function setupAdvertisementBottomSheet() {
+
+    const adWrap =
+        document.getElementById("homepageAdvertisement");
+
+    if (!adWrap) {
+        return;
+    }
+
+    let startY = 0;
+    let currentY = 0;
+    let dragging = false;
+
+    function openAdSheet() {
+        adWrap.classList.remove("ad-sheet-dragging");
+        adWrap.classList.add("ad-sheet-open");
+    }
+
+    function closeAdSheet() {
+        adWrap.classList.remove("ad-sheet-dragging");
+        adWrap.classList.remove("ad-sheet-open");
+    }
+
+    adWrap.addEventListener(
+        "touchstart",
+        (event) => {
+
+            if (!event.touches.length) {
+                return;
+            }
+
+            startY = event.touches[0].clientY;
+            currentY = startY;
+            dragging = true;
+
+            adWrap.classList.add(
+                "ad-sheet-dragging"
+            );
+        },
+        { passive: true }
+    );
+
+    adWrap.addEventListener(
+        "touchmove",
+        (event) => {
+
+            if (!dragging || !event.touches.length) {
+                return;
+            }
+
+            currentY =
+                event.touches[0].clientY;
+        },
+        { passive: true }
+    );
+
+    adWrap.addEventListener(
+        "touchend",
+        () => {
+
+            if (!dragging) {
+                return;
+            }
+
+            dragging = false;
+
+            const distance =
+                startY - currentY;
+
+            adWrap.classList.remove(
+                "ad-sheet-dragging"
+            );
+
+            if (distance > 45) {
+                openAdSheet();
+            }
+            else if (distance < -45) {
+                closeAdSheet();
+            }
+        },
+        { passive: true }
+    );
+
+    // Also allow tapping the handle to toggle.
+    adWrap.addEventListener(
+        "click",
+        (event) => {
+
+            if (
+                event.target &&
+                event.target.closest(".ad-sheet-handle")
+            ) {
+
+                adWrap.classList.toggle(
+                    "ad-sheet-open"
+                );
+            }
+        }
+    );
+
+})();

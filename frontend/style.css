@@ -4417,3 +4417,115 @@ button {
     }
 }
 
+
+/* =========================================================
+   AD BOTTOM SHEET
+   ========================================================= */
+
+.homepage-ad-wrap {
+    position: fixed !important;
+    left: 18px !important;
+    right: 18px !important;
+    bottom: 68px !important;
+
+    width: auto !important;
+    height: auto !important;
+    max-height: 75vh !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    z-index: 5000 !important;
+
+    overflow: visible !important;
+
+    transform: translateY(calc(100% - 105px)) !important;
+
+    transition:
+        transform 0.38s cubic-bezier(.22,.61,.36,1) !important;
+
+    touch-action: none !important;
+}
+
+.homepage-ad-wrap.ad-sheet-open {
+    transform: translateY(0) !important;
+}
+
+.homepage-ad-wrap .media-ad-slider {
+    position: relative !important;
+    width: 100% !important;
+
+    border-radius: 20px !important;
+
+    overflow: hidden !important;
+
+    box-shadow:
+        0 12px 35px rgba(0,0,0,.35) !important;
+}
+
+.homepage-ad-wrap .media-ad-card {
+    width: 100% !important;
+    max-width: none !important;
+
+    border-radius: 20px !important;
+
+    overflow: hidden !important;
+}
+
+.homepage-ad-wrap .media-ad-image {
+    display: block !important;
+
+    width: 100% !important;
+    height: auto !important;
+
+    max-height: 330px !important;
+
+    object-fit: contain !important;
+}
+
+.homepage-ad-wrap .ad-sheet-handle {
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+    height: 27px !important;
+
+    cursor: grab !important;
+
+    background: rgba(20,16,30,.92) !important;
+}
+
+.homepage-ad-wrap .ad-sheet-handle::after {
+    content: "" !important;
+
+    width: 42px !important;
+    height: 4px !important;
+
+    border-radius: 10px !important;
+
+    background: rgba(255,255,255,.55) !important;
+}
+
+.homepage-ad-wrap.ad-sheet-dragging {
+    transition: none !important;
+}
+
+@media (max-width: 600px) {
+
+    .homepage-ad-wrap {
+        left: 17px !important;
+        right: 17px !important;
+        bottom: 65px !important;
+
+        max-height: 78vh !important;
+
+        transform: translateY(calc(100% - 92px)) !important;
+    }
+
+    .homepage-ad-wrap .media-ad-image {
+        max-height: 300px !important;
+    }
+}
+
