@@ -4354,3 +4354,66 @@ button {
     transform: scale(0.96);
 }
 
+
+/* =========================================================
+   AD SCROLL / EXPAND FIX
+   ========================================================= */
+
+.homepage-ad-wrap {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    flex: 0 0 auto !important;
+}
+
+.homepage-ad-wrap .media-ad-slider {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+}
+
+.homepage-ad-wrap .media-ad-slides {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+}
+
+.homepage-ad-wrap .media-ad-card {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.homepage-ad-wrap .media-ad-content {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.homepage-ad-wrap .media-ad-text-expanded {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    white-space: normal !important;
+}
+
+.homepage-ad-wrap .media-ad-image {
+    height: auto !important;
+    max-height: 320px !important;
+    object-fit: contain !important;
+}
+
+@media (max-width: 600px) {
+
+    .homepage-ad-wrap .media-ad-image {
+        max-height: 240px !important;
+        height: auto !important;
+    }
+
+    .homepage-ad-wrap .media-ad-content {
+        overflow: visible !important;
+    }
+}
+
