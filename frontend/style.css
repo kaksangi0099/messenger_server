@@ -3426,3 +3426,656 @@ button {
     }
 }
 
+
+
+/* =========================================
+   COMPACT TELEGRAM-STYLE MEDIA ADS
+========================================= */
+
+.homepage-ad-wrap {
+    width: 100%;
+    margin: 7px 0 9px;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.homepage-ad-wrap .media-ad-slider {
+    width: 100%;
+    position: relative;
+}
+
+.homepage-ad-wrap .media-ad-slides {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 15px;
+}
+
+.homepage-ad-wrap .media-ad-card {
+    width: 100%;
+    max-height: 205px;
+    overflow: hidden;
+
+    border-radius: 15px;
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(139,92,246,.24),
+            transparent 45%
+        ),
+        linear-gradient(
+            135deg,
+            #21183a,
+            #171225
+        );
+
+    border: 1px solid rgba(124,58,237,.22);
+
+    box-shadow:
+        0 8px 22px rgba(45,20,80,.12);
+
+    color: #fff;
+
+    box-sizing: border-box;
+
+    animation: mediaAdCompactIn .28s ease;
+}
+
+@keyframes mediaAdCompactIn {
+
+    from {
+        opacity: .55;
+        transform: translateY(3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+
+/* تبلیغ */
+
+.homepage-ad-wrap .media-ad-label {
+    padding: 6px 11px 2px;
+
+    font-size: 10px;
+    line-height: 14px;
+
+    color: rgba(255,255,255,.58);
+
+    font-weight: 600;
+}
+
+
+/* عکس تبلیغ */
+
+.homepage-ad-wrap .media-ad-image {
+    display: block;
+
+    width: 100%;
+    height: 105px;
+
+    max-height: 105px;
+
+    object-fit: cover;
+
+    background: rgba(255,255,255,.04);
+}
+
+
+/* محتوای تبلیغ */
+
+.homepage-ad-wrap .media-ad-content {
+    padding: 7px 11px 9px;
+}
+
+
+/* عنوان */
+
+.homepage-ad-wrap .media-ad-title {
+    display: block;
+
+    margin: 0 0 2px;
+
+    font-size: 13px;
+    line-height: 18px;
+
+    font-weight: 800;
+
+    color: #fff;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* متن */
+
+.homepage-ad-wrap .media-ad-text {
+    font-size: 11px;
+    line-height: 16px;
+
+    color: rgba(255,255,255,.68);
+
+    display: -webkit-box;
+
+    -webkit-box-orient: vertical;
+
+    -webkit-line-clamp: 2;
+
+    overflow: hidden;
+
+    word-break: break-word;
+}
+
+
+/* لینک */
+
+.homepage-ad-wrap .media-ad-link {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    height: 25px;
+
+    margin-top: 5px;
+
+    padding: 0 10px;
+
+    border-radius: 8px;
+
+    background: rgba(139,92,246,.24);
+
+    color: #d9c8ff;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition: .18s ease;
+}
+
+.homepage-ad-wrap .media-ad-link:hover {
+    background: rgba(139,92,246,.36);
+}
+
+
+/* نقطه‌های اسلایدر */
+
+.homepage-ad-wrap .media-ad-dots {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 4px;
+
+    margin-top: 5px;
+
+    direction: ltr;
+}
+
+.homepage-ad-wrap .media-ad-dot {
+    width: 5px;
+    height: 5px;
+
+    min-width: 5px;
+
+    padding: 0;
+
+    border: 0;
+
+    border-radius: 50%;
+
+    background: rgba(124,58,237,.22);
+
+    opacity: 1;
+
+    transform: none;
+
+    transition:
+        width .2s ease,
+        background .2s ease,
+        transform .2s ease;
+}
+
+.homepage-ad-wrap .media-ad-dot.active {
+    width: 7px;
+    height: 7px;
+
+    min-width: 7px;
+
+    background: #7c3aed;
+
+    transform: scale(1.05);
+}
+
+
+/* موبایل */
+
+@media (max-width: 600px) {
+
+    .homepage-ad-wrap {
+        margin: 6px 0 8px;
+
+        padding: 0 9px;
+    }
+
+    .homepage-ad-wrap .media-ad-card {
+        max-height: 178px;
+
+        border-radius: 14px;
+    }
+
+    .homepage-ad-wrap .media-ad-image {
+        height: 82px;
+
+        max-height: 82px;
+    }
+
+    .homepage-ad-wrap .media-ad-label {
+        padding: 5px 10px 1px;
+
+        font-size: 9px;
+    }
+
+    .homepage-ad-wrap .media-ad-content {
+        padding: 6px 10px 7px;
+    }
+
+    .homepage-ad-wrap .media-ad-title {
+        font-size: 12px;
+        line-height: 16px;
+    }
+
+    .homepage-ad-wrap .media-ad-text {
+        font-size: 10px;
+        line-height: 14px;
+
+        -webkit-line-clamp: 2;
+    }
+
+    .homepage-ad-wrap .media-ad-link {
+        height: 23px;
+
+        margin-top: 4px;
+
+        padding: 0 9px;
+
+        font-size: 9px;
+    }
+
+    .homepage-ad-wrap .media-ad-dots {
+        margin-top: 4px;
+    }
+
+}
+
+
+/* =========================================
+   COMPACT TELEGRAM-STYLE MEDIA ADS
+========================================= */
+
+.homepage-ad-wrap {
+    width: 100%;
+    margin: 7px 0 9px;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.homepage-ad-wrap .media-ad-slider {
+    width: 100%;
+    position: relative;
+}
+
+.homepage-ad-wrap .media-ad-slides {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 15px;
+}
+
+.homepage-ad-wrap .media-ad-card {
+    width: 100%;
+    max-height: 205px;
+    overflow: hidden;
+
+    border-radius: 15px;
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(139,92,246,.24),
+            transparent 45%
+        ),
+        linear-gradient(
+            135deg,
+            #21183a,
+            #171225
+        );
+
+    border: 1px solid rgba(124,58,237,.22);
+
+    box-shadow:
+        0 8px 22px rgba(45,20,80,.12);
+
+    color: #fff;
+
+    box-sizing: border-box;
+
+    animation: mediaAdCompactIn .28s ease;
+}
+
+@keyframes mediaAdCompactIn {
+
+    from {
+        opacity: .55;
+        transform: translateY(3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+
+/* تبلیغ */
+
+.homepage-ad-wrap .media-ad-label {
+    padding: 6px 11px 2px;
+
+    font-size: 10px;
+    line-height: 14px;
+
+    color: rgba(255,255,255,.58);
+
+    font-weight: 600;
+}
+
+
+/* عکس تبلیغ */
+
+.homepage-ad-wrap .media-ad-image {
+    display: block;
+
+    width: 100%;
+    height: 105px;
+
+    max-height: 105px;
+
+    object-fit: cover;
+
+    background: rgba(255,255,255,.04);
+}
+
+
+/* محتوای تبلیغ */
+
+.homepage-ad-wrap .media-ad-content {
+    padding: 7px 11px 9px;
+}
+
+
+/* عنوان */
+
+.homepage-ad-wrap .media-ad-title {
+    display: block;
+
+    margin: 0 0 2px;
+
+    font-size: 13px;
+    line-height: 18px;
+
+    font-weight: 800;
+
+    color: #fff;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* متن */
+
+.homepage-ad-wrap .media-ad-text {
+    font-size: 11px;
+    line-height: 16px;
+
+    color: rgba(255,255,255,.68);
+
+    display: -webkit-box;
+
+    -webkit-box-orient: vertical;
+
+    -webkit-line-clamp: 2;
+
+    overflow: hidden;
+
+    word-break: break-word;
+}
+
+
+/* لینک */
+
+.homepage-ad-wrap .media-ad-link {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    height: 25px;
+
+    margin-top: 5px;
+
+    padding: 0 10px;
+
+    border-radius: 8px;
+
+    background: rgba(139,92,246,.24);
+
+    color: #d9c8ff;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition: .18s ease;
+}
+
+.homepage-ad-wrap .media-ad-link:hover {
+    background: rgba(139,92,246,.36);
+}
+
+
+/* نقطه‌های اسلایدر */
+
+.homepage-ad-wrap .media-ad-dots {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 4px;
+
+    margin-top: 5px;
+
+    direction: ltr;
+}
+
+.homepage-ad-wrap .media-ad-dot {
+    width: 5px;
+    height: 5px;
+
+    min-width: 5px;
+
+    padding: 0;
+
+    border: 0;
+
+    border-radius: 50%;
+
+    background: rgba(124,58,237,.22);
+
+    opacity: 1;
+
+    transform: none;
+
+    transition:
+        width .2s ease,
+        background .2s ease,
+        transform .2s ease;
+}
+
+.homepage-ad-wrap .media-ad-dot.active {
+    width: 7px;
+    height: 7px;
+
+    min-width: 7px;
+
+    background: #7c3aed;
+
+    transform: scale(1.05);
+}
+
+
+/* موبایل */
+
+@media (max-width: 600px) {
+
+    .homepage-ad-wrap {
+        margin: 6px 0 8px;
+
+        padding: 0 9px;
+    }
+
+    .homepage-ad-wrap .media-ad-card {
+        max-height: 178px;
+
+        border-radius: 14px;
+    }
+
+    .homepage-ad-wrap .media-ad-image {
+        height: 82px;
+
+        max-height: 82px;
+    }
+
+    .homepage-ad-wrap .media-ad-label {
+        padding: 5px 10px 1px;
+
+        font-size: 9px;
+    }
+
+    .homepage-ad-wrap .media-ad-content {
+        padding: 6px 10px 7px;
+    }
+
+    .homepage-ad-wrap .media-ad-title {
+        font-size: 12px;
+        line-height: 16px;
+    }
+
+    .homepage-ad-wrap .media-ad-text {
+        font-size: 10px;
+        line-height: 14px;
+
+        -webkit-line-clamp: 2;
+    }
+
+    .homepage-ad-wrap .media-ad-link {
+        height: 23px;
+
+        margin-top: 4px;
+
+        padding: 0 9px;
+
+        font-size: 9px;
+    }
+
+    .homepage-ad-wrap .media-ad-dots {
+        margin-top: 4px;
+    }
+
+}
+
+/* =========================
+   AD LAYOUT FIX
+   تبلیغ زیر لیست چت و بدون
+   پوشاندن پیام‌ها
+========================= */
+
+#chatList {
+    min-height: 0;
+}
+
+.homepage-ad-wrap {
+    position: relative !important;
+    z-index: 2 !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+
+.homepage-ad-wrap.hidden {
+    display: none !important;
+}
+
+.homepage-ad-wrap .media-ad-slider {
+    position: relative !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.homepage-ad-wrap .media-ad-card {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+
+.homepage-ad-wrap .media-ad-image {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    object-fit: cover !important;
+}
+
+.homepage-ad-wrap .media-ad-content {
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.homepage-ad-wrap .media-ad-title,
+.homepage-ad-wrap .media-ad-text {
+    overflow: hidden !important;
+    word-break: break-word !important;
+}
+
+@media (max-width: 600px) {
+    .homepage-ad-wrap {
+        flex-shrink: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .homepage-ad-wrap .media-ad-card {
+        max-width: 100% !important;
+    }
+}
+
