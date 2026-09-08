@@ -315,6 +315,14 @@
 
         </div>
 
+        <!-- HOMEPAGE ADVERTISEMENT -->
+
+        <div
+            id="homepageAdvertisement"
+            class="homepage-ad-wrap hidden"
+        ></div>
+
+
     </aside>
 
 
@@ -873,6 +881,33 @@
 
 
         <button
+            type="button"
+            class="setting-item owner-ad-setting hidden"
+            id="ownerAdSetting"
+        >
+
+            <div class="setting-icon purple-bg">
+                📢
+            </div>
+
+            <div class="setting-text">
+
+                <strong>
+                    مدیریت تبلیغات
+                </strong>
+
+                <small>
+                    ساخت، ویرایش و مدیریت تبلیغات مدیا
+                </small>
+
+            </div>
+
+            <span>‹</span>
+
+        </button>
+
+
+        <button
             class="setting-item"
             id="aboutSetting"
         >
@@ -966,6 +1001,166 @@
 
 
 
+<!-- ================= OWNER ADVERTISEMENT PANEL ================= -->
+
+<div
+    class="media-subpanel hidden"
+    id="ownerAdvertisementPanel"
+>
+
+    <div class="media-subpanel-header">
+
+        <button
+            type="button"
+            id="closeOwnerAdvertisementPanel"
+        >
+            ‹
+        </button>
+
+        <h3>
+            📢 مدیریت تبلیغات
+        </h3>
+
+    </div>
+
+
+    <div class="owner-ad-card">
+
+        <div class="owner-ad-title">
+            <span>📢</span>
+
+            <div>
+                <strong>تبلیغات مدیا</strong>
+                <small>
+                    تبلیغ خودت را برای کاربران نمایش بده
+                </small>
+            </div>
+        </div>
+
+
+        <label>
+            عنوان تبلیغ
+        </label>
+
+        <input
+            type="text"
+            id="adTitleInput"
+            maxlength="120"
+            placeholder="مثلاً پیشنهاد ویژه مدیا"
+        >
+
+
+        <label>
+            متن تبلیغ
+        </label>
+
+        <textarea
+            id="adTextInput"
+            maxlength="1000"
+            placeholder="متن جذاب تبلیغ را بنویس..."
+        ></textarea>
+
+
+        <button
+            type="button"
+            id="adAiButton"
+            class="ad-ai-button"
+        >
+            ✨ پیشنهاد متن با AI
+        </button>
+
+
+        <label>
+            لینک تبلیغ
+        </label>
+
+        <input
+            type="url"
+            id="adLinkInput"
+            placeholder="https://example.com"
+        >
+
+
+        <label>
+            تصویر تبلیغ
+        </label>
+
+        <input
+            type="file"
+            id="adImageInput"
+            accept="image/*"
+        >
+
+
+        <div
+            id="adImagePreview"
+            class="ad-image-preview hidden"
+        ></div>
+
+
+        <label class="ad-active-row">
+
+            <span>
+                <strong>نمایش تبلیغ</strong>
+                <small>
+                    تبلیغ فعال باشد و کاربران آن را ببینند
+                </small>
+            </span>
+
+            <input
+                type="checkbox"
+                id="adActiveInput"
+                checked
+            >
+
+        </label>
+
+
+        <button
+            type="button"
+            id="saveAdvertisementButton"
+            class="privacy-save-button"
+        >
+            💾 ذخیره تبلیغ
+        </button>
+
+
+        <button
+            type="button"
+            id="cancelAdvertisementEdit"
+            class="ad-cancel-button hidden"
+        >
+            انصراف از ویرایش
+        </button>
+
+
+        <div
+            id="advertisementSaveStatus"
+            class="privacy-save-status"
+        ></div>
+
+    </div>
+
+
+    <div class="owner-ads-list">
+
+        <div class="owner-ads-list-title">
+            تبلیغات شما
+        </div>
+
+        <div
+            id="ownerAdvertisementsList"
+        >
+            <div class="owner-ads-empty">
+                هنوز تبلیغی ایجاد نکرده‌اید.
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
 <!-- ================= USER PROFILE MODAL ================= -->
 
 <div
@@ -1030,6 +1225,14 @@
                 </div>
 
             </div>
+
+
+            <!-- OWNER PROFILE ADVERTISEMENT -->
+
+            <div
+                id="ownerProfileAdvertisement"
+                class="profile-ad-wrap hidden"
+            ></div>
 
 
             <div

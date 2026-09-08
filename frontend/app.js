@@ -121,6 +121,7 @@ if (privacySetting) {
 }
 
 const aboutSetting = document.getElementById("aboutSetting");
+const ownerAdSetting = document.getElementById("ownerAdSetting");
 
 
 /* =========================
@@ -605,6 +606,11 @@ function openApplication() {
 
     updateProfile();
 
+    // فقط مالک دکمه مدیریت تبلیغات را ببیند
+    if (typeof updateOwnerAdvertisementButton === "function") {
+        updateOwnerAdvertisementButton();
+    }
+
     // بارگذاری گفتگوهای قبلی بعد از آماده شدن کامل رابط
     setTimeout(() => {
         if (typeof loadRecentChats === "function") {
@@ -775,6 +781,1323 @@ if (aboutSetting) aboutSetting.addEventListener(
         });
     }
 );
+
+/* =========================
+   OWNER ADVERTISEMENT
+========================= */
+
+const ownerAdvertisementPanel =
+    document.getElementById(
+        "ownerAdvertisementPanel"
+    );
+
+const closeOwnerAdvertisementPanel =
+    document.getElementById(
+        "closeOwnerAdvertisementPanel"
+    );
+
+
+if (ownerAdSetting) {
+
+    ownerAdSetting.addEventListener(
+        "click",
+        () => {
+
+            if (!ownerAdvertisementPanel) {
+                return;
+            }
+
+            settingsPanel.classList.remove(
+                "open"
+            );
+
+            ownerAdvertisementPanel.classList.remove(
+                "hidden"
+            );
+
+            loadOwnerAdvertisements();
+        }
+    );
+
+}
+
+
+if (closeOwnerAdvertisementPanel) {
+
+    closeOwnerAdvertisementPanel.addEventListener(
+        "click",
+        () => {
+
+            if (!ownerAdvertisementPanel) {
+                return;
+            }
+
+            ownerAdvertisementPanel.classList.add(
+                "hidden"
+            );
+
+            settingsPanel.classList.add(
+                "open"
+            );
+
+        }
+    );
+
+}
+
+
+
+
+/* =========================
+   OWNER ADVERTISEMENT LOGIC
+========================= */
+
+let editingAdvertisementId = null;
+let advertisementImageUrl = null;
+
+
+/* -------------------------
+   OWNER CHECK
+------------------------- */
+
+function isOwnerUser() {
+
+    return !!(
+        currentUser &&
+        currentUser.role === "owner"
+    );
+}
+
+
+/* -------------------------
+   OWNER AD BUTTON
+------------------------- */
+
+function updateOwnerAdvertisementButton() {
+
+    const button =
+        document.getElementById(
+            "ownerAdSetting"
+        );
+
+    if (!button) {
+        return;
+    }
+
+    if (isOwnerUser()) {
+
+        button.classList.remove(
+            "hidden"
+        );
+
+    } else {
+
+        button.classList.add(
+            "hidden"
+        );
+
+    }
+}
+
+
+/* -------------------------
+   RESET FORM
+------------------------- */
+
+function resetAdvertisementForm() {
+
+    editingAdvertisementId = null;
+    advertisementImageUrl = null;
+
+    const title =
+        document.getElementById(
+            "adTitleInput"
+        );
+
+    const text =
+        document.getElementById(
+            "adTextInput"
+        );
+
+    const link =
+        document.getElementById(
+            "adLinkInput"
+        );
+
+    const image =
+        document.getElementById(
+            "adImageInput"
+        );
+
+    const active =
+        document.getElementById(
+            "adActiveInput"
+        );
+
+    const preview =
+        document.getElementById(
+            "adImagePreview"
+        );
+
+    const cancel =
+        document.getElementById(
+            "cancelAdvertisementEdit"
+        );
+
+    const status =
+        document.getElementById(
+            "advertisementSaveStatus"
+        );
+
+    if (title) title.value = "";
+    if (text) text.value = "";
+    if (link) link.value = "";
+
+    if (image) {
+        image.value = "";
+    }
+
+    if (active) {
+        active.checked = true;
+    }
+
+    if (preview) {
+        preview.innerHTML = "";
+        preview.classList.add(
+            "hidden"
+        );
+    }
+
+    if (cancel) {
+        cancel.classList.add(
+            "hidden"
+        );
+    }
+
+    if (status) {
+        status.textContent = "";
+    }
+}
+
+
+/* -------------------------
+   LOAD OWNER ADS
+------------------------- */
+
+async function loadOwnerAdvertisements() {
+
+    if (!isOwnerUser()) {
+        return;
+    }
+
+    const list =
+        document.getElementById(
+            "ownerAdvertisementsList"
+        );
+
+    if (!list) {
+        return;
+    }
+
+    list.innerHTML =
+        '<div class="owner-ads-empty">در حال دریافت تبلیغات...</div>';
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/owner/advertisements`,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Authorization":
+                            "Bearer " + getToken()
+                    }
+                }
+            );
+
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                "دریافت تبلیغات انجام نشد."
+            );
+        }
+
+        const ads =
+            Array.isArray(data.advertisements)
+                ? data.advertisements
+                : [];
+
+        renderOwnerAdvertisements(ads);
+
+    } catch (error) {
+
+        console.error(
+            "OWNER ADS LOAD ERROR:",
+            error
+        );
+
+        list.innerHTML =
+            '<div class="owner-ads-empty">خطا در دریافت تبلیغات.</div>';
+    }
+}
+
+
+/* -------------------------
+   RENDER OWNER ADS
+------------------------- */
+
+function renderOwnerAdvertisements(ads) {
+
+    const list =
+        document.getElementById(
+            "ownerAdvertisementsList"
+        );
+
+    if (!list) {
+        return;
+    }
+
+    list.innerHTML = "";
+
+    if (!ads.length) {
+
+        list.innerHTML =
+            '<div class="owner-ads-empty">هنوز تبلیغی ایجاد نکرده‌اید.</div>';
+
+        return;
+    }
+
+    ads.forEach(ad => {
+
+        const item =
+            document.createElement(
+                "div"
+            );
+
+        item.className =
+            "owner-ad-management-item";
+
+        const status =
+            Number(ad.is_active) === 1
+                ? "فعال"
+                : "غیرفعال";
+
+        item.innerHTML = `
+            <div class="owner-ad-management-main">
+
+                <strong>
+                    ${escapeHtml(ad.title || "بدون عنوان")}
+                </strong>
+
+                <span>
+                    ${status}
+                </span>
+
+            </div>
+
+            <div class="owner-ad-management-text">
+                ${escapeHtml(ad.text || "")}
+            </div>
+
+            <div class="owner-ad-management-actions">
+
+                <button
+                    type="button"
+                    class="ad-edit-button"
+                >
+                    ✏️ ویرایش
+                </button>
+
+                <button
+                    type="button"
+                    class="ad-toggle-button"
+                >
+                    ${Number(ad.is_active) === 1
+                        ? "⏸️ غیرفعال"
+                        : "▶️ فعال"}
+                </button>
+
+                <button
+                    type="button"
+                    class="ad-delete-button"
+                >
+                    🗑️ حذف
+                </button>
+
+            </div>
+        `;
+
+        const editButton =
+            item.querySelector(
+                ".ad-edit-button"
+            );
+
+        const toggleButton =
+            item.querySelector(
+                ".ad-toggle-button"
+            );
+
+        const deleteButton =
+            item.querySelector(
+                ".ad-delete-button"
+            );
+
+
+        if (editButton) {
+
+            editButton.addEventListener(
+                "click",
+                () => {
+
+                    editAdvertisement(ad);
+
+                }
+            );
+
+        }
+
+
+        if (toggleButton) {
+
+            toggleButton.addEventListener(
+                "click",
+                () => {
+
+                    toggleAdvertisement(
+                        ad.id
+                    );
+
+                }
+            );
+
+        }
+
+
+        if (deleteButton) {
+
+            deleteButton.addEventListener(
+                "click",
+                () => {
+
+                    deleteAdvertisement(
+                        ad.id
+                    );
+
+                }
+            );
+
+        }
+
+
+        list.appendChild(item);
+
+    });
+}
+
+
+/* -------------------------
+   EDIT AD
+------------------------- */
+
+function editAdvertisement(ad) {
+
+    editingAdvertisementId =
+        ad.id;
+
+    advertisementImageUrl =
+        ad.image_url || null;
+
+
+    const title =
+        document.getElementById(
+            "adTitleInput"
+        );
+
+    const text =
+        document.getElementById(
+            "adTextInput"
+        );
+
+    const link =
+        document.getElementById(
+            "adLinkInput"
+        );
+
+    const active =
+        document.getElementById(
+            "adActiveInput"
+        );
+
+    const preview =
+        document.getElementById(
+            "adImagePreview"
+        );
+
+    const cancel =
+        document.getElementById(
+            "cancelAdvertisementEdit"
+        );
+
+
+    if (title) {
+        title.value =
+            ad.title || "";
+    }
+
+    if (text) {
+        text.value =
+            ad.text || "";
+    }
+
+    if (link) {
+        link.value =
+            ad.target_url || "";
+    }
+
+    if (active) {
+        active.checked =
+            Number(ad.is_active) === 1;
+    }
+
+
+    if (preview) {
+
+        if (ad.image_url) {
+
+            preview.innerHTML = `
+                <img
+                    src="${escapeHtml(ad.image_url)}"
+                    alt="تصویر تبلیغ"
+                >
+            `;
+
+            preview.classList.remove(
+                "hidden"
+            );
+
+        } else {
+
+            preview.innerHTML = "";
+
+            preview.classList.add(
+                "hidden"
+            );
+
+        }
+
+    }
+
+
+    if (cancel) {
+        cancel.classList.remove(
+            "hidden"
+        );
+    }
+
+
+    const panel =
+        document.getElementById(
+            "ownerAdvertisementPanel"
+        );
+
+    if (panel) {
+        panel.scrollTop = 0;
+    }
+
+}
+
+
+/* -------------------------
+   SAVE AD
+------------------------- */
+
+async function saveAdvertisement() {
+
+    if (!isOwnerUser()) {
+
+        alert(
+            "فقط مالک برنامه می‌تواند تبلیغ مدیریت کند."
+        );
+
+        return;
+    }
+
+
+    const titleInput =
+        document.getElementById(
+            "adTitleInput"
+        );
+
+    const textInput =
+        document.getElementById(
+            "adTextInput"
+        );
+
+    const linkInput =
+        document.getElementById(
+            "adLinkInput"
+        );
+
+    const activeInput =
+        document.getElementById(
+            "adActiveInput"
+        );
+
+    const status =
+        document.getElementById(
+            "advertisementSaveStatus"
+        );
+
+
+    const title =
+        titleInput
+            ? titleInput.value.trim()
+            : "";
+
+    const text =
+        textInput
+            ? textInput.value.trim()
+            : "";
+
+    const targetUrl =
+        linkInput
+            ? linkInput.value.trim()
+            : "";
+
+    const isActive =
+        activeInput
+            ? activeInput.checked
+            : true;
+
+
+    if (!title) {
+
+        if (status) {
+            status.textContent =
+                "❌ عنوان تبلیغ را وارد کنید.";
+        }
+
+        return;
+    }
+
+
+    if (!text) {
+
+        if (status) {
+            status.textContent =
+                "❌ متن تبلیغ را وارد کنید.";
+        }
+
+        return;
+    }
+
+
+    if (status) {
+        status.textContent =
+            "در حال ذخیره...";
+    }
+
+
+    const payload = {
+
+        title: title,
+
+        text: text,
+
+        image_url:
+            advertisementImageUrl,
+
+        target_url:
+            targetUrl || null,
+
+        is_active:
+            isActive
+
+    };
+
+
+    try {
+
+        const url =
+            editingAdvertisementId
+                ? `${API_URL}/owner/advertisements/${editingAdvertisementId}`
+                : `${API_URL}/owner/advertisements`;
+
+        const method =
+            editingAdvertisementId
+                ? "PUT"
+                : "POST";
+
+
+        const response =
+            await fetch(
+                url,
+                {
+                    method: method,
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "Authorization":
+                            "Bearer " + getToken()
+                    },
+
+                    body:
+                        JSON.stringify(
+                            payload
+                        )
+                }
+            );
+
+
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                "ذخیره تبلیغ انجام نشد."
+            );
+        }
+
+
+        if (status) {
+            status.textContent =
+                "✓ تبلیغ با موفقیت ذخیره شد.";
+        }
+
+
+        resetAdvertisementForm();
+
+        await loadOwnerAdvertisements();
+
+        await loadActiveAdvertisement();
+
+    } catch (error) {
+
+        console.error(
+            "SAVE AD ERROR:",
+            error
+        );
+
+        if (status) {
+            status.textContent =
+                "❌ " +
+                (
+                    error.message ||
+                    "خطا در ذخیره تبلیغ."
+                );
+        }
+
+    }
+}
+
+
+/* -------------------------
+   TOGGLE AD
+------------------------- */
+
+async function toggleAdvertisement(id) {
+
+    if (!isOwnerUser()) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/owner/advertisements/${id}/toggle`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Authorization":
+                            "Bearer " + getToken()
+                    }
+                }
+            );
+
+
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                "تغییر وضعیت تبلیغ انجام نشد."
+            );
+        }
+
+
+        await loadOwnerAdvertisements();
+
+        await loadActiveAdvertisement();
+
+    } catch (error) {
+
+        console.error(
+            "TOGGLE AD ERROR:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "خطا در تغییر وضعیت تبلیغ."
+        );
+    }
+}
+
+
+/* -------------------------
+   DELETE AD
+------------------------- */
+
+async function deleteAdvertisement(id) {
+
+    if (!isOwnerUser()) {
+        return;
+    }
+
+    const confirmed =
+        confirm(
+            "آیا از حذف این تبلیغ مطمئن هستید؟"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/owner/advertisements/${id}`,
+                {
+                    method: "DELETE",
+
+                    headers: {
+                        "Authorization":
+                            "Bearer " + getToken()
+                    }
+                }
+            );
+
+
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                "حذف تبلیغ انجام نشد."
+            );
+        }
+
+
+        if (
+            editingAdvertisementId &&
+            Number(editingAdvertisementId) ===
+                Number(id)
+        ) {
+
+            resetAdvertisementForm();
+
+        }
+
+
+        await loadOwnerAdvertisements();
+
+        await loadActiveAdvertisement();
+
+    } catch (error) {
+
+        console.error(
+            "DELETE AD ERROR:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "خطا در حذف تبلیغ."
+        );
+    }
+}
+
+
+/* -------------------------
+   IMAGE UPLOAD
+------------------------- */
+
+async function handleAdvertisementImage(file) {
+
+    if (!file) {
+        return;
+    }
+
+    const status =
+        document.getElementById(
+            "advertisementSaveStatus"
+        );
+
+    if (status) {
+        status.textContent =
+            "در حال آپلود تصویر...";
+    }
+
+
+    try {
+
+        const data =
+            await uploadMedia(file);
+
+        advertisementImageUrl =
+            data.url ||
+            data.file_url ||
+            data.image_url ||
+            null;
+
+
+        if (!advertisementImageUrl) {
+
+            throw new Error(
+                "آدرس تصویر از سرور دریافت نشد."
+            );
+        }
+
+
+        const preview =
+            document.getElementById(
+                "adImagePreview"
+            );
+
+
+        if (preview) {
+
+            preview.innerHTML = `
+                <img
+                    src="${escapeHtml(advertisementImageUrl)}"
+                    alt="پیش‌نمایش تبلیغ"
+                >
+            `;
+
+            preview.classList.remove(
+                "hidden"
+            );
+
+        }
+
+
+        if (status) {
+            status.textContent =
+                "✓ تصویر آماده شد.";
+        }
+
+    } catch (error) {
+
+        console.error(
+            "ADVERTISEMENT IMAGE ERROR:",
+            error
+        );
+
+        if (status) {
+            status.textContent =
+                "❌ " +
+                (
+                    error.message ||
+                    "آپلود تصویر انجام نشد."
+                );
+        }
+    }
+}
+
+
+/* -------------------------
+   ACTIVE AD
+------------------------- */
+
+async function loadActiveAdvertisement() {
+
+    const container =
+        document.getElementById(
+            "homepageAdvertisement"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    const token =
+        getToken();
+
+    if (!token) {
+
+        container.innerHTML = "";
+
+        container.classList.add(
+            "hidden"
+        );
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/advertisement`,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Authorization":
+                            "Bearer " + token
+                    }
+                }
+            );
+
+
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail ||
+                "دریافت تبلیغ انجام نشد."
+            );
+        }
+
+
+        const ad =
+            data.advertisement;
+
+
+        if (!ad) {
+
+            container.innerHTML = "";
+
+            container.classList.add(
+                "hidden"
+            );
+
+            return;
+        }
+
+
+        container.innerHTML = `
+            <div class="media-ad-card">
+
+                <div class="media-ad-label">
+                    📢 تبلیغ
+                </div>
+
+                ${
+                    ad.image_url
+                        ? `
+                            <img
+                                class="media-ad-image"
+                                src="${escapeHtml(ad.image_url)}"
+                                alt="تبلیغ"
+                            >
+                        `
+                        : ""
+                }
+
+                <div class="media-ad-content">
+
+                    <strong class="media-ad-title">
+                        ${escapeHtml(ad.title || "")}
+                    </strong>
+
+                    <div class="media-ad-text">
+                        ${escapeHtml(ad.text || "")}
+                    </div>
+
+                    ${
+                        ad.target_url
+                            ? `
+                                <a
+                                    class="media-ad-link"
+                                    href="${escapeHtml(ad.target_url)}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    مشاهده
+                                </a>
+                            `
+                            : ""
+                    }
+
+                </div>
+
+            </div>
+        `;
+
+        container.classList.remove(
+            "hidden"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "ACTIVE AD ERROR:",
+            error
+        );
+
+        container.innerHTML = "";
+
+        container.classList.add(
+            "hidden"
+        );
+    }
+}
+
+
+/* -------------------------
+   PROFILE OWNER AD
+------------------------- */
+
+async function loadOwnerProfileAdvertisement() {
+
+    const container =
+        document.getElementById(
+            "ownerProfileAdvertisement"
+        );
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = "";
+
+    container.classList.add(
+        "hidden"
+    );
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/advertisement`,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Authorization":
+                            "Bearer " + getToken()
+                    }
+                }
+            );
+
+
+        if (!response.ok) {
+            return;
+        }
+
+
+        const data =
+            await response.json();
+
+        const ad =
+            data.advertisement;
+
+
+        if (!ad) {
+            return;
+        }
+
+
+        container.innerHTML = `
+            <div class="profile-ad-card">
+
+                <div class="media-ad-label">
+                    📢 تبلیغ
+                </div>
+
+                ${
+                    ad.image_url
+                        ? `
+                            <img
+                                class="media-ad-image"
+                                src="${escapeHtml(ad.image_url)}"
+                                alt="تبلیغ"
+                            >
+                        `
+                        : ""
+                }
+
+                <div class="media-ad-content">
+
+                    <strong class="media-ad-title">
+                        ${escapeHtml(ad.title || "")}
+                    </strong>
+
+                    <div class="media-ad-text">
+                        ${escapeHtml(ad.text || "")}
+                    </div>
+
+                    ${
+                        ad.target_url
+                            ? `
+                                <a
+                                    class="media-ad-link"
+                                    href="${escapeHtml(ad.target_url)}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    مشاهده
+                                </a>
+                            `
+                            : ""
+                    }
+
+                </div>
+
+            </div>
+        `;
+
+        container.classList.remove(
+            "hidden"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "PROFILE AD ERROR:",
+            error
+        );
+    }
+}
+
+
+/* -------------------------
+   BUTTON EVENTS
+------------------------- */
+
+const saveAdvertisementButton =
+    document.getElementById(
+        "saveAdvertisementButton"
+    );
+
+const cancelAdvertisementEdit =
+    document.getElementById(
+        "cancelAdvertisementEdit"
+    );
+
+const adImageInput =
+    document.getElementById(
+        "adImageInput"
+    );
+
+const adAiButton =
+    document.getElementById(
+        "adAiButton"
+    );
+
+
+if (saveAdvertisementButton) {
+
+    saveAdvertisementButton.addEventListener(
+        "click",
+        saveAdvertisement
+    );
+
+}
+
+
+if (cancelAdvertisementEdit) {
+
+    cancelAdvertisementEdit.addEventListener(
+        "click",
+        resetAdvertisementForm
+    );
+
+}
+
+
+if (adImageInput) {
+
+    adImageInput.addEventListener(
+        "change",
+        event => {
+
+            const file =
+                event.target.files &&
+                event.target.files[0];
+
+            handleAdvertisementImage(
+                file
+            );
+
+        }
+    );
+
+}
+
+
+/*
+ * AI button is kept ready for the AI service.
+ * The actual AI provider can be connected later.
+ */
+
+if (adAiButton) {
+
+    adAiButton.addEventListener(
+        "click",
+        () => {
+
+            alert(
+                "بخش پیشنهاد متن با AI آماده اتصال است؛ سرویس AI هنوز متصل نشده است."
+            );
+
+        }
+    );
+
+}
+
 
 
 /* =========================

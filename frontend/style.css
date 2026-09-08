@@ -3165,3 +3165,152 @@ button {
     }
 
 }
+
+/* =========================
+   ADVERTISEMENT
+========================= */
+
+.homepage-ad-wrap,
+.profile-ad-wrap {
+    width: 100%;
+    margin: 12px 0;
+}
+
+.media-ad-card,
+.profile-ad-card {
+    overflow: hidden;
+    border-radius: 18px;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.12);
+}
+
+.media-ad-label {
+    padding: 10px 14px 4px;
+    font-size: 12px;
+    opacity: .7;
+}
+
+.media-ad-image {
+    display: block;
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+}
+
+.media-ad-content {
+    padding: 12px 14px 14px;
+}
+
+.media-ad-title {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+.media-ad-text {
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+}
+
+.media-ad-link {
+    display: block;
+    margin-top: 12px;
+    padding: 10px;
+    text-align: center;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.owner-ad-card {
+    padding: 16px;
+}
+
+.owner-ad-card label {
+    display: block;
+    margin: 14px 0 6px;
+    font-size: 13px;
+}
+
+.owner-ad-card input[type="text"],
+.owner-ad-card input[type="url"],
+.owner-ad-card textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.06);
+    color: inherit;
+}
+
+.owner-ad-card textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+.ad-ai-button,
+.ad-cancel-button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 11px;
+    border: 0;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.ad-active-row {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.ad-active-row small {
+    display: block;
+    margin-top: 4px;
+    opacity: .6;
+}
+
+.owner-ads-list {
+    padding: 16px;
+}
+
+.owner-ads-list-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.owner-ad-list-item {
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.06);
+}
+
+.owner-ad-list-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.owner-ad-list-actions button {
+    flex: 1;
+    padding: 9px;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.ad-image-preview {
+    margin-top: 10px;
+}
+
+.ad-image-preview img {
+    width: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: 14px;
+}
+
