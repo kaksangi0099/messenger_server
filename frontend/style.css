@@ -4529,3 +4529,22 @@ button {
     }
 }
 
+
+/* ===== FIX AD BOTTOM SHEET ===== */
+
+#homepageAdvertisement {
+    transform: translateY(calc(100% - 30px)) !important;
+}
+
+#homepageAdvertisement.ad-sheet-open {
+    transform: translateY(0) !important;
+}
+
+/* وقتی Settings باز است، تبلیغ کاملاً مخفی شود */
+#homepageAdvertisement.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: translateY(100%) !important;
+}
+

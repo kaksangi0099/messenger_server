@@ -5724,3 +5724,31 @@ setupImageAdvertisementPopup();
     );
 
 })();
+
+/* ===== HIDE AD WHEN SETTINGS IS OPEN ===== */
+(function setupSettingsAdvertisementFix() {
+    const settingsPanel =
+        document.getElementById("settingsPanel");
+
+    const adWrap =
+        document.getElementById("homepageAdvertisement");
+
+    if (!settingsPanel || !adWrap) return;
+
+    const observer = new MutationObserver(() => {
+        if (settingsPanel.classList.contains("open")) {
+            adWrap.classList.add("hidden");
+        } else {
+            adWrap.classList.remove("hidden");
+        }
+    });
+
+    observer.observe(settingsPanel, {
+        attributes: true,
+        attributeFilter: ["class"]
+    });
+
+    if (settingsPanel.classList.contains("open")) {
+        adWrap.classList.add("hidden");
+    }
+})();
