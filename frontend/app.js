@@ -6309,100 +6309,229 @@ async function refreshChatBlockState() {
 
 function setChatBlockUI(blockedMe, message) {
 
-    const selectors = [
-        "#messageInput",
-        "#messageText",
-        "#messageBox",
-        "#sendButton",
-        "#sendMessageButton",
+    const chat = document.getElementById("chatPage");
+    if (!chat) return;
+
+    // حذف پنل قبلی
+    const oldPanel = document.getElementById("chatBlockedPanel");
+    if (oldPanel) oldPanel.remove();
+
+    // حالت عادی
+    if (!message) {
+
+        chat.classList.remove("chat-is-blocked");
+
+        if (messages) {
+            messages.style.display = "";
+        }
+
+        if (messageInput) {
+            messageInput.style.display = "";
+            messageInput.disabled = false;
+            messageInput.placeholder =
+                messageInput.dataset.normalPlaceholder || "پیام...";
+        }
+
+        if (sendButton) {
+            sendButton.style.display = "";
+            sendButton.disabled = false;
+        }
+
+        if (chatStatus) {
+            chatStatus.textContent = "آنلاین";
+        }
+
+        return;
+    }
+
+    // =========================
+    // حالت بلاک
+    // =========================
+
+    chat.classList.add("chat-is-blocked");
+
+    // کل پیام‌ها مخفی
+    if (messages) {
+        messages.style.display = "none";
+    }
+
+    // کادر پیام و ارسال کاملاً مخفی
+    if (messageInput) {
+        messageInput.style.display = "none";
+        messageInput.disabled = true;
+        messageInput.value = "";
+    }
+
+    if (sendButton) {
+        sendButton.style.display = "none";
+        sendButton.disabled = true;
+    }
+
+    // مخفی کردن دکمه‌های احتمالی ارسال فایل/رسانه
+    [
         "#attachButton",
         "#mediaButton",
-        "#fileButton"
-    ];
-
-    selectors.forEach(selector => {
+        "#fileButton",
+        "#messageBox",
+        "#messageText",
+        ".message-composer",
+        ".chat-composer",
+        ".composer",
+        ".input-area",
+        ".message-input-area"
+    ].forEach(selector => {
         document.querySelectorAll(selector).forEach(el => {
-            el.disabled = !!message;
-            el.setAttribute("aria-disabled", message ? "true" : "false");
+            el.style.display = "none";
         });
     });
 
-    const input =
-        document.querySelector("#messageInput") ||
-        document.querySelector("#messageText");
-
-    if (input) {
-        if (!input.dataset.normalPlaceholder) {
-            input.dataset.normalPlaceholder =
-                input.getAttribute("placeholder") || "پیام...";
-        }
-
-        input.placeholder = message
-            ? message
-            : input.dataset.normalPlaceholder;
-    }
-
     if (chatStatus) {
-        if (blockedMe) {
-            chatStatus.textContent = "مسدود شدی";
-        } else if (message) {
-            chatStatus.textContent = "کاربر مسدود شده";
-        }
+        chatStatus.textContent =
+            blockedMe ? "مسدود شدی" : "کاربر بلاک شد";
     }
 
-    // فقط فردی که بلاک شده می‌تواند از همین صفحه گزارش کند.
-    if (blockedMe && messages) {
-        let notice = document.getElementById("blockedUserNotice");
+    // ساخت پنل زیبا
+    const panel = document.createElement("div");
+    panel.id = "chatBlockedPanel";
+    panel.className = "chat-blocked-panel";
 
-        if (!notice) {
-            notice = document.createElement("div");
-            notice.id = "blockedUserNotice";
-            notice.style.cssText =
-                "text-align:center;padding:18px 15px;color:#888;";
+    if (blockedMe) {
 
-            notice.innerHTML = `
-                <div style="font-size:28px;">🚫</div>
-                <strong>مسدود شدی</strong>
-                <div style="margin-top:7px;font-size:13px;">
-                    امکان ارسال پیام وجود ندارد.
-                </div>
-                <button
-                    type="button"
-                    id="blockedReportButton"
-                    style="
-                        margin-top:10px;
-                        border:0;
-                        background:transparent;
-                        color:#229ed9;
-                        cursor:pointer;
-                    "
-                >🚨 گزارش</button>
-            `;
+        panel.innerHTML = `
+            <div class="chat-blocked-icon">🚫</div>
 
-            messages.appendChild(notice);
+            <div class="chat-blocked-title">
+                مسدود شدی
+            </div>
 
-            const reportBtn =
-                document.getElementById("blockedReportButton");
+            <div class="chat-blocked-text">
+                این کاربر شما را مسدود کرده است.<br>
+                امکان ارسال پیام وجود ندارد.
+            </div>
 
-            if (reportBtn) {
-                reportBtn.onclick = () => {
-                    if (reportModal)
-                        reportModal.classList.remove("hidden");
+            <button
+                type="button"
+                id="blockedReportButton"
+                class="chat-blocked-report"
+            >
+                🚨 گزارش کاربر
+            </button>
+        `;
 
-                    if (reportTargetText)
-                        reportTargetText.textContent =
-                            "گزارش کاربر @" + activeChatUsername;
-
-                    if (reportReason) {
-                        reportReason.value = "";
-                        reportReason.focus();
-                    }
-                };
-            }
-        }
     } else {
-        const notice = document.getElementById("blockedUserNotice");
-        if (notice) notice.remove();
+
+        panel.innerHTML = `
+            <div class="chat-blocked-icon">🚫</div>
+
+            <div class="chat-blocked-title">
+                کاربر بلاک شد
+            </div>
+
+            <div class="chat-blocked-text">
+                این کاربر را مسدود کرده‌ای.<br>
+                امکان ارسال پیام وجود ندارد.
+            </div>
+
+            <button
+                type="button"
+                id="unblockChatButton"
+                class="chat-unblock-button"
+            >
+                رفع مسدودی
+            </button>
+        `;
+    }
+
+    // پنل داخل صفحه چت
+    const chatBody =
+        chat.querySelector(".messages")?.parentElement || chat;
+
+    chatBody.appendChild(panel);
+
+    // گزارش فقط برای فرد بلاک‌شده
+    if (blockedMe) {
+
+        const reportBtn =
+            document.getElementById("blockedReportButton");
+
+        if (reportBtn) {
+            reportBtn.onclick = () => {
+
+                if (reportModal) {
+                    reportModal.classList.remove("hidden");
+                }
+
+                if (reportTargetText) {
+                    reportTargetText.textContent =
+                        "گزارش کاربر @" + activeChatUsername;
+                }
+
+                if (reportReason) {
+                    reportReason.value = "";
+                    reportReason.focus();
+                }
+            };
+        }
+
+    } else {
+
+        // رفع مسدودی
+        const unblockBtn =
+            document.getElementById("unblockChatButton");
+
+        if (unblockBtn) {
+
+            unblockBtn.onclick = async () => {
+
+                if (!activeChatUsername) return;
+
+                unblockBtn.disabled = true;
+                unblockBtn.textContent = "در حال رفع مسدودی...";
+
+                try {
+
+                    const token = getToken();
+
+                    const response = await fetch(
+                        `${API_URL}/users/unblock/${encodeURIComponent(activeChatUsername)}`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Authorization": "Bearer " + token
+                            }
+                        }
+                    );
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(
+                            data.detail || "رفع مسدودی انجام نشد."
+                        );
+                    }
+
+                    // بازگشت کامل چت به حالت عادی
+                    setChatBlockUI(false, "");
+
+                    // دوباره پیام‌ها را بارگذاری کن
+                    if (typeof loadMessages === "function") {
+                        await loadMessages(activeChatUsername);
+                    }
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    alert(
+                        error.message ||
+                        "خطا در رفع مسدودی."
+                    );
+
+                    unblockBtn.disabled = false;
+                    unblockBtn.textContent = "رفع مسدودی";
+                }
+            };
+        }
     }
 }
 
