@@ -5752,3 +5752,524 @@ setupImageAdvertisementPopup();
         adWrap.classList.add("hidden");
     }
 })();
+
+/* =========================================================
+   CHAT MENU / VERIFICATION / BLOCK / REPORT / SEARCH
+========================================================= */
+
+(function setupChatModerationUI() {
+
+    const menuButton = document.getElementById("chatMenuButton");
+    const menu = document.getElementById("chatMenu");
+
+    const searchButton = document.getElementById("chatMenuSearch");
+    const blockButton = document.getElementById("chatMenuBlock");
+    const reportButton = document.getElementById("chatMenuReport");
+    const verifyButton = document.getElementById("chatMenuVerify");
+
+    const searchBox = document.getElementById("chatSearchBox");
+    const searchInput = document.getElementById("chatSearchInput");
+    const closeSearch = document.getElementById("closeChatSearch");
+
+    const reportModal = document.getElementById("reportModal");
+    const closeReport = document.getElementById("closeReportModal");
+    const reportReason = document.getElementById("reportReason");
+    const submitReport = document.getElementById("submitReport");
+    const reportTargetText = document.getElementById("reportTargetText");
+
+    if (!menuButton) return;
+
+    function closeMenu() {
+        if (menu) menu.classList.add("hidden");
+    }
+
+    menuButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (menu) menu.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", (event) => {
+        if (
+            menu &&
+            !menu.contains(event.target) &&
+            event.target !== menuButton
+        ) {
+            closeMenu();
+        }
+    });
+
+    if (searchButton) {
+        searchButton.addEventListener("click", () => {
+            closeMenu();
+
+            if (searchBox) {
+                searchBox.classList.remove("hidden");
+            }
+
+            if (searchInput) {
+                searchInput.value = "";
+                searchInput.focus();
+            }
+        });
+    }
+
+    if (closeSearch) {
+        closeSearch.addEventListener("click", () => {
+            if (searchBox) searchBox.classList.add("hidden");
+
+            if (messages) {
+                messages.querySelectorAll(
+                    ".message-search-result"
+                ).forEach(el => el.remove());
+
+                messages.querySelectorAll("mark").forEach(mark => {
+                    mark.replaceWith(
+                        document.createTextNode(mark.textContent)
+                    );
+                });
+            }
+        });
+    }
+
+    if (blockButton) {
+        blockButton.addEventListener("click", async () => {
+
+            closeMenu();
+
+            if (!activeChatUsername) return;
+
+            const token = getToken();
+
+            try {
+
+                const response = await fetch(
+                    `${API_URL}/users/block/${encodeURIComponent(activeChatUsername)}`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Authorization": "Bearer " + token
+                        }
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.detail || "مسدود کردن انجام نشد.");
+                    return;
+                }
+
+                alert("کاربر مسدود شد.");
+
+                if (chatStatus) {
+                    chatStatus.textContent = "مسدود شدی";
+                }
+
+                if (messages) {
+                    messages.innerHTML = `
+                        <div style="
+                            text-align:center;
+                            padding:35px 20px;
+                            color:#888;
+                        ">
+                            <div style="font-size:32px;">🚫</div>
+                            <strong>مسدود شدی</strong>
+                            <div style="margin-top:8px;font-size:13px;">
+                                امکان ارسال پیام وجود ندارد.
+                            </div>
+                            <button
+                                id="blockedReportButton"
+                                style="
+                                    margin-top:12px;
+                                    border:0;
+                                    background:transparent;
+                                    color:#229ed9;
+                                    cursor:pointer;
+                                "
+                            >
+                                🚨 گزارش
+                            </button>
+                        </div>
+                    `;
+
+                    const reportBtn =
+                        document.getElementById(
+                            "blockedReportButton"
+                        );
+
+                    if (reportBtn) {
+                        reportBtn.onclick = () => {
+                            if (reportModal) {
+                                reportModal.classList.remove("hidden");
+                            }
+
+                            if (reportTargetText) {
+                                reportTargetText.textContent =
+                                    "گزارش کاربر @" +
+                                    activeChatUsername;
+                            }
+
+                            if (reportReason) {
+                                reportReason.value = "";
+                                reportReason.focus();
+                            }
+                        };
+                    }
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("خطا در اتصال به سرور.");
+            }
+        });
+    }
+
+    if (reportButton) {
+        reportButton.addEventListener("click", () => {
+
+            closeMenu();
+
+            if (!activeChatUsername) return;
+
+            if (reportTargetText) {
+                reportTargetText.textContent =
+                    "گزارش کاربر @" + activeChatUsername;
+            }
+
+            if (reportReason) {
+                reportReason.value = "";
+            }
+
+            if (reportModal) {
+                reportModal.classList.remove("hidden");
+            }
+        });
+    }
+
+    if (closeReport) {
+        closeReport.addEventListener("click", () => {
+            if (reportModal) {
+                reportModal.classList.add("hidden");
+            }
+        });
+    }
+
+    if (reportModal) {
+        reportModal.addEventListener("click", (event) => {
+            if (event.target === reportModal) {
+                reportModal.classList.add("hidden");
+            }
+        });
+    }
+
+    if (submitReport) {
+        submitReport.addEventListener("click", async () => {
+
+            if (!activeChatUsername) return;
+
+            const reason =
+                reportReason ?
+                reportReason.value.trim() :
+                "";
+
+            if (!reason) {
+                alert("لطفاً دلیل گزارش را بنویس.");
+                return;
+            }
+
+            submitReport.disabled = true;
+
+            try {
+
+                const response = await fetch(
+                    `${API_URL}/users/report`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization":
+                                "Bearer " + getToken()
+                        },
+                        body: JSON.stringify({
+                            username: activeChatUsername,
+                            reason: reason
+                        })
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.detail || "گزارش ارسال نشد.");
+                    return;
+                }
+
+                alert("گزارش برای مالک ارسال شد.");
+
+                if (reportModal) {
+                    reportModal.classList.add("hidden");
+                }
+
+                if (reportReason) {
+                    reportReason.value = "";
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("خطا در اتصال به سرور.");
+            } finally {
+                submitReport.disabled = false;
+            }
+        });
+    }
+
+    /* OWNER ONLY — VERIFY BUTTON */
+
+    if (verifyButton) {
+
+        verifyButton.addEventListener("click", async () => {
+
+            closeMenu();
+
+            if (!activeChatUsername) return;
+
+            try {
+
+                const response = await fetch(
+                    `${API_URL}/owner/verify/${encodeURIComponent(activeChatUsername)}`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Authorization":
+                                "Bearer " + getToken()
+                        }
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.detail || "عملیات انجام نشد.");
+                    return;
+                }
+
+                alert("تیک آبی فعال شد. 🔵");
+
+                if (chatTitle) {
+                    addVerifiedBadgeToChatTitle();
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("خطا در اتصال به سرور.");
+            }
+        });
+    }
+
+    async function updateModerationMenu(username) {
+
+        if (!username) return;
+
+        try {
+
+            const profileResponse = await fetch(
+                `${API_URL}/profile/${encodeURIComponent(username)}`,
+                {
+                    headers: {
+                        "Authorization":
+                            "Bearer " + getToken()
+                    }
+                }
+            );
+
+            if (!profileResponse.ok) return;
+
+            const profile =
+                await profileResponse.json();
+
+            /* فقط مالک گزینه تأیید را می‌بیند */
+            const isOwner =
+                currentUser &&
+                currentUser.role === "owner";
+
+            if (verifyButton) {
+                if (isOwner && profile.role !== "owner") {
+                    verifyButton.classList.remove("hidden");
+                } else {
+                    verifyButton.classList.add("hidden");
+                }
+            }
+
+            /* تیک آبی */
+            if (
+                profile.verified === true ||
+                Number(profile.verified) === 1 ||
+                profile.role === "owner"
+            ) {
+                addVerifiedBadgeToChatTitle();
+            }
+
+        } catch (error) {
+            console.warn(
+                "Moderation profile error:",
+                error
+            );
+        }
+    }
+
+    function addVerifiedBadgeToChatTitle() {
+
+        if (!chatTitle) return;
+
+        if (
+            chatTitle.querySelector(
+                ".verified-badge"
+            )
+        ) {
+            return;
+        }
+
+        const badge =
+            document.createElement("span");
+
+        badge.className =
+            "verified-badge";
+
+        badge.textContent = "✓";
+
+        chatTitle.appendChild(badge);
+    }
+
+    window.updateModerationMenu =
+        updateModerationMenu;
+
+    window.addVerifiedBadgeToChatTitle =
+        addVerifiedBadgeToChatTitle;
+
+
+    /* جستجوی پیام‌ها */
+
+    if (searchInput) {
+
+        searchInput.addEventListener(
+            "input",
+            async () => {
+
+                const q =
+                    searchInput.value.trim();
+
+                if (!activeChatUsername || !messages) {
+                    return;
+                }
+
+                messages.querySelectorAll(
+                    ".message-search-result"
+                ).forEach(el => el.remove());
+
+                if (!q) return;
+
+                try {
+
+                    const response = await fetch(
+                        `${API_URL}/messages/${encodeURIComponent(activeChatUsername)}`,
+                        {
+                            headers: {
+                                "Authorization":
+                                    "Bearer " + getToken()
+                            }
+                        }
+                    );
+
+                    const data =
+                        await response.json();
+
+                    if (!response.ok) return;
+
+                    const results =
+                        (data.messages || [])
+                        .filter(message =>
+                            String(message.text || "")
+                            .toLowerCase()
+                            .includes(q.toLowerCase())
+                        );
+
+                    if (!results.length) {
+                        messages.insertAdjacentHTML(
+                            "afterbegin",
+                            `
+                            <div class="message-search-result">
+                                نتیجه‌ای پیدا نشد.
+                            </div>
+                            `
+                        );
+                        return;
+                    }
+
+                    results.reverse().forEach(message => {
+
+                        const div =
+                            document.createElement("div");
+
+                        div.className =
+                            "message-search-result";
+
+                        const text =
+                            escapeHtml(
+                                message.text || ""
+                            );
+
+                        const escapedQ =
+                            q.replace(
+                                /[.*+?^${}()|[\]\\]/g,
+                                "\\$&"
+                            );
+
+                        div.innerHTML =
+                            text.replace(
+                                new RegExp(
+                                    `(${escapedQ})`,
+                                    "gi"
+                                ),
+                                "<mark>$1</mark>"
+                            );
+
+                        div.addEventListener(
+                            "click",
+                            () => {
+                                const all =
+                                    messages.querySelectorAll(
+                                        ".message-bubble"
+                                    );
+
+                                all.forEach(el => {
+                                    if (
+                                        el.textContent
+                                            .toLowerCase()
+                                            .includes(
+                                                q.toLowerCase()
+                                            )
+                                    ) {
+                                        el.scrollIntoView({
+                                            behavior: "smooth",
+                                            block: "center"
+                                        });
+                                    }
+                                });
+                            }
+                        );
+
+                        messages.prepend(div);
+                    });
+
+                } catch (error) {
+                    console.error(
+                        "Message search error:",
+                        error
+                    );
+                }
+            }
+        );
+    }
+
+})();
+

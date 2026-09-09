@@ -426,6 +426,47 @@
         </header>
 
 
+        <!-- CHAT MENU -->
+        <div id="chatMenu" class="chat-menu hidden">
+            <button type="button" id="chatMenuSearch">🔍 جستجو در پیام‌ها</button>
+            <button type="button" id="chatMenuBlock">🚫 مسدود کردن</button>
+            <button type="button" id="chatMenuReport">🚨 گزارش کاربر</button>
+            <button type="button" id="chatMenuVerify" class="hidden">🔵 تأیید کاربر</button>
+        </div>
+
+        <!-- CHAT SEARCH -->
+        <div id="chatSearchBox" class="chat-search-box hidden">
+            <input
+                id="chatSearchInput"
+                type="text"
+                placeholder="جستجو در پیام‌ها..."
+                autocomplete="off"
+            >
+            <button type="button" id="closeChatSearch">×</button>
+        </div>
+
+        <!-- REPORT MODAL -->
+        <div id="reportModal" class="report-modal hidden">
+            <div class="report-card">
+                <button type="button" id="closeReportModal" class="report-close">×</button>
+
+                <h3>🚨 گزارش کاربر</h3>
+
+                <p id="reportTargetText"></p>
+
+                <textarea
+                    id="reportReason"
+                    maxlength="3000"
+                    placeholder="دلیل گزارش را بنویسید..."
+                ></textarea>
+
+                <button type="button" id="submitReport" class="primary-button">
+                    ارسال گزارش
+                </button>
+            </div>
+        </div>
+
+
         <!-- MESSAGES -->
 
         <div

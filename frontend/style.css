@@ -4620,3 +4620,160 @@ button {
     pointer-events: none !important;
 }
 
+
+/* =========================================================
+   CHAT MENU / REPORT / MESSAGE SEARCH
+========================================================= */
+
+.chat-menu {
+    position: absolute;
+    top: 64px;
+    left: 12px;
+    z-index: 5000;
+    min-width: 220px;
+    padding: 7px;
+    border-radius: 16px;
+    background: rgba(25, 25, 35, 0.96);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 12px 35px rgba(0,0,0,.25);
+}
+
+.chat-menu button {
+    display: block;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: white;
+    text-align: right;
+    padding: 12px 14px;
+    border-radius: 11px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.chat-menu button:hover {
+    background: rgba(255,255,255,.10);
+}
+
+.chat-search-box {
+    position: absolute;
+    top: 64px;
+    left: 10px;
+    right: 10px;
+    z-index: 4900;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 8px 25px rgba(0,0,0,.18);
+}
+
+.chat-search-box input {
+    flex: 1;
+    border: 0;
+    outline: none;
+    background: transparent;
+    padding: 8px;
+    font-size: 14px;
+    direction: rtl;
+}
+
+.chat-search-box button {
+    border: 0;
+    background: transparent;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.report-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0,0,0,.48);
+    backdrop-filter: blur(8px);
+}
+
+.report-card {
+    position: relative;
+    width: min(430px, 100%);
+    padding: 24px;
+    border-radius: 22px;
+    background: white;
+    box-shadow: 0 20px 60px rgba(0,0,0,.30);
+    direction: rtl;
+}
+
+.report-close {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    background: #f1f1f1;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.report-card h3 {
+    margin: 0 0 8px;
+}
+
+.report-card p {
+    color: #777;
+    font-size: 13px;
+}
+
+#reportReason {
+    width: 100%;
+    min-height: 130px;
+    box-sizing: border-box;
+    resize: vertical;
+    border: 1px solid #ddd;
+    border-radius: 14px;
+    outline: none;
+    padding: 12px;
+    direction: rtl;
+    font-family: inherit;
+    margin: 10px 0 14px;
+}
+
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    margin-right: 5px;
+    border-radius: 50%;
+    background: #229ed9;
+    color: white;
+    font-size: 11px;
+    font-weight: 900;
+    vertical-align: middle;
+}
+
+.message-search-result {
+    padding: 9px 12px;
+    margin: 5px 10px;
+    border-radius: 12px;
+    background: rgba(100,100,255,.10);
+    cursor: pointer;
+}
+
+.message-search-result mark {
+    border-radius: 4px;
+    padding: 1px 3px;
+}
+
+.hidden {
+    display: none !important;
+}
+

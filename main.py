@@ -1352,7 +1352,8 @@ def get_profile(
             email,
             role,
             premium_level,
-            blocked
+            blocked,
+            verified
         FROM users
         WHERE username = %s
         """,
@@ -1377,6 +1378,7 @@ def get_profile(
         "username": user["username"],
         "role": user["role"],
         "premium_level": user["premium_level"],
+        "verified": bool(user["verified"]),
         **profile
     }
 
@@ -1486,7 +1488,8 @@ def update_profile(
             username,
             email,
             role,
-            premium_level
+            premium_level,
+            verified
         FROM users
         WHERE id = %s
         """,
@@ -2356,7 +2359,8 @@ def search_users(
             name,
             username,
             role,
-            premium_level
+            premium_level,
+            verified
         FROM users
         WHERE
             username LIKE %s
@@ -2387,7 +2391,8 @@ def search_users(
                 "name": row["name"],
                 "username": row["username"],
                 "role": row["role"],
-                "premium_level": row["premium_level"]
+                "premium_level": row["premium_level"],
+                "verified": bool(row["verified"])
             }
             for row in rows
             if row["id"] != current["id"]
