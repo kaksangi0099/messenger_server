@@ -2415,6 +2415,27 @@ if (logoutButton) logoutButton.addEventListener(
 );
 
 
+/* =========================================================
+   HOMEPAGE ADS GUARD
+========================================================= */
+function updateHomepageAdVisibility() {
+    const homepageAd = document.getElementById("homepageAdvertisement");
+    const chat = document.getElementById("chatPage");
+
+    if (!homepageAd) return;
+
+    if (chat && chat.classList.contains("open")) {
+        homepageAd.classList.add("hidden");
+        homepageAd.style.display = "none";
+        homepageAd.style.visibility = "hidden";
+        homepageAd.style.pointerEvents = "none";
+    } else {
+        homepageAd.style.display = "";
+        homepageAd.style.visibility = "";
+        homepageAd.style.pointerEvents = "";
+    }
+}
+
 /* =========================
    CHAT
 ========================= */
@@ -2448,6 +2469,8 @@ function openChat(
     chatPage.classList.add(
         "open"
     );
+
+    updateHomepageAdVisibility();
 }
 
 
@@ -2468,6 +2491,8 @@ function closeChat() {
     if (homepageAd) {
         homepageAd.classList.remove("hidden");
     }
+
+    updateHomepageAdVisibility();
 }
 
 

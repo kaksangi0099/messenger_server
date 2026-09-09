@@ -4777,3 +4777,15 @@ button {
     display: none !important;
 }
 
+
+/* =========================================================
+   ADS ONLY ON HOMEPAGE
+   وقتی چت باز است، تبلیغات کاملاً مخفی باشند
+========================================================= */
+#chatPage.open ~ #homepageAdvertisement,
+.chat-page.open ~ #homepageAdvertisement {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
