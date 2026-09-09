@@ -660,6 +660,13 @@ if (profileButton && settingsPanel) {
             settingsPanel.classList.add(
                 "open"
             );
+
+            const adWrap =
+                document.getElementById("homepageAdvertisement");
+
+            if (adWrap) {
+                adWrap.classList.add("hidden");
+            }
         }
     );
 }
@@ -672,6 +679,13 @@ if (closeSettings) closeSettings.addEventListener(
         settingsPanel.classList.remove(
             "open"
         );
+
+        const adWrap =
+            document.getElementById("homepageAdvertisement");
+
+        if (adWrap) {
+            adWrap.classList.remove("hidden");
+        }
     }
 );
 
