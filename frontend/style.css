@@ -4548,3 +4548,41 @@ button {
     transform: translateY(100%) !important;
 }
 
+
+/* ===== FINAL BOTTOM SHEET CLOSED STATE ===== */
+
+#homepageAdvertisement {
+    transform: translateY(calc(100% - 12px)) !important;
+}
+
+#homepageAdvertisement.ad-sheet-open {
+    transform: translateY(0) !important;
+}
+
+/* نوار بالایی هنگام بسته بودن */
+#homepageAdvertisement .ad-sheet-handle {
+    height: 12px !important;
+    min-height: 12px !important;
+    background: rgba(255,255,255,0.92) !important;
+    border-radius: 12px 12px 0 0 !important;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.12) !important;
+}
+
+/* خود خط سفید وسط */
+#homepageAdvertisement .ad-sheet-handle::after {
+    width: 42px !important;
+    height: 4px !important;
+    border-radius: 10px !important;
+    background: rgba(80,80,90,0.45) !important;
+}
+
+/* در Settings کاملاً مخفی */
+#homepageAdvertisement.hidden {
+    display: none !important;
+}
+
+/* حالت کشیدن */
+#homepageAdvertisement.ad-sheet-dragging {
+    transition: none !important;
+}
+
