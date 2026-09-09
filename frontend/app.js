@@ -5898,61 +5898,12 @@ setupImageAdvertisementPopup();
 
                 alert("کاربر مسدود شد.");
 
-                if (chatStatus) {
-                    chatStatus.textContent = "مسدود شدی";
-                }
-
-                if (messages) {
-                    messages.innerHTML = `
-                        <div style="
-                            text-align:center;
-                            padding:35px 20px;
-                            color:#888;
-                        ">
-                            <div style="font-size:32px;">🚫</div>
-                            <strong>مسدود شدی</strong>
-                            <div style="margin-top:8px;font-size:13px;">
-                                امکان ارسال پیام وجود ندارد.
-                            </div>
-                            <button
-                                id="blockedReportButton"
-                                style="
-                                    margin-top:12px;
-                                    border:0;
-                                    background:transparent;
-                                    color:#229ed9;
-                                    cursor:pointer;
-                                "
-                            >
-                                🚨 گزارش
-                            </button>
-                        </div>
-                    `;
-
-                    const reportBtn =
-                        document.getElementById(
-                            "blockedReportButton"
-                        );
-
-                    if (reportBtn) {
-                        reportBtn.onclick = () => {
-                            if (reportModal) {
-                                reportModal.classList.remove("hidden");
-                            }
-
-                            if (reportTargetText) {
-                                reportTargetText.textContent =
-                                    "گزارش کاربر @" +
-                                    activeChatUsername;
-                            }
-
-                            if (reportReason) {
-                                reportReason.value = "";
-                                reportReason.focus();
-                            }
-                        };
-                    }
-                }
+                // این طرف بلاکر است، پس پیام «مسدود شدی» نباید نمایش داده شود.
+                // فقط کادر ارسال برای بلاکر غیرفعال می‌شود.
+                setChatBlockUI(
+                    false,
+                    "این کاربر را مسدود کرده‌ای. امکان ارسال پیام وجود ندارد."
+                );
 
             } catch (error) {
                 console.error(error);
@@ -6309,4 +6260,158 @@ setupImageAdvertisementPopup();
     }
 
 })();
+
+
+
+/* =========================
+   MEDIA BLOCK UI
+   ========================= */
+
+async function refreshChatBlockState() {
+    if (!activeChatUsername) return;
+
+    const token = getToken();
+    if (!token) return;
+
+    try {
+        const response = await fetch(
+            `${API_URL}/users/block-status/${encodeURIComponent(activeChatUsername)}`,
+            {
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            }
+        );
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (data.blocked_me) {
+            setChatBlockUI(
+                true,
+                "مسدود شدی. امکان ارسال پیام وجود ندارد."
+            );
+        } else if (data.i_blocked) {
+            setChatBlockUI(
+                false,
+                "این کاربر را مسدود کرده‌ای. امکان ارسال پیام وجود ندارد."
+            );
+        } else {
+            setChatBlockUI(false, "");
+        }
+
+    } catch (e) {
+        console.error("block status error:", e);
+    }
+}
+
+
+function setChatBlockUI(blockedMe, message) {
+
+    const selectors = [
+        "#messageInput",
+        "#messageText",
+        "#messageBox",
+        "#sendButton",
+        "#sendMessageButton",
+        "#attachButton",
+        "#mediaButton",
+        "#fileButton"
+    ];
+
+    selectors.forEach(selector => {
+        document.querySelectorAll(selector).forEach(el => {
+            el.disabled = !!message;
+            el.setAttribute("aria-disabled", message ? "true" : "false");
+        });
+    });
+
+    const input =
+        document.querySelector("#messageInput") ||
+        document.querySelector("#messageText");
+
+    if (input) {
+        if (!input.dataset.normalPlaceholder) {
+            input.dataset.normalPlaceholder =
+                input.getAttribute("placeholder") || "پیام...";
+        }
+
+        input.placeholder = message
+            ? message
+            : input.dataset.normalPlaceholder;
+    }
+
+    if (chatStatus) {
+        if (blockedMe) {
+            chatStatus.textContent = "مسدود شدی";
+        } else if (message) {
+            chatStatus.textContent = "کاربر مسدود شده";
+        }
+    }
+
+    // فقط فردی که بلاک شده می‌تواند از همین صفحه گزارش کند.
+    if (blockedMe && messages) {
+        let notice = document.getElementById("blockedUserNotice");
+
+        if (!notice) {
+            notice = document.createElement("div");
+            notice.id = "blockedUserNotice";
+            notice.style.cssText =
+                "text-align:center;padding:18px 15px;color:#888;";
+
+            notice.innerHTML = `
+                <div style="font-size:28px;">🚫</div>
+                <strong>مسدود شدی</strong>
+                <div style="margin-top:7px;font-size:13px;">
+                    امکان ارسال پیام وجود ندارد.
+                </div>
+                <button
+                    type="button"
+                    id="blockedReportButton"
+                    style="
+                        margin-top:10px;
+                        border:0;
+                        background:transparent;
+                        color:#229ed9;
+                        cursor:pointer;
+                    "
+                >🚨 گزارش</button>
+            `;
+
+            messages.appendChild(notice);
+
+            const reportBtn =
+                document.getElementById("blockedReportButton");
+
+            if (reportBtn) {
+                reportBtn.onclick = () => {
+                    if (reportModal)
+                        reportModal.classList.remove("hidden");
+
+                    if (reportTargetText)
+                        reportTargetText.textContent =
+                            "گزارش کاربر @" + activeChatUsername;
+
+                    if (reportReason) {
+                        reportReason.value = "";
+                        reportReason.focus();
+                    }
+                };
+            }
+        }
+    } else {
+        const notice = document.getElementById("blockedUserNotice");
+        if (notice) notice.remove();
+    }
+}
+
+
+// بعد از باز شدن هر چت، وضعیت بلاک بررسی شود
+setTimeout(() => {
+    if (typeof activeChatUsername !== "undefined" &&
+        activeChatUsername) {
+        refreshChatBlockState();
+    }
+}, 300);
 

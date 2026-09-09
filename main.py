@@ -2107,6 +2107,40 @@ async def send_message(
             detail="این حساب در دسترس نیست."
         )
 
+    # User-to-user block: ارسال در هر دو جهت ممنوع است
+    block_row = connection.execute(
+        """
+        SELECT blocker_id, blocked_id
+        FROM user_blocks
+        WHERE
+            (blocker_id = %s AND blocked_id = %s)
+            OR
+            (blocker_id = %s AND blocked_id = %s)
+        LIMIT 1
+        """,
+        (
+            sender["id"],
+            receiver["id"],
+            receiver["id"],
+            sender["id"]
+        )
+    ).fetchone()
+
+    if block_row:
+
+        connection.close()
+
+        if block_row["blocker_id"] == receiver["id"]:
+            raise HTTPException(
+                status_code=403,
+                detail="مسدود شدی. امکان ارسال پیام وجود ندارد."
+            )
+        else:
+            raise HTTPException(
+                status_code=403,
+                detail="این کاربر را مسدود کرده‌ای. امکان ارسال پیام وجود ندارد."
+            )
+
     if not text.strip() and not media_url:
 
         connection.close()
