@@ -2423,6 +2423,12 @@ function openChat(
     title = "Media",
     status = "پشتیبانی رسمی برنامه"
 ) {
+    // تبلیغات فقط در صفحه اصلی نمایش داده شوند
+    const homepageAd = document.getElementById("homepageAdvertisement");
+    if (homepageAd) {
+        homepageAd.classList.add("hidden");
+        homepageAd.classList.remove("ad-sheet-open");
+    }
 
     if (activeChatUsername === "media_1234") {
         chatTitle.innerHTML =
@@ -2455,6 +2461,12 @@ function closeChat() {
 
     if (messageInput) {
         messageInput.value = "";
+    }
+
+    // بعد از خروج از چت، تبلیغات دوباره فقط در صفحه اصلی نمایش داده شوند
+    const homepageAd = document.getElementById("homepageAdvertisement");
+    if (homepageAd) {
+        homepageAd.classList.remove("hidden");
     }
 }
 
