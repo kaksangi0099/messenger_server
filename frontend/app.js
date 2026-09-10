@@ -6308,99 +6308,76 @@ async function refreshChatBlockState() {
 
 
 function setChatBlockUI(blockedMe, message) {
+    const composer = document.getElementById("messageComposer");
 
-    const selectors = [
-        "#messageInput",
-        "#messageText",
-        "#messageBox",
-        "#sendButton",
-        "#sendMessageButton",
-        "#attachButton",
-        "#mediaButton",
-        "#fileButton"
-    ];
+    if (message || blockedMe) {
+        if (composer) composer.style.display = "none";
 
-    selectors.forEach(selector => {
-        document.querySelectorAll(selector).forEach(el => {
-            el.disabled = !!message;
-            el.setAttribute("aria-disabled", message ? "true" : "false");
-        });
-    });
+        if (messages) {
+            messages.innerHTML = "";
 
-    const input =
-        document.querySelector("#messageInput") ||
-        document.querySelector("#messageText");
-
-    if (input) {
-        if (!input.dataset.normalPlaceholder) {
-            input.dataset.normalPlaceholder =
-                input.getAttribute("placeholder") || "پیام...";
-        }
-
-        input.placeholder = message
-            ? message
-            : input.dataset.normalPlaceholder;
-    }
-
-    if (chatStatus) {
-        if (blockedMe) {
-            chatStatus.textContent = "مسدود شدی";
-        } else if (message) {
-            chatStatus.textContent = "کاربر مسدود شده";
-        }
-    }
-
-    // فقط فردی که بلاک شده می‌تواند از همین صفحه گزارش کند.
-    if (blockedMe && messages) {
-        let notice = document.getElementById("blockedUserNotice");
-
-        if (!notice) {
-            notice = document.createElement("div");
+            const notice = document.createElement("div");
             notice.id = "blockedUserNotice";
-            notice.style.cssText =
-                "text-align:center;padding:18px 15px;color:#888;";
+            notice.className = "blocked-chat-notice";
 
-            notice.innerHTML = `
-                <div style="font-size:28px;">🚫</div>
-                <strong>مسدود شدی</strong>
-                <div style="margin-top:7px;font-size:13px;">
-                    امکان ارسال پیام وجود ندارد.
-                </div>
-                <button
-                    type="button"
-                    id="blockedReportButton"
-                    style="
-                        margin-top:10px;
-                        border:0;
-                        background:transparent;
-                        color:#229ed9;
-                        cursor:pointer;
-                    "
-                >🚨 گزارش</button>
-            `;
+            if (blockedMe) {
+                notice.innerHTML = `
+                    <div class="blocked-chat-icon">🚫</div>
+                    <div class="blocked-chat-title">مسدود شدی</div>
+                    <div class="blocked-chat-text">
+                        این کاربر شما را مسدود کرده است.
+                        <br>
+                        امکان ارسال پیام وجود ندارد.
+                    </div>
+                    <button type="button" class="blocked-report-button">
+                        🚨 گزارش کاربر
+                    </button>
+                `;
+
+                const reportBtn =
+                    notice.querySelector(".blocked-report-button");
+
+                if (reportBtn) {
+                    reportBtn.onclick = () => {
+                        if (reportModal)
+                            reportModal.classList.remove("hidden");
+
+                        if (reportTargetText)
+                            reportTargetText.textContent =
+                                "گزارش کاربر @" + activeChatUsername;
+
+                        if (reportReason) {
+                            reportReason.value = "";
+                            reportReason.focus();
+                        }
+                    };
+                }
+            } else {
+                notice.innerHTML = `
+                    <div class="blocked-chat-icon">🚫</div>
+                    <div class="blocked-chat-title">کاربر بلاک شد</div>
+                    <div class="blocked-chat-text">
+                        این کاربر را مسدود کرده‌ای.
+                        <br>
+                        امکان ارسال پیام وجود ندارد.
+                    </div>
+                    <button type="button"
+                        class="blocked-unblock-button"
+                        onclick="unblockCurrentChatUser()">
+                        رفع مسدودی
+                    </button>
+                `;
+            }
 
             messages.appendChild(notice);
-
-            const reportBtn =
-                document.getElementById("blockedReportButton");
-
-            if (reportBtn) {
-                reportBtn.onclick = () => {
-                    if (reportModal)
-                        reportModal.classList.remove("hidden");
-
-                    if (reportTargetText)
-                        reportTargetText.textContent =
-                            "گزارش کاربر @" + activeChatUsername;
-
-                    if (reportReason) {
-                        reportReason.value = "";
-                        reportReason.focus();
-                    }
-                };
-            }
         }
-    } else {
+
+        return;
+    }
+
+    if (composer) composer.style.display = "";
+
+    if (messages) {
         const notice = document.getElementById("blockedUserNotice");
         if (notice) notice.remove();
     }
