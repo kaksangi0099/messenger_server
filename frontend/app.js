@@ -2769,6 +2769,9 @@ async function loadChatMessages(username) {
             `;
         }
     }
+
+    await refreshChatBlockState();
+
 }
 
 function formatFileSize(bytes) {
