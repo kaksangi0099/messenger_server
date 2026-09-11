@@ -219,7 +219,7 @@ async function loadOwnerReports() {
 
                 <div class="owner-report-actions">
                     <button type="button"
-                        onclick="openOwnerReport(${report.id})">
+                        class="owner-report-review-button" data-report-id="${report.id}">
                         بررسی گزارش
                     </button>
 
@@ -6983,3 +6983,63 @@ if (markReportClosed) {
     markReportClosed.onclick = () =>
         changeOwnerReportStatus("closed");
 }
+
+
+/* ================= OWNER BUTTON FALLBACK ================= */
+
+document.addEventListener("click", async function(event) {
+
+    const reportButton =
+        event.target.closest(".owner-report-review-button");
+
+    if (reportButton) {
+        const reportId = reportButton.dataset.reportId;
+
+        if (reportId && typeof openOwnerReport === "function") {
+            await openOwnerReport(Number(reportId));
+        }
+
+        return;
+    }
+
+    const banButton =
+        event.target.closest(".owner-report-ban-button");
+
+    if (banButton) {
+        const userId = banButton.dataset.userId;
+        const username = banButton.dataset.username || "";
+
+        if (userId && typeof openBanPanel === "function") {
+            openBanPanel(Number(userId), username);
+        }
+
+        return;
+    }
+
+    const unblockButton =
+        event.target.closest(".blocked-unblock-button");
+
+    if (unblockButton) {
+        if (typeof unblockCurrentChatUser === "function") {
+            await unblockCurrentChatUser();
+        }
+
+        return;
+    }
+
+    const reportUserButton =
+        event.target.closest(".blocked-report-button");
+
+    if (reportUserButton) {
+        if (reportModal) {
+            reportModal.classList.remove("hidden");
+        }
+
+        if (reportTargetText) {
+            reportTargetText.textContent =
+                "گزارش کاربر @" + activeChatUsername;
+        }
+
+        return;
+    }
+});
