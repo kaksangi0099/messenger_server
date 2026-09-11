@@ -6307,6 +6307,43 @@ async function refreshChatBlockState() {
 }
 
 
+
+async function unblockCurrentChatUser() {
+    if (!activeChatUsername) return;
+
+    try {
+        const token = localStorage.getItem("media_token");
+
+        const res = await fetch(
+            `${API_URL}/users/unblock/${encodeURIComponent(activeChatUsername)}`,
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.detail || "رفع مسدودی انجام نشد.");
+        }
+
+        setChatBlockUI(false, "");
+
+        if (typeof loadChatMessages === "function") {
+            await loadChatMessages(activeChatUsername);
+        }
+
+        await refreshChatBlockState();
+
+    } catch (e) {
+        console.error("unblock error:", e);
+        alert("خطا در رفع مسدودی: " + (e.message || e));
+    }
+}
+
 function setChatBlockUI(blockedMe, message) {
     const composer = document.getElementById("messageComposer");
 
