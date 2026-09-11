@@ -5071,3 +5071,492 @@ textarea:focus{
 .blocked-unblock-button:hover {
     background: #e8e1f7;
 }
+
+/* ================= OWNER REPORTS ================= */
+
+.owner-reports-header {
+    padding: 18px 18px 10px;
+}
+
+.owner-reports-header strong {
+    display: block;
+    font-size: 17px;
+    color: #222;
+}
+
+.owner-reports-header small {
+    display: block;
+    margin-top: 7px;
+    color: #888;
+    line-height: 1.7;
+}
+
+.owner-reports-list {
+    padding: 10px 14px 24px;
+}
+
+.owner-report-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 18px rgba(0,0,0,.05);
+}
+
+.owner-report-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.owner-report-card-top strong {
+    display: block;
+    font-size: 15px;
+    color: #222;
+}
+
+.owner-report-card-top small {
+    display: block;
+    margin-top: 5px;
+    color: #999;
+}
+
+.owner-report-status {
+    font-size: 11px;
+    padding: 5px 9px;
+    border-radius: 8px;
+    background: #f3f1f8;
+    color: #7251a8;
+    white-space: nowrap;
+}
+
+.owner-report-user {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 13px;
+    background: #f8f8fa;
+}
+
+.owner-report-user strong {
+    display: block;
+    color: #333;
+}
+
+.owner-report-user span {
+    display: block;
+    margin-top: 4px;
+    color: #888;
+    direction: ltr;
+    text-align: right;
+}
+
+.owner-report-description {
+    margin-top: 14px;
+}
+
+.owner-report-description small {
+    color: #999;
+}
+
+.owner-report-description p {
+    margin: 6px 0 0;
+    color: #444;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.owner-report-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.owner-report-actions button {
+    flex: 1;
+    border: 0;
+    border-radius: 11px;
+    padding: 10px 8px;
+    cursor: pointer;
+    background: #f1eff7;
+    color: #7046a8;
+    font-size: 13px;
+}
+
+.owner-report-actions button.danger {
+    background: #fff0f0;
+    color: #d33;
+}
+
+.owner-reports-loading,
+.owner-reports-empty {
+    text-align: center;
+    padding: 45px 20px;
+    color: #888;
+}
+
+.owner-reports-empty strong {
+    display: block;
+    color: #444;
+    margin-bottom: 7px;
+}
+
+.owner-reports-empty small {
+    color: #999;
+}
+
+
+/* ================= SUSPENSION MODAL ================= */
+
+.suspension-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(20, 15, 30, .42);
+    backdrop-filter: blur(8px);
+}
+
+.suspension-modal.hidden {
+    display: none;
+}
+
+.suspension-card {
+    width: min(430px, 100%);
+    background: #fff;
+    border-radius: 22px;
+    padding: 24px;
+    box-sizing: border-box;
+    box-shadow: 0 18px 60px rgba(0,0,0,.18);
+}
+
+.suspension-card h3 {
+    margin: 0;
+    font-size: 19px;
+    color: #222;
+}
+
+.suspension-card p {
+    margin: 9px 0 20px;
+    color: #888;
+    line-height: 1.8;
+    font-size: 13px;
+}
+
+.suspension-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+}
+
+.suspension-option {
+    border: 1px solid #e8e5ed;
+    background: #faf9fc;
+    border-radius: 13px;
+    padding: 12px;
+    cursor: pointer;
+    color: #555;
+    font-size: 13px;
+}
+
+.suspension-option.selected {
+    border-color: #8057c7;
+    background: #f2edfb;
+    color: #7046a8;
+}
+
+.suspension-actions {
+    display: flex;
+    gap: 9px;
+    margin-top: 20px;
+}
+
+.suspension-actions button {
+    flex: 1;
+    border: 0;
+    border-radius: 12px;
+    padding: 11px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.suspension-confirm {
+    background: #7046a8;
+    color: #fff;
+}
+
+.suspension-cancel {
+    background: #f1f1f3;
+    color: #555;
+}
+
+/* ================= SUSPENSION LOGIN NOTICE ================= */
+
+.suspension-login-notice {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    background: rgba(20, 15, 30, .45);
+    backdrop-filter: blur(9px);
+}
+
+.suspension-login-card {
+    width: min(420px, 100%);
+    padding: 28px 24px 22px;
+    box-sizing: border-box;
+    text-align: center;
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 20px 70px rgba(0,0,0,.20);
+    animation: suspensionLoginIn .22s ease-out;
+}
+
+.suspension-login-icon {
+    width: 54px;
+    height: 54px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f3edf9;
+    color: #7046a8;
+    font-size: 25px;
+    font-weight: 800;
+}
+
+.suspension-login-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: #222;
+}
+
+.suspension-login-text {
+    margin-top: 11px;
+    color: #777;
+    font-size: 13px;
+    line-height: 2;
+    white-space: pre-wrap;
+}
+
+.suspension-login-close {
+    width: 100%;
+    margin-top: 22px;
+    border: 0;
+    border-radius: 13px;
+    padding: 12px;
+    cursor: pointer;
+    background: #7046a8;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.suspension-login-close:hover {
+    opacity: .92;
+}
+
+@keyframes suspensionLoginIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+
+/* ================= OWNER REPORT REVIEW ================= */
+
+.owner-report-review-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(20, 15, 30, .45);
+    backdrop-filter: blur(9px);
+}
+
+.owner-report-review-modal.hidden {
+    display: none;
+}
+
+.owner-report-review-card {
+    width: min(440px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 22px;
+    padding: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 20px 70px rgba(0,0,0,.20);
+}
+
+.owner-report-review-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.owner-report-review-head strong {
+    font-size: 18px;
+    color: #222;
+}
+
+.owner-report-review-head button {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    background: #f2f1f4;
+    color: #666;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.owner-report-review-content {
+    margin-top: 18px;
+}
+
+.review-section {
+    padding: 13px;
+    margin-bottom: 10px;
+    border-radius: 14px;
+    background: #f8f8fa;
+}
+
+.review-section small {
+    display: block;
+    color: #999;
+    margin-bottom: 6px;
+}
+
+.review-section strong {
+    display: block;
+    color: #333;
+}
+
+.review-section span {
+    display: block;
+    margin-top: 4px;
+    color: #888;
+    direction: ltr;
+    text-align: right;
+}
+
+.review-section p {
+    margin: 5px 0 0;
+    color: #444;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.review-moderation-loading {
+    padding: 14px;
+    border-radius: 14px;
+    background: #f5f3f8;
+    color: #777;
+    text-align: center;
+}
+
+.moderation-status {
+    padding: 14px;
+    border-radius: 14px;
+}
+
+.moderation-status strong,
+.moderation-status span {
+    display: block;
+}
+
+.moderation-status strong {
+    margin-bottom: 7px;
+}
+
+.moderation-status span {
+    color: #777;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.moderation-status.normal {
+    background: #f4faf6;
+}
+
+.moderation-status.normal strong {
+    color: #39805a;
+}
+
+.moderation-status.suspended {
+    background: #fff5f5;
+}
+
+.moderation-status.suspended strong {
+    color: #c33;
+}
+
+.owner-report-review-actions {
+    display: flex;
+    gap: 9px;
+    margin-top: 17px;
+}
+
+.owner-report-review-actions button {
+    flex: 1;
+    border: 0;
+    border-radius: 12px;
+    padding: 11px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+#markReportReviewed {
+    background: #f1eff7;
+    color: #7046a8;
+}
+
+#markReportClosed {
+    background: #f4f4f5;
+    color: #555;
+}
+
+
+/* ================= REPORT REVIEW MAIN ACTION ================= */
+
+.owner-review-main-action {
+    margin: 12px 0;
+}
+
+.owner-review-main-action button {
+    width: 100%;
+    border: 0;
+    border-radius: 13px;
+    padding: 12px;
+    cursor: pointer;
+    background: #fff0f0;
+    color: #c33;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.owner-review-main-action button:hover {
+    background: #ffe5e5;
+}

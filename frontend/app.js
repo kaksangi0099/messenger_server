@@ -122,6 +122,287 @@ if (privacySetting) {
 
 const aboutSetting = document.getElementById("aboutSetting");
 const ownerAdSetting = document.getElementById("ownerAdSetting");
+const ownerReportSetting = document.getElementById("ownerReportSetting");
+const ownerReportsPanel = document.getElementById("ownerReportsPanel");
+const closeOwnerReportsPanel = document.getElementById("closeOwnerReportsPanel");
+const ownerReportsList = document.getElementById("ownerReportsList");
+
+if (ownerReportSetting) {
+    ownerReportSetting.addEventListener("click", async () => {
+        if (!ownerReportsPanel) return;
+
+        settingsPanel.classList.remove("open");
+        ownerReportsPanel.classList.remove("hidden");
+
+        await loadOwnerReports();
+    });
+}
+
+if (closeOwnerReportsPanel) {
+    closeOwnerReportsPanel.addEventListener("click", () => {
+        if (ownerReportsPanel) {
+            ownerReportsPanel.classList.add("hidden");
+        }
+    });
+}
+
+async function loadOwnerReports() {
+    if (!ownerReportsList) return;
+
+    ownerReportsList.innerHTML = `
+        <div class="owner-reports-loading">
+            در حال دریافت گزارش‌ها...
+        </div>
+    `;
+
+    try {
+        const token = localStorage.getItem("media_token");
+
+        const res = await fetch(`${API_URL}/owner/reports`, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.detail || "دریافت گزارش‌ها انجام نشد.");
+        }
+
+        const reports = data.reports || [];
+        cachedOwnerReports = reports;
+
+        if (!reports.length) {
+            ownerReportsList.innerHTML = `
+                <div class="owner-reports-empty">
+                    <strong>گزارشی برای بررسی وجود ندارد</strong>
+                    <small>
+                        در حال حاضر همه‌چیز آرام است.
+                    </small>
+                </div>
+            `;
+            return;
+        }
+
+        ownerReportsList.innerHTML = reports.map(report => `
+            <div class="owner-report-card">
+
+                <div class="owner-report-card-top">
+                    <div>
+                        <strong>
+                            گزارش درباره @${escapeHtml(report.reported_username)}
+                        </strong>
+                        <small>
+                            ارسال‌شده توسط @${escapeHtml(report.reporter_username)}
+                        </small>
+                    </div>
+
+                    <span class="owner-report-status">
+                        ${escapeHtml(report.status || "pending")}
+                    </span>
+                </div>
+
+                <div class="owner-report-user">
+                    <strong>
+                        ${escapeHtml(report.reported_name || report.reported_username)}
+                    </strong>
+                    <span>
+                        @${escapeHtml(report.reported_username)}
+                    </span>
+                </div>
+
+                <div class="owner-report-description">
+                    <small>شرح گزارش</small>
+                    <p>${escapeHtml(report.reason || "بدون توضیح")}</p>
+                </div>
+
+                <div class="owner-report-actions">
+                    <button type="button"
+                        onclick="openOwnerReport(${report.id})">
+                        بررسی گزارش
+                    </button>
+
+                    <button type="button"
+                        class="danger"
+                        onclick="openBanPanel(${report.reported_id}, '${escapeHtml(report.reported_username)}')">
+                        محروم‌سازی
+                    </button>
+                </div>
+
+            </div>
+        `).join("");
+
+    } catch (e) {
+        console.error("owner reports error:", e);
+
+        ownerReportsList.innerHTML = `
+            <div class="owner-reports-empty">
+                <strong>دریافت گزارش‌ها ناموفق بود</strong>
+                <small>${escapeHtml(e.message || "خطای نامشخص")}</small>
+            </div>
+        `;
+    }
+}
+
+let activeOwnerReportId = null;
+let cachedOwnerReports = [];
+
+async function openOwnerReport(reportId) {
+    activeOwnerReportId = reportId;
+
+    const modal =
+        document.getElementById("ownerReportReviewModal");
+
+    const content =
+        document.getElementById("ownerReportReviewContent");
+
+    if (!modal || !content) return;
+
+    const report =
+        cachedOwnerReports.find(
+            item => Number(item.id) === Number(reportId)
+        );
+
+    if (!report) {
+        content.innerHTML =
+            "<p>اطلاعات گزارش پیدا نشد.</p>";
+        modal.classList.remove("hidden");
+        return;
+    }
+
+    content.innerHTML = `
+        <div class="review-section">
+            <small>کاربر گزارش‌شده</small>
+            <strong>
+                ${escapeHtml(report.reported_name || report.reported_username)}
+            </strong>
+            <span>@${escapeHtml(report.reported_username)}</span>
+        </div>
+
+        <div class="review-section">
+            <small>گزارش‌دهنده</small>
+            <strong>
+                ${escapeHtml(report.reporter_name || report.reporter_username)}
+            </strong>
+            <span>@${escapeHtml(report.reporter_username)}</span>
+        </div>
+
+        <div class="review-section">
+            <small>شرح گزارش</small>
+            <p>${escapeHtml(report.reason || "بدون توضیح")}</p>
+        </div>
+
+        <div id="moderationInfo" class="review-moderation-loading">
+            در حال دریافت وضعیت حساب...
+        </div>
+    `;
+
+    modal.classList.remove("hidden");
+
+    const reviewBanButton =
+        document.getElementById("reviewBanUserButton");
+
+    if (reviewBanButton) {
+        reviewBanButton.onclick = () => {
+            if (typeof openBanPanel === "function") {
+                openBanPanel(
+                    report.reported_id,
+                    report.reported_username
+                );
+            }
+        };
+    }
+
+    try {
+        const token =
+            localStorage.getItem("media_token");
+
+        const res = await fetch(
+            `${API_URL}/owner/users/${report.reported_id}/moderation`,
+            {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        const data = await res.json();
+
+        const box =
+            document.getElementById("moderationInfo");
+
+        if (!box) return;
+
+        if (!res.ok) {
+            box.textContent =
+                data.detail || "وضعیت حساب دریافت نشد.";
+            return;
+        }
+
+        const suspension = data.suspension;
+
+        if (!suspension) {
+            box.innerHTML = `
+                <div class="moderation-status normal">
+                    <strong>وضعیت حساب</strong>
+                    <span>محرومیتی ثبت نشده است.</span>
+                </div>
+            `;
+            return;
+        }
+
+        const durationMap = {
+            "1_month": "۱ ماه",
+            "3_months": "۳ ماه",
+            "1_year": "۱ سال",
+            "permanent": "دائمی"
+        };
+
+        box.innerHTML = `
+            <div class="moderation-status suspended">
+                <strong>وضعیت حساب: محروم</strong>
+                <span>
+                    مدت:
+                    ${durationMap[suspension.duration] ||
+                      escapeHtml(suspension.duration)}
+                </span>
+                ${
+                    suspension.ends_at
+                    ? `<span>پایان: ${escapeHtml(suspension.ends_at)}</span>`
+                    : `<span>بدون تاریخ پایان</span>`
+                }
+                <span>
+                    اعمال‌شده توسط:
+                    @${escapeHtml(
+                        suspension.moderator_username || "مدیریت"
+                    )}
+                </span>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error("moderation details:", error);
+
+        const box =
+            document.getElementById("moderationInfo");
+
+        if (box) {
+            box.textContent =
+                "دریافت وضعیت حساب ناموفق بود.";
+        }
+    }
+}
+
+function updateOwnerReportsButton() {
+    if (!ownerReportSetting) return;
+
+    if (isOwnerUser()) {
+        ownerReportSetting.classList.remove("hidden");
+    } else {
+        ownerReportSetting.classList.add("hidden");
+    }
+}
 
 
 /* =========================
@@ -549,10 +830,60 @@ if (loginButton) loginButton.addEventListener(
 
             if (!response.ok) {
 
-                alert(
-                    data.detail ||
-                    "ورود انجام نشد."
-                );
+                if (response.status === 403 && data.detail) {
+
+                    const existing = document.getElementById(
+                        "suspensionLoginNotice"
+                    );
+
+                    if (existing) {
+                        existing.remove();
+                    }
+
+                    const notice = document.createElement("div");
+
+                    notice.id = "suspensionLoginNotice";
+                    notice.className = "suspension-login-notice";
+
+                    notice.innerHTML = `
+                        <div class="suspension-login-card">
+                            <div class="suspension-login-icon">!</div>
+
+                            <div class="suspension-login-title">
+                                دسترسی حساب محدود شده
+                            </div>
+
+                            <div class="suspension-login-text">
+                                ${data.detail}
+                            </div>
+
+                            <button type="button"
+                                class="suspension-login-close">
+                                متوجه شدم
+                            </button>
+                        </div>
+                    `;
+
+                    document.body.appendChild(notice);
+
+                    const closeButton =
+                        notice.querySelector(
+                            ".suspension-login-close"
+                        );
+
+                    if (closeButton) {
+                        closeButton.onclick = () => {
+                            notice.remove();
+                        };
+                    }
+
+                } else {
+
+                    alert(
+                        data.detail ||
+                        "ورود انجام نشد."
+                    );
+                }
 
                 return;
             }
@@ -609,6 +940,10 @@ function openApplication() {
     // فقط مالک دکمه مدیریت تبلیغات را ببیند
     if (typeof updateOwnerAdvertisementButton === "function") {
         updateOwnerAdvertisementButton();
+    }
+
+    if (typeof updateOwnerReportsButton === "function") {
+        updateOwnerReportsButton();
     }
 
     // بارگذاری گفتگوهای قبلی بعد از آماده شدن کامل رابط
@@ -6432,3 +6767,219 @@ setTimeout(() => {
     }
 }, 300);
 
+
+/* ================= OWNER SUSPENSION UI ================= */
+
+let suspensionTargetId = null;
+let suspensionTargetUsername = "";
+let selectedSuspensionDuration = null;
+
+const suspensionModal = document.getElementById("suspensionModal");
+const suspensionTitle = document.getElementById("suspensionTitle");
+const suspensionText = document.getElementById("suspensionText");
+const cancelSuspension = document.getElementById("cancelSuspension");
+const confirmSuspension = document.getElementById("confirmSuspension");
+const suspensionOptions =
+    document.querySelectorAll(".suspension-option");
+
+function openBanPanel(userId, username) {
+    suspensionTargetId = userId;
+    suspensionTargetUsername = username || "";
+    selectedSuspensionDuration = null;
+
+    if (suspensionTitle) {
+        suspensionTitle.textContent =
+            "محروم‌سازی @" + suspensionTargetUsername;
+    }
+
+    if (suspensionText) {
+        suspensionText.textContent =
+            "آیا از محروم‌سازی این حساب مطمئن هستید؟ مدت محرومیت را انتخاب کنید.";
+    }
+
+    suspensionOptions.forEach(btn => {
+        btn.classList.remove("selected");
+    });
+
+    if (suspensionModal) {
+        suspensionModal.classList.remove("hidden");
+    }
+}
+
+suspensionOptions.forEach(btn => {
+    btn.addEventListener("click", () => {
+        selectedSuspensionDuration =
+            btn.dataset.duration;
+
+        suspensionOptions.forEach(item => {
+            item.classList.remove("selected");
+        });
+
+        btn.classList.add("selected");
+    });
+});
+
+if (cancelSuspension) {
+    cancelSuspension.addEventListener("click", () => {
+        if (suspensionModal) {
+            suspensionModal.classList.add("hidden");
+        }
+
+        suspensionTargetId = null;
+        selectedSuspensionDuration = null;
+    });
+}
+
+if (confirmSuspension) {
+    confirmSuspension.addEventListener("click", async () => {
+
+        if (!suspensionTargetId) {
+            alert("کاربری برای محروم‌سازی انتخاب نشده است.");
+            return;
+        }
+
+        if (!selectedSuspensionDuration) {
+            alert("ابتدا مدت محرومیت را انتخاب کنید.");
+            return;
+        }
+
+        confirmSuspension.disabled = true;
+        confirmSuspension.textContent = "در حال ثبت...";
+
+        try {
+            const token =
+                localStorage.getItem("media_token");
+
+            const res = await fetch(
+                `${API_URL}/owner/users/${suspensionTargetId}/suspend`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        duration: selectedSuspensionDuration,
+                        reason: "اقدام مدیریتی پس از بررسی گزارش"
+                    })
+                }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(
+                    data.detail ||
+                    "محروم‌سازی انجام نشد."
+                );
+            }
+
+            if (suspensionModal) {
+                suspensionModal.classList.add("hidden");
+            }
+
+            alert(
+                "حساب @" +
+                suspensionTargetUsername +
+                " با موفقیت محروم شد."
+            );
+
+            if (typeof loadOwnerReports === "function") {
+                await loadOwnerReports();
+            }
+
+        } catch (e) {
+
+            console.error(
+                "suspension error:",
+                e
+            );
+
+            alert(
+                "خطا در محروم‌سازی: " +
+                (e.message || e)
+            );
+
+        } finally {
+
+            confirmSuspension.disabled = false;
+            confirmSuspension.textContent =
+                "محروم کردن";
+        }
+    });
+}
+
+
+
+/* ================= OWNER REPORT REVIEW ================= */
+
+const ownerReportReviewModal =
+    document.getElementById("ownerReportReviewModal");
+
+const closeOwnerReportReview =
+    document.getElementById("closeOwnerReportReview");
+
+const markReportReviewed =
+    document.getElementById("markReportReviewed");
+
+const markReportClosed =
+    document.getElementById("markReportClosed");
+
+async function changeOwnerReportStatus(status) {
+    if (!activeOwnerReportId) return;
+
+    try {
+        const token =
+            localStorage.getItem("media_token");
+
+        const res = await fetch(
+            `${API_URL}/owner/reports/${activeOwnerReportId}/status`,
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ status })
+            }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(
+                data.detail || "تغییر وضعیت گزارش انجام نشد."
+            );
+        }
+
+        if (ownerReportReviewModal) {
+            ownerReportReviewModal.classList.add("hidden");
+        }
+
+        await loadOwnerReports();
+
+    } catch (error) {
+        alert(
+            "خطا: " +
+            (error.message || error)
+        );
+    }
+}
+
+if (closeOwnerReportReview) {
+    closeOwnerReportReview.onclick = () => {
+        if (ownerReportReviewModal) {
+            ownerReportReviewModal.classList.add("hidden");
+        }
+    };
+}
+
+if (markReportReviewed) {
+    markReportReviewed.onclick = () =>
+        changeOwnerReportStatus("reviewed");
+}
+
+if (markReportClosed) {
+    markReportClosed.onclick = () =>
+        changeOwnerReportStatus("closed");
+}

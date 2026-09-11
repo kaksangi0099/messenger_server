@@ -960,6 +960,33 @@
 
         <button
             type="button"
+            class="setting-item owner-report-setting hidden"
+            id="ownerReportSetting"
+        >
+
+            <div class="setting-icon red-bg">
+                <span class="report-setting-symbol"></span>
+            </div>
+
+            <div class="setting-text">
+
+                <strong>
+                    مرکز گزارش‌ها
+                </strong>
+
+                <small>
+                    بررسی گزارش‌های کاربران و مدیریت حساب‌ها
+                </small>
+
+            </div>
+
+            <span>‹</span>
+
+        </button>
+
+
+        <button
+            type="button"
             class="setting-item owner-ad-setting hidden"
             id="ownerAdSetting"
         >
@@ -1077,6 +1104,102 @@
 
 
 
+
+
+<!-- ================= OWNER REPORTS PANEL ================= -->
+
+<div
+    class="media-subpanel hidden"
+    id="ownerReportsPanel"
+>
+
+    <div class="media-subpanel-header">
+
+        <button
+            type="button"
+            id="closeOwnerReportsPanel"
+        >
+            ‹
+        </button>
+
+        <h3>
+            مرکز گزارش‌ها
+        </h3>
+
+    </div>
+
+    <div class="owner-reports-header">
+        <strong>گزارش‌های کاربران</strong>
+        <small>
+            گزارش‌ها را بررسی کنید و در صورت نیاز درباره حساب گزارش‌شده اقدام کنید.
+        </small>
+    </div>
+
+    <div
+        id="ownerReportsList"
+        class="owner-reports-list"
+    ></div>
+
+</div>
+
+
+<!-- ================= SUSPENSION MODAL ================= -->
+
+<div id="suspensionModal" class="suspension-modal hidden">
+
+    <div class="suspension-card">
+
+        <h3 id="suspensionTitle">
+            محروم‌سازی حساب
+        </h3>
+
+        <p id="suspensionText">
+            مدت محرومیت این حساب را انتخاب کنید.
+        </p>
+
+        <div class="suspension-options">
+
+            <button type="button" class="suspension-option" data-duration="1_month">
+                ۱ ماه
+            </button>
+
+            <button type="button" class="suspension-option" data-duration="3_months">
+                ۳ ماه
+            </button>
+
+            <button type="button" class="suspension-option" data-duration="1_year">
+                ۱ سال
+            </button>
+
+            <button type="button" class="suspension-option" data-duration="permanent">
+                دائمی
+            </button>
+
+        </div>
+
+        <div class="suspension-actions">
+
+            <button
+                type="button"
+                class="suspension-cancel"
+                id="cancelSuspension"
+            >
+                نخیر، برگشت
+            </button>
+
+            <button
+                type="button"
+                class="suspension-confirm"
+                id="confirmSuspension"
+            >
+                محروم کردن
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 
 <!-- ================= OWNER ADVERTISEMENT PANEL ================= -->
