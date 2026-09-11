@@ -224,8 +224,7 @@ async function loadOwnerReports() {
                     </button>
 
                     <button type="button"
-                        class="danger"
-                        onclick="openBanPanel(${report.reported_id}, '${escapeHtml(report.reported_username)}')">
+                        class="danger owner-report-ban-button" data-user-id="${report.reported_id}" data-username="${escapeHtml(report.reported_username)}">
                         محروم‌سازی
                     </button>
                 </div>
@@ -6985,32 +6984,39 @@ if (markReportClosed) {
 }
 
 
-/* ================= OWNER BUTTON FALLBACK ================= */
+
+/* ================= MANAGEMENT BUTTONS FINAL FIX ================= */
 
 document.addEventListener("click", async function(event) {
 
-    const reportButton =
-        event.target.closest(".owner-report-review-button");
+    const reviewButton =
+        event.target.closest("[data-report-id]");
 
-    if (reportButton) {
-        const reportId = reportButton.dataset.reportId;
+    if (
+        reviewButton &&
+        reviewButton.classList.contains("owner-report-review-button")
+    ) {
+        const id = Number(reviewButton.dataset.reportId);
 
-        if (reportId && typeof openOwnerReport === "function") {
-            await openOwnerReport(Number(reportId));
+        if (id && typeof openOwnerReport === "function") {
+            await openOwnerReport(id);
         }
 
         return;
     }
 
     const banButton =
-        event.target.closest(".owner-report-ban-button");
+        event.target.closest("[data-user-id]");
 
-    if (banButton) {
-        const userId = banButton.dataset.userId;
+    if (
+        banButton &&
+        banButton.classList.contains("owner-report-ban-button")
+    ) {
+        const userId = Number(banButton.dataset.userId);
         const username = banButton.dataset.username || "";
 
         if (userId && typeof openBanPanel === "function") {
-            openBanPanel(Number(userId), username);
+            openBanPanel(userId, username);
         }
 
         return;
@@ -7027,10 +7033,10 @@ document.addEventListener("click", async function(event) {
         return;
     }
 
-    const reportUserButton =
+    const blockedReportButton =
         event.target.closest(".blocked-report-button");
 
-    if (reportUserButton) {
+    if (blockedReportButton) {
         if (reportModal) {
             reportModal.classList.remove("hidden");
         }
