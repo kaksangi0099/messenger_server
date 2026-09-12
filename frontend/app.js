@@ -7049,3 +7049,50 @@ document.addEventListener("click", async function(event) {
         return;
     }
 });
+
+
+/* =========================
+   FINAL SUSPENSION LOGIN UI
+   ========================= */
+
+function showSuspensionLoginNotice(detail) {
+    const old = document.getElementById("suspensionLoginNotice");
+    if (old) old.remove();
+
+    const notice = document.createElement("div");
+    notice.id = "suspensionLoginNotice";
+    notice.className = "suspension-login-notice";
+
+    const text = String(detail || "حساب شما موقتاً محروم شده است.");
+
+    const permanent = text.includes("دائمی");
+
+    notice.innerHTML = `
+        <div class="suspension-login-card">
+            <div class="suspension-login-icon">
+                ${permanent ? "🔒" : "⏳"}
+            </div>
+
+            <div class="suspension-login-title">
+                ${permanent ? "حساب شما محروم شده است" : "حساب شما موقتاً محروم شده است"}
+            </div>
+
+            <div class="suspension-login-text">
+                ${text.replace(/\n/g, "<br>")}
+            </div>
+
+            <div class="suspension-login-note">
+                در صورت نیاز می‌توانید از پشتیبانی Media پیگیری کنید.
+            </div>
+
+            <button type="button" class="suspension-login-close">
+                متوجه شدم
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(notice);
+
+    const close = notice.querySelector(".suspension-login-close");
+    if (close) close.onclick = () => notice.remove();
+}
