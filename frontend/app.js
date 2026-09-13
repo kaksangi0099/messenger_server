@@ -4185,6 +4185,671 @@ async function restoreEmptyChatList() {
 }
 
 
+/* =========================
+   MEDIA GROUPS / CHANNELS
+========================= */
+
+const mediaCommunitiesSection =
+    document.getElementById("mediaCommunitiesSection");
+
+const mediaCommunitiesList =
+    document.getElementById("mediaCommunitiesList");
+
+const mediaCreateFab =
+    document.getElementById("mediaCreateFab");
+
+const mediaCreateMenu =
+    document.getElementById("mediaCreateMenu");
+
+const communityCreateModal =
+    document.getElementById("communityCreateModal");
+
+const communityCreateClose =
+    document.getElementById("communityCreateClose");
+
+const communityCreateTitle =
+    document.getElementById("communityCreateTitle");
+
+const communityAvatarInput =
+    document.getElementById("communityAvatarInput");
+
+const communityAvatarPreview =
+    document.getElementById("communityAvatarPreview");
+
+const communityNameInput =
+    document.getElementById("communityNameInput");
+
+const communityDescriptionInput =
+    document.getElementById("communityDescriptionInput");
+
+const communityUsernameField =
+    document.getElementById("communityUsernameField");
+
+const communityUsernameInput =
+    document.getElementById("communityUsernameInput");
+
+const communityPrivateHint =
+    document.getElementById("communityPrivateHint");
+
+const communityCreateError =
+    document.getElementById("communityCreateError");
+
+const communityCreateSubmit =
+    document.getElementById("communityCreateSubmit");
+
+let communityCreateType = "group";
+let communityVisibility = "private";
+let communityAvatarFile = null;
+
+function closeCommunityCreate() {
+    if (communityCreateModal) {
+        communityCreateModal.classList.add("hidden");
+    }
+
+    communityAvatarFile = null;
+
+    if (communityAvatarInput) {
+        communityAvatarInput.value = "";
+    }
+
+    if (communityAvatarPreview) {
+        communityAvatarPreview.textContent = "📷";
+        communityAvatarPreview.style.backgroundImage = "";
+    }
+
+    if (communityNameInput) {
+        communityNameInput.value = "";
+    }
+
+    if (communityDescriptionInput) {
+        communityDescriptionInput.value = "";
+    }
+
+    if (communityUsernameInput) {
+        communityUsernameInput.value = "";
+    }
+
+    if (communityCreateError) {
+        communityCreateError.classList.add("hidden");
+        communityCreateError.textContent = "";
+    }
+
+    updateCommunityCreateButton();
+}
+
+function openCommunityCreate(type) {
+
+    communityCreateType =
+        type === "channel"
+            ? "channel"
+            : "group";
+
+    if (communityCreateTitle) {
+        communityCreateTitle.textContent =
+            communityCreateType === "channel"
+                ? "افزودن کانال"
+                : "افزودن گروه";
+    }
+
+    if (communityCreateModal) {
+        communityCreateModal.classList.remove("hidden");
+    }
+
+    if (mediaCreateMenu) {
+        mediaCreateMenu.classList.add("hidden");
+    }
+
+    updateCommunityVisibilityUI();
+    updateCommunityCreateButton();
+}
+
+function updateCommunityVisibilityUI() {
+
+    document
+        .querySelectorAll(".community-visibility-btn")
+        .forEach(button => {
+            button.classList.toggle(
+                "active",
+                button.dataset.visibility === communityVisibility
+            );
+        });
+
+    if (communityUsernameField) {
+        communityUsernameField.classList.toggle(
+            "hidden",
+            communityVisibility !== "public"
+        );
+    }
+
+    if (communityPrivateHint) {
+        communityPrivateHint.classList.toggle(
+            "hidden",
+            communityVisibility !== "private"
+        );
+    }
+
+    updateCommunityCreateButton();
+}
+
+function updateCommunityCreateButton() {
+
+    if (!communityCreateSubmit) {
+        return;
+    }
+
+    const nameOK =
+        !!communityNameInput &&
+        communityNameInput.value.trim().length > 0;
+
+    const imageOK =
+        !!communityAvatarFile;
+
+    const usernameOK =
+        communityVisibility !== "public" ||
+        (
+            !!communityUsernameInput &&
+            communityUsernameInput.value.trim().length >= 3
+        );
+
+    communityCreateSubmit.disabled =
+        !(nameOK && imageOK && usernameOK);
+}
+
+if (mediaCreateFab) {
+    mediaCreateFab.addEventListener("click", event => {
+        event.stopPropagation();
+
+        if (mediaCreateMenu) {
+            mediaCreateMenu.classList.toggle("hidden");
+        }
+    });
+}
+
+document
+    .querySelectorAll(".media-create-option")
+    .forEach(button => {
+        button.addEventListener("click", () => {
+            openCommunityCreate(
+                button.dataset.createType
+            );
+        });
+    });
+
+document
+    .querySelectorAll(".community-visibility-btn")
+    .forEach(button => {
+        button.addEventListener("click", () => {
+            communityVisibility =
+                button.dataset.visibility === "public"
+                    ? "public"
+                    : "private";
+
+            updateCommunityVisibilityUI();
+        });
+    });
+
+if (communityCreateClose) {
+    communityCreateClose.addEventListener(
+        "click",
+        closeCommunityCreate
+    );
+}
+
+if (communityAvatarInput) {
+
+    communityAvatarInput.addEventListener(
+        "change",
+        () => {
+
+            const file =
+                communityAvatarInput.files &&
+                communityAvatarInput.files[0];
+
+            communityAvatarFile =
+                file || null;
+
+            if (
+                file &&
+                communityAvatarPreview
+            ) {
+                const reader =
+                    new FileReader();
+
+                reader.onload = event => {
+                    communityAvatarPreview.style.backgroundImage =
+                        `url("${event.target.result}")`;
+
+                    communityAvatarPreview.textContent = "";
+                };
+
+                reader.readAsDataURL(file);
+            } else if (communityAvatarPreview) {
+                communityAvatarPreview.textContent = "📷";
+                communityAvatarPreview.style.backgroundImage = "";
+            }
+
+            updateCommunityCreateButton();
+        }
+    );
+}
+
+[
+    communityNameInput,
+    communityUsernameInput
+].forEach(input => {
+
+    if (!input) {
+        return;
+    }
+
+    input.addEventListener(
+        "input",
+        updateCommunityCreateButton
+    );
+});
+
+async function createMediaCommunity() {
+
+    if (
+        !communityNameInput ||
+        !communityAvatarFile
+    ) {
+        return;
+    }
+
+    const name =
+        communityNameInput.value.trim();
+
+    if (!name) {
+        showCommunityError("نام الزامی است.");
+        return;
+    }
+
+    if (!communityAvatarFile) {
+        showCommunityError("تصویر الزامی است.");
+        return;
+    }
+
+    if (
+        communityVisibility === "public" &&
+        (
+            !communityUsernameInput ||
+            communityUsernameInput.value.trim().length < 3
+        )
+    ) {
+        showCommunityError(
+            "برای عمومی، نام کاربری حداقل ۳ حرفی وارد کنید."
+        );
+        return;
+    }
+
+    const token = getToken();
+
+    if (!token) {
+        showCommunityError("ابتدا وارد حساب شوید.");
+        return;
+    }
+
+    communityCreateSubmit.disabled = true;
+    communityCreateSubmit.textContent = "در حال ساخت...";
+
+    try {
+
+        const uploadForm =
+            new FormData();
+
+        uploadForm.append(
+            "file",
+            communityAvatarFile
+        );
+
+        const uploadResponse =
+            await fetch(
+                `${API_URL}/upload`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Authorization":
+                            "Bearer " + token
+                    },
+                    body: uploadForm
+                }
+            );
+
+        const uploadData =
+            await uploadResponse.json();
+
+        if (!uploadResponse.ok) {
+            throw new Error(
+                uploadData.detail ||
+                "آپلود تصویر انجام نشد."
+            );
+        }
+
+        const params =
+            new URLSearchParams();
+
+        params.set(
+            "type",
+            communityCreateType
+        );
+
+        params.set(
+            "name",
+            name
+        );
+
+        params.set(
+            "description",
+            communityDescriptionInput
+                ? communityDescriptionInput.value.trim()
+                : ""
+        );
+
+        params.set(
+            "avatar_url",
+            uploadData.url
+        );
+
+        params.set(
+            "visibility",
+            communityVisibility
+        );
+
+        if (communityVisibility === "public") {
+            params.set(
+                "username",
+                communityUsernameInput.value
+                    .trim()
+                    .toLowerCase()
+                    .replace(/^@/, "")
+            );
+        }
+
+        const response =
+            await fetch(
+                `${API_URL}/communities?${params.toString()}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Authorization":
+                            "Bearer " + token
+                    }
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail ||
+                "ساخت انجام نشد."
+            );
+        }
+
+        closeCommunityCreate();
+
+        await loadRecentChats();
+
+        alert(
+            communityCreateType === "channel"
+                ? "📢 کانال با موفقیت ساخته شد."
+                : "👥 گروه با موفقیت ساخته شد."
+        );
+
+    } catch (error) {
+
+        console.error(
+            "CREATE COMMUNITY:",
+            error
+        );
+
+        showCommunityError(
+            error.message ||
+            "ساخت انجام نشد."
+        );
+
+        updateCommunityCreateButton();
+
+    } finally {
+
+        if (communityCreateSubmit) {
+            communityCreateSubmit.textContent =
+                "ساخت";
+        }
+    }
+}
+
+function showCommunityError(message) {
+
+    if (!communityCreateError) {
+        return;
+    }
+
+    communityCreateError.textContent =
+        message;
+
+    communityCreateError.classList.remove(
+        "hidden"
+    );
+}
+
+if (communityCreateSubmit) {
+    communityCreateSubmit.addEventListener(
+        "click",
+        createMediaCommunity
+    );
+}
+
+async function loadMediaCommunities() {
+
+    if (!mediaCommunitiesList) {
+        return;
+    }
+
+    const token = getToken();
+
+    if (!token) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/communities`,
+                {
+                    headers: {
+                        "Authorization":
+                            "Bearer " + token
+                    }
+                }
+            );
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        renderMediaCommunities(
+            data.communities || []
+        );
+
+    } catch (error) {
+        console.error(
+            "COMMUNITIES:",
+            error
+        );
+    }
+}
+
+function renderMediaCommunities(
+    communities
+) {
+
+    if (!mediaCommunitiesList) {
+        return;
+    }
+
+    mediaCommunitiesList.innerHTML = "";
+
+    if (
+        !Array.isArray(communities) ||
+        communities.length === 0
+    ) {
+        if (mediaCommunitiesSection) {
+            mediaCommunitiesSection.classList.add(
+                "hidden"
+            );
+        }
+        return;
+    }
+
+    if (mediaCommunitiesSection) {
+        mediaCommunitiesSection.classList.remove(
+            "hidden"
+        );
+    }
+
+    communities.forEach(
+        community => {
+
+            const item =
+                document.createElement("button");
+
+            item.type = "button";
+            item.className =
+                "media-community-item";
+
+            const avatar =
+                document.createElement("div");
+
+            avatar.className =
+                "media-community-avatar";
+
+            if (community.avatar_url) {
+
+                const img =
+                    document.createElement("img");
+
+                img.src =
+                    community.avatar_url.startsWith("http")
+                        ? community.avatar_url
+                        : API_URL + community.avatar_url;
+
+                img.alt =
+                    community.name || "Media";
+
+                img.loading = "lazy";
+
+                avatar.appendChild(img);
+
+            } else {
+
+                avatar.textContent =
+                    community.type === "channel"
+                        ? "📢"
+                        : "👥";
+            }
+
+            const info =
+                document.createElement("div");
+
+            info.className =
+                "media-community-info";
+
+            const title =
+                document.createElement("strong");
+
+            title.textContent =
+                (
+                    community.type === "channel"
+                        ? "📢 "
+                        : "👥 "
+                ) +
+                (
+                    community.name ||
+                    "بدون نام"
+                );
+
+            const sub =
+                document.createElement("span");
+
+            sub.textContent =
+                community.type === "channel"
+                    ? "کانال"
+                    : "گروه";
+
+            info.appendChild(title);
+            info.appendChild(sub);
+
+            item.appendChild(avatar);
+            item.appendChild(info);
+
+            item.addEventListener(
+                "click",
+                () => {
+
+                    if (
+                        community.visibility === "public" &&
+                        community.username
+                    ) {
+                        alert(
+                            "لینک عمومی:\n" +
+                            `${location.origin}/community/${community.username}`
+                        );
+                    } else {
+                        alert(
+                            "لینک دعوت خصوصی:\n" +
+                            `${location.origin}/join/${community.invite_token}`
+                        );
+                    }
+                }
+            );
+
+            mediaCommunitiesList.appendChild(
+                item
+            );
+        }
+    );
+}
+
+if (communityCreateModal) {
+    communityCreateModal.addEventListener(
+        "click",
+        event => {
+            if (
+                event.target ===
+                communityCreateModal
+            ) {
+                closeCommunityCreate();
+            }
+        }
+    );
+}
+
+if (mediaCreateMenu) {
+    document.addEventListener(
+        "click",
+        event => {
+
+            if (
+                !mediaCreateMenu.contains(event.target) &&
+                event.target !== mediaCreateFab
+            ) {
+                mediaCreateMenu.classList.add(
+                    "hidden"
+                );
+            }
+        }
+    );
+}
+
+
+
 async function loadRecentChats() {
 
     if (!realChatList) {
@@ -4224,6 +4889,7 @@ async function loadRecentChats() {
         }
 
         renderRecentChats(data.chats || []);
+        await loadMediaCommunities();
 
     } catch (error) {
 
