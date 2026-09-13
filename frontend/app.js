@@ -7762,3 +7762,335 @@ function showSuspensionLoginNotice(detail) {
     const close = notice.querySelector(".suspension-login-close");
     if (close) close.onclick = () => notice.remove();
 }
+
+/* ===== MEDIA COMMUNITY PAGE ===== */
+
+(function () {
+    const style = document.createElement("style");
+    style.textContent = `
+    #mediaCommunityPage{
+        position:fixed;inset:0;z-index:99999;background:#f7f5ff;
+        display:none;flex-direction:column;
+    }
+    #mediaCommunityPage.active{display:flex}
+    .mcp-head{
+        height:64px;background:#fff;display:flex;align-items:center;
+        gap:12px;padding:8px 14px;border-bottom:1px solid #eee;
+        box-shadow:0 2px 10px #0000000b
+    }
+    .mcp-back{border:0;background:none;font-size:27px;cursor:pointer}
+    .mcp-avatar{
+        width:44px;height:44px;border-radius:50%;overflow:hidden;
+        background:#eee;display:flex;align-items:center;justify-content:center;
+        font-size:22px;flex:none
+    }
+    .mcp-avatar img{width:100%;height:100%;object-fit:cover}
+    .mcp-title{font-weight:800;font-size:16px}
+    .mcp-desc{font-size:12px;color:#777;margin-top:3px}
+    .mcp-profile{margin-left:auto;border:0;background:none;font-size:23px;cursor:pointer}
+    .mcp-feed{
+        flex:1;overflow-y:auto;padding:14px;display:flex;
+        flex-direction:column;gap:10px
+    }
+    .mcp-msg{
+        max-width:85%;background:#fff;border-radius:16px;padding:9px 11px;
+        box-shadow:0 2px 8px #00000009;align-self:flex-start
+    }
+    .mcp-name{font-size:12px;font-weight:800;color:#7047d8;margin-bottom:5px}
+    .mcp-text{font-size:14px;white-space:pre-wrap;word-break:break-word}
+    .mcp-media{max-width:100%;max-height:360px;border-radius:12px;margin-top:7px;display:block}
+    .mcp-file{display:block;margin-top:7px;color:#7047d8;text-decoration:none}
+    .mcp-time{font-size:10px;color:#999;margin-top:5px;text-align:left}
+    .mcp-compose{
+        background:#fff;border-top:1px solid #eee;padding:8px;
+        display:flex;gap:7px;align-items:center
+    }
+    .mcp-input{
+        flex:1;border:1px solid #ddd;border-radius:22px;padding:10px 14px;
+        outline:none;background:#fafafa
+    }
+    .mcp-send,.mcp-filebtn{
+        border:0;border-radius:50%;width:42px;height:42px;
+        background:#7047d8;color:#fff;font-size:18px;cursor:pointer
+    }
+    .mcp-filebtn{background:#eee;color:#7047d8}
+    .mcp-empty{text-align:center;color:#999;margin:auto}
+    @media(max-width:600px){
+        .mcp-msg{max-width:92%}
+        .mcp-feed{padding:9px}
+    }`;
+    document.head.appendChild(style);
+
+    const page = document.createElement("div");
+    page.id = "mediaCommunityPage";
+    page.innerHTML = `
+      <div class="mcp-head">
+        <button class="mcp-back" id="mcpBack">‹</button>
+        <div class="mcp-avatar" id="mcpAvatar">👥</div>
+        <div style="min-width:0">
+          <div class="mcp-title" id="mcpTitle">مدیا</div>
+          <div class="mcp-desc" id="mcpDesc"></div>
+        </div>
+        <button class="mcp-profile" id="mcpProfile">⋮</button>
+      </div>
+      <div class="mcp-feed" id="mcpFeed"></div>
+      <div class="mcp-compose" id="mcpCompose">
+        <input type="file" id="mcpFile" hidden>
+        <button class="mcp-filebtn" id="mcpFileBtn">＋</button>
+        <input class="mcp-input" id="mcpInput" placeholder="پیام...">
+        <button class="mcp-send" id="mcpSend">➤</button>
+      </div>`;
+    document.body.appendChild(page);
+
+    let activeCommunity = null;
+
+    function esc(v) {
+        return String(v ?? "").replace(/[&<>"']/g, x => ({
+            "&":"&amp;","<":"&lt;",">":"&gt;",
+            '"':"&quot;","'":"&#039;"
+        }[x]));
+    }
+
+    function mediaUrl(url) {
+        if (!url) return "";
+        return url.startsWith("http") ? url : API_URL + url;
+    }
+
+    async function openCommunity(id) {
+        try {
+            const headers = {Authorization:"Bearer " + getToken()};
+
+            const infoRes = await fetch(
+                API_URL + "/communities/" + id,
+                {headers}
+            );
+            const info = await infoRes.json();
+
+            if (!infoRes.ok) {
+                alert(info.detail || "خطا");
+                return;
+            }
+
+            activeCommunity = info.community;
+
+            document.getElementById("mcpTitle").textContent =
+                activeCommunity.name || "مدیا";
+
+            document.getElementById("mcpDesc").textContent =
+                activeCommunity.type === "channel"
+                    ? (activeCommunity.description || "کانال")
+                    : (activeCommunity.description || "گروه");
+
+            const avatar = document.getElementById("mcpAvatar");
+            avatar.innerHTML = activeCommunity.avatar_url
+                ? `<img src="${esc(mediaUrl(activeCommunity.avatar_url))}">`
+                : (activeCommunity.type === "channel" ? "📢" : "👥");
+
+            document.getElementById("mcpCompose").style.display =
+                activeCommunity.type === "channel" &&
+                !["owner","admin"].includes(activeCommunity.role)
+                    ? "none" : "flex";
+
+            page.classList.add("active");
+            await loadCommunityMessages(true);
+        } catch(e) {
+            console.error(e);
+            alert("باز کردن گروه/کانال انجام نشد.");
+        }
+    }
+
+    async function loadCommunityMessages(forceBottom=false) {
+        if (!activeCommunity) return;
+
+        const feed = document.getElementById("mcpFeed");
+
+        try {
+            const res = await fetch(
+                API_URL + "/communities/" +
+                activeCommunity.id + "/messages",
+                {headers:{Authorization:"Bearer " + getToken()}}
+            );
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "خطا");
+
+            feed.innerHTML = "";
+
+            if (!data.messages || !data.messages.length) {
+                feed.innerHTML =
+                    `<div class="mcp-empty">هنوز پیامی وجود ندارد 🌱</div>`;
+                return;
+            }
+
+            data.messages.forEach(m => {
+                const box = document.createElement("div");
+                box.className = "mcp-msg";
+
+                let media = "";
+
+                if (m.media_type === "image" && m.media_url) {
+                    media = `<img class="mcp-media"
+                        src="${esc(mediaUrl(m.media_url))}">`;
+                } else if (m.media_type === "video" && m.media_url) {
+                    media = `<video class="mcp-media"
+                        src="${esc(mediaUrl(m.media_url))}"
+                        controls playsinline></video>`;
+                } else if (m.media_url) {
+                    media = `<a class="mcp-file"
+                        href="${esc(mediaUrl(m.media_url))}"
+                        target="_blank">📎 ${esc(m.media_filename || "فایل")}</a>`;
+                }
+
+                box.innerHTML = `
+                    <div class="mcp-name">${esc(m.name || m.username)}</div>
+                    ${m.text ? `<div class="mcp-text">${esc(m.text)}</div>` : ""}
+                    ${media}
+                    <div class="mcp-time">${new Date(m.created_at).toLocaleString("fa-IR")}</div>
+                `;
+
+                feed.appendChild(box);
+            });
+
+            if (forceBottom) {
+                requestAnimationFrame(() => {
+                    feed.scrollTop = feed.scrollHeight;
+                });
+            }
+        } catch(e) {
+            console.error(e);
+            feed.innerHTML =
+                `<div class="mcp-empty">خطا در دریافت پیام‌ها</div>`;
+        }
+    }
+
+    async function sendCommunityMessage() {
+        if (!activeCommunity) return;
+
+        const input = document.getElementById("mcpInput");
+        const fileInput = document.getElementById("mcpFile");
+        const text = input.value.trim();
+
+        if (!text && !fileInput.files.length) return;
+
+        let media_url = null;
+        let media_type = null;
+        let media_filename = null;
+        let media_size = 0;
+
+        try {
+            if (fileInput.files.length) {
+                const fd = new FormData();
+                fd.append("file", fileInput.files[0]);
+
+                const upload = await fetch(
+                    API_URL + "/upload",
+                    {
+                        method:"POST",
+                        headers:{Authorization:"Bearer " + getToken()},
+                        body:fd
+                    }
+                );
+
+                const ud = await upload.json();
+
+                if (!upload.ok) {
+                    alert(ud.detail || "آپلود ناموفق بود.");
+                    return;
+                }
+
+                media_url = ud.url;
+                media_type = ud.type;
+                media_filename = ud.filename;
+                media_size = ud.size || 0;
+            }
+
+            const qs = new URLSearchParams({
+                text,
+                media_url: media_url || "",
+                media_type: media_type || "",
+                media_filename: media_filename || "",
+                media_size: String(media_size)
+            });
+
+            const res = await fetch(
+                API_URL + "/communities/" +
+                activeCommunity.id + "/messages?" + qs,
+                {
+                    method:"POST",
+                    headers:{Authorization:"Bearer " + getToken()}
+                }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.detail || "ارسال ناموفق بود.");
+                return;
+            }
+
+            input.value = "";
+            fileInput.value = "";
+            await loadCommunityMessages(true);
+
+        } catch(e) {
+            console.error(e);
+            alert("ارسال پیام انجام نشد.");
+        }
+    }
+
+    document.getElementById("mcpBack").onclick = () => {
+        page.classList.remove("active");
+        activeCommunity = null;
+    };
+
+    document.getElementById("mcpSend").onclick = sendCommunityMessage;
+
+    document.getElementById("mcpInput").addEventListener("keydown", e => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendCommunityMessage();
+        }
+    });
+
+    document.getElementById("mcpFileBtn").onclick = () =>
+        document.getElementById("mcpFile").click();
+
+    document.getElementById("mcpProfile").onclick = () => {
+        if (!activeCommunity) return;
+        alert(
+            activeCommunity.name + "\n\n" +
+            (activeCommunity.description || "بدون توضیحات") +
+            "\n\n" +
+            (activeCommunity.type === "channel" ? "کانال" : "گروه")
+        );
+    };
+
+    /* جلوگیری از alert لینک قبلی و باز کردن صفحه واقعی */
+    if (typeof mediaCommunitiesList !== "undefined" && mediaCommunitiesList) {
+        mediaCommunitiesList.addEventListener("click", e => {
+            const item = e.target.closest(".media-community-item");
+            if (!item) return;
+
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            const items = Array.from(
+                mediaCommunitiesList.querySelectorAll(".media-community-item")
+            );
+            const index = items.indexOf(item);
+
+            if (index >= 0 && window.__mediaCommunitiesData) {
+                openCommunity(window.__mediaCommunitiesData[index].id);
+            }
+        }, true);
+    }
+
+    /* ذخیره لیست برای کلیک */
+    const oldRender = window.renderMediaCommunities;
+    window.renderMediaCommunities = function(communities) {
+        window.__mediaCommunitiesData = communities || [];
+        if (typeof oldRender === "function") oldRender(communities);
+    };
+
+    window.openMediaCommunity = openCommunity;
+})();
