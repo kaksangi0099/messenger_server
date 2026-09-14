@@ -7988,30 +7988,12 @@ edit.style.border="0";
 edit.style.width="100%";
 edit.style.textAlign="right";
 edit.style.cursor="pointer";
-edit.onclick=async()=>{
-const name=prompt("نام جدید:",current.name||"");
-if(name===null)return;
-const description=prompt("توضیحات جدید:",current.description||"");
-if(description===null)return;
-const username=prompt("نام کاربری عمومی بدون @:",current.username||"");
-if(username===null)return;
-const visibility=confirm("عمومی باشد؟\nتأیید = عمومی / لغو = خصوصی")?"public":"private";
-
-const q=new URLSearchParams({name,description,username,visibility});
-const r=await fetch(API_URL+"/communities/"+current.id+"/profile",{
-method:"PUT",
-headers:{Authorization:"Bearer "+token(),"Content-Type":"application/x-www-form-urlencoded"},
-body:q
-});
-const d=await r.json();
-if(!r.ok){alert(d.detail||"ویرایش نشد");return;}
-current={...current,...d.community};
-alert("ذخیره شد ✅");
-await openCommunityV2(current.id);
+edit.onclick=()=>{
+document.getElementById("mc2profile").classList.add("on");
+document.getElementById("mc2pname").value=current.name||"";
+document.getElementById("mc2pdesc").value=current.description||"";
+document.getElementById("mc2puser").value=current.username||"";
 };
-document.getElementById("mc2admins").before(edit);
-edit.id="mc2-edit-btn";
-}
 
 const info=document.createElement("div");
 info.className="mc2-stat";
