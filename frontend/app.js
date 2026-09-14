@@ -7975,45 +7975,25 @@ input.value="";fi.value="";await loadV2();
 async function profileV2(){
 if(!current)return;
 const p=document.getElementById("mc2profile");
-document.getElementById("mc2pname").textContent=current.name;
+document.getElementById("mc2pname").textContent=current.name||"";
 document.getElementById("mc2pdesc").textContent=current.description||"بدون توضیحات";
 document.getElementById("mc2count").textContent=
-"👥 "+current.member_count+" عضو • "+
+"👥 "+(current.member_count||0)+" عضو • "+
 (current.visibility==="public"?"🌐 عمومی":"🔒 خصوصی");
-if(current.role==="owner"){
-const edit=document.createElement("button");
-edit.className="mc2-stat";
-edit.textContent="✏️ ویرایش اطلاعات";
-edit.style.border="0";
-edit.style.width="100%";
-edit.style.textAlign="right";
-edit.style.cursor="pointer";
-edit.onclick=()=>{
-document.getElementById("mc2profile").classList.add("on");
-document.getElementById("mc2pname").value=current.name||"";
-document.getElementById("mc2pdesc").value=current.description||"";
-document.getElementById("mc2puser").value=current.username||"";
-};
-document.getElementById("mc2admins").before(edit);
-}
 
-const info=document.createElement("div");
-info.className="mc2-stat";
-info.innerHTML=current.username
- ? "🔗 @"+current.username
- : "🔒 لینک خصوصی";
-info.id="mc2-link-info";
-document.getElementById("mc2-link-info")?.remove();
-document.getElementById("mc2admins").before(info);
-
-const a=document.getElementById("mc2admins");a.innerHTML="";
+const a=document.getElementById("mc2admins");
+a.innerHTML="";
 (current.admins||[]).forEach(x=>{
-const d=document.createElement("div");d.className="mc2-admin";
-d.innerHTML=x.avatar_url?`<img src="${url(x.avatar_url)}">`:`<div class="mc2-admin-av">👤</div>`;
+const d=document.createElement("div");
+d.className="mc2-admin";
+d.innerHTML=x.avatar_url
+?`<img src="${url(x.avatar_url)}">`
+:`<div class="mc2-admin-av">👤</div>`;
 const role=x.role==="owner"?"مالک":"مدیر";
 d.innerHTML+=`<div><b>${x.name}</b><div style="font-size:11px;color:#777">${role}</div></div>`;
 a.appendChild(d);
 });
+
 p.classList.add("on");
 }
 
