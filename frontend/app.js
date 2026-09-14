@@ -4792,20 +4792,8 @@ function renderMediaCommunities(
             item.addEventListener(
                 "click",
                 () => {
-
-                    if (
-                        community.visibility === "public" &&
-                        community.username
-                    ) {
-                        alert(
-                            "لینک عمومی:\n" +
-                            `${location.origin}/community/${community.username}`
-                        );
-                    } else {
-                        alert(
-                            "لینک دعوت خصوصی:\n" +
-                            `${location.origin}/join/${community.invite_token}`
-                        );
+                    if (typeof window.openMediaCommunity === "function") {
+                        window.openMediaCommunity(community.id);
                     }
                 }
             );
