@@ -47,6 +47,22 @@ OWNER_PASSWORD = os.getenv(
 # APP
 # =========================
 
+@app.delete("/owner/reset-communities")
+def reset_communities():
+    c = db()
+    try:
+        for t in [
+            "community_message_receipts",
+            "community_messages",
+            "community_members",
+            "communities"
+        ]:
+            c.execute(f"DELETE FROM {t}")
+        c.commit()
+        return {"ok": True, "message": "COMMUNITIES RESET DONE"}
+    finally:
+        c.close()
+
 app = FastAPI(
     title="Media Messenger API",
     version="1.0.0"
