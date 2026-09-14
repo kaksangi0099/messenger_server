@@ -8010,6 +8010,7 @@ alert("ذخیره شد ✅");
 await openCommunityV2(current.id);
 };
 document.getElementById("mc2admins").before(edit);
+edit.id="mc2-edit-btn";
 }
 
 const info=document.createElement("div");
@@ -8017,6 +8018,8 @@ info.className="mc2-stat";
 info.innerHTML=current.username
  ? "🔗 @"+current.username
  : "🔒 لینک خصوصی";
+info.id="mc2-link-info";
+document.getElementById("mc2-link-info")?.remove();
 document.getElementById("mc2admins").before(info);
 
 const a=document.getElementById("mc2admins");a.innerHTML="";
