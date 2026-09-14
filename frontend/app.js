@@ -3032,6 +3032,30 @@ async function loadChatMessages(username) {
 
         const data = await response.json();
 
+        /* MARK RECEIVED MESSAGES DELIVERED + READ */
+        for (const msg of (data.messages || [])) {
+            if (
+                Number(msg.receiver_id) === Number(currentUser.id)
+                && msg.id
+            ) {
+                fetch(
+                    `${API_URL}/messages/${msg.id}/delivered`,
+                    {
+                        method: "POST",
+                        headers: authHeaders()
+                    }
+                ).catch(() => {});
+
+                fetch(
+                    `${API_URL}/messages/${msg.id}/read`,
+                    {
+                        method: "POST",
+                        headers: authHeaders()
+                    }
+                ).catch(() => {});
+            }
+        }
+
         console.log("MESSAGES API STATUS:", response.status);
         console.log("MESSAGES API DATA:", data);
 
@@ -3368,35 +3392,70 @@ function renderMessage(message) {
     }
 
 
-    /* TIME */
+    /* FORWARDED FROM COMMUNITY */
 
-    const time =
-        document.createElement("div");
+    if (message.forward_source_name) {
+        const forward = document.createElement("div");
+
+        forward.textContent = "↗️ " + message.forward_source_name;
+        forward.style.fontSize = "11px";
+        forward.style.fontWeight = "700";
+        forward.style.marginBottom = "5px";
+        forward.style.cursor = "pointer";
+        forward.style.opacity = "0.9";
+
+        forward.addEventListener("click", () => {
+            if (message.forward_community_id) {
+                window.openMediaCommunity(
+                    Number(message.forward_community_id)
+                );
+            }
+        });
+
+        bubble.insertBefore(forward, bubble.firstChild);
+    }
+
+    /* TIME + DELIVERY */
+
+    const meta = document.createElement("div");
+    meta.style.display = "flex";
+    meta.style.alignItems = "center";
+    meta.style.justifyContent = mine ? "flex-end" : "flex-start";
+    meta.style.gap = "4px";
+    meta.style.marginTop = "4px";
+
+    const time = document.createElement("span");
 
     time.textContent =
-        formatLastSeen(
-            message.created_at
-        );
+        formatLastSeen(message.created_at);
 
-    time.style.fontSize =
-        "10px";
+    time.style.fontSize = "10px";
+    time.style.opacity = "0.65";
 
-    time.style.opacity =
-        "0.65";
+    meta.appendChild(time);
 
-    time.style.marginTop =
-        "4px";
+    if (mine) {
+        const ticks = document.createElement("span");
 
-    time.style.textAlign =
-        mine ? "right" : "left";
+        ticks.textContent =
+            message.delivered ? "✓✓" : "✓";
 
-    bubble.appendChild(time);
+        ticks.style.fontSize = "12px";
+        ticks.style.fontWeight = "700";
+        ticks.style.opacity = "0.85";
 
+        meta.appendChild(ticks);
+    }
+
+    bubble.appendChild(meta);
 
     messages.appendChild(
         bubble
     );
 }
+
+/* OLD TIME BLOCK REMOVED */
+
 
 
 /* =========================
@@ -7826,7 +7885,9 @@ const url=x=>x?(x.startsWith("http")?x:API_URL+x):"";
 async function openCommunityV2(id){
 try{
 const r=await fetch(API_URL+"/communities/"+id+"/profile",{headers:{Authorization:"Bearer "+token()}});
-const d=await r.json();
+const raw=await r.text();
+let d={};
+try{d=JSON.parse(raw)}catch{throw Error("خطای سرور: "+r.status)}
 if(!r.ok)throw Error(d.detail||"خطا");
 current=d.community;
 
@@ -7848,19 +7909,48 @@ await loadV2();
 async function loadV2(){
 const feed=document.getElementById("mc2feed");
 const r=await fetch(API_URL+"/communities/"+current.id+"/messages",{headers:{Authorization:"Bearer "+token()}});
-const d=await r.json();
+const raw=await r.text();
+let d={};
+try{d=JSON.parse(raw)}catch{throw Error("خطای دریافت پیام‌ها: "+r.status)}
+if(!r.ok)throw Error(d.detail||"خطای دریافت پیام‌ها");
 feed.innerHTML="";
 (d.messages||[]).forEach(m=>{
 const box=document.createElement("div");
-box.className="mc2-msg"+(current.owner_id===m.sender_id?"":"");
+box.className="mc2-msg"+(Number(m.sender_id)===Number(currentUser?.id)?" mc2-mine":"");
 let media="";
 if(m.media_type==="image"&&m.media_url)media=`<img class="mc2-img" src="${url(m.media_url)}">`;
 else if(m.media_type==="video"&&m.media_url)media=`<video class="mc2-video" src="${url(m.media_url)}" controls playsinline></video>`;
 else if(m.media_url)media=`<a class="mc2-file" href="${url(m.media_url)}" target="_blank">📎 ${m.media_filename||"فایل"}</a>`;
-box.innerHTML=`<div class="mc2-author">${m.name||m.username}</div>${m.text?`<div class="mc2-text">${escapeHtml(m.text)}</div>`:""}${media}<div class="mc2-meta">${new Date(m.created_at).toLocaleTimeString("fa-IR",{hour:"2-digit",minute:"2-digit"})} ✓✓</div>`;
+const mine = Number(m.sender_id) === Number(currentUser?.id);
+const delivered = Number(m.delivered_count || 0) > 0;
+const read = Number(m.read_count || 0) > 0;
+const ticks = mine ? (read ? "✓✓" : delivered ? "✓✓" : "✓") : "";
+
+box.innerHTML=`<div class="mc2-author">${m.name||m.username}</div>${m.text?`<div class="mc2-text">${escapeHtml(m.text)}</div>`:""}${media}<div class="mc2-meta">${new Date(m.created_at).toLocaleTimeString("fa-IR",{hour:"2-digit",minute:"2-digit"})} ${ticks}</div>`;
+
+if(current.role==="owner"||current.role==="admin"||mine){
+const del=document.createElement("button");
+del.textContent="🗑️";
+del.title="حذف پیام";
+del.style.cssText="border:0;background:transparent;cursor:pointer;font-size:13px;margin-top:3px";
+del.onclick=async()=>{
+if(!confirm("حذف این پیام؟"))return;
+const r=await fetch(API_URL+"/communities/"+current.id+"/messages/"+m.id,{
+method:"DELETE",headers:{Authorization:"Bearer "+token()}
+});
+if(r.ok) loadV2();
+};
+box.appendChild(del);
+}
 feed.appendChild(box);
 });
-requestAnimationFrame(()=>feed.scrollTop=feed.scrollHeight);
+for(const m of (d.messages||[])){
+if(m.id && Number(m.sender_id)!==Number(currentUser?.id)){
+fetch(API_URL+"/communities/"+current.id+"/messages/"+m.id+"/delivered",{method:"POST",headers:{Authorization:"Bearer "+token()}}).catch(()=>{});
+fetch(API_URL+"/communities/"+current.id+"/messages/"+m.id+"/read",{method:"POST",headers:{Authorization:"Bearer "+token()}}).catch(()=>{});
+}
+}
+requestAnimationFrame(()=>{if(feed.scrollHeight-feed.scrollTop-feed.clientHeight<180)feed.scrollTop=feed.scrollHeight;});
 }
 
 async function sendV2(){
@@ -7887,7 +7977,48 @@ if(!current)return;
 const p=document.getElementById("mc2profile");
 document.getElementById("mc2pname").textContent=current.name;
 document.getElementById("mc2pdesc").textContent=current.description||"بدون توضیحات";
-document.getElementById("mc2count").textContent="👥 "+current.member_count+" عضو";
+document.getElementById("mc2count").textContent=
+"👥 "+current.member_count+" عضو • "+
+(current.visibility==="public"?"🌐 عمومی":"🔒 خصوصی");
+if(current.role==="owner"){
+const edit=document.createElement("button");
+edit.className="mc2-stat";
+edit.textContent="✏️ ویرایش اطلاعات";
+edit.style.border="0";
+edit.style.width="100%";
+edit.style.textAlign="right";
+edit.style.cursor="pointer";
+edit.onclick=async()=>{
+const name=prompt("نام جدید:",current.name||"");
+if(name===null)return;
+const description=prompt("توضیحات جدید:",current.description||"");
+if(description===null)return;
+const username=prompt("نام کاربری عمومی بدون @:",current.username||"");
+if(username===null)return;
+const visibility=confirm("عمومی باشد؟\nتأیید = عمومی / لغو = خصوصی")?"public":"private";
+
+const q=new URLSearchParams({name,description,username,visibility});
+const r=await fetch(API_URL+"/communities/"+current.id+"/profile",{
+method:"PUT",
+headers:{Authorization:"Bearer "+token(),"Content-Type":"application/x-www-form-urlencoded"},
+body:q
+});
+const d=await r.json();
+if(!r.ok){alert(d.detail||"ویرایش نشد");return;}
+current={...current,...d.community};
+alert("ذخیره شد ✅");
+await openCommunityV2(current.id);
+};
+document.getElementById("mc2admins").before(edit);
+}
+
+const info=document.createElement("div");
+info.className="mc2-stat";
+info.innerHTML=current.username
+ ? "🔗 @"+current.username
+ : "🔒 لینک خصوصی";
+document.getElementById("mc2admins").before(info);
+
 const a=document.getElementById("mc2admins");a.innerHTML="";
 (current.admins||[]).forEach(x=>{
 const d=document.createElement("div");d.className="mc2-admin";
