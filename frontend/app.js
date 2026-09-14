@@ -7994,6 +7994,8 @@ document.getElementById("mc2pname").value=current.name||"";
 document.getElementById("mc2pdesc").value=current.description||"";
 document.getElementById("mc2puser").value=current.username||"";
 };
+document.getElementById("mc2admins").before(edit);
+}
 
 const info=document.createElement("div");
 info.className="mc2-stat";
