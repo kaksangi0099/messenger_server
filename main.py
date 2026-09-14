@@ -4615,3 +4615,19 @@ def send_media_report_notification(
             "Media report notification error:",
             error
         )
+
+@app.get("/reset-community-data-7X9K")
+def reset_community_data():
+    c = db()
+    try:
+        for t in [
+            "community_message_receipts",
+            "community_messages",
+            "community_members",
+            "communities"
+        ]:
+            c.execute(f"DELETE FROM {t}")
+        c.commit()
+        return {"ok": True, "message": "COMMUNITIES RESET DONE"}
+    finally:
+        c.close()
