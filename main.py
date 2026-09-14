@@ -2428,6 +2428,79 @@ def get_community_messages(
     }
 
 
+
+@app.get("/communities/{community_id}/profile")
+def community_profile(
+    community_id: int,
+    authorization: str | None = Header(default=None)
+):
+    user = get_current_user(authorization)
+    c = db()
+
+    community = c.execute(
+        "SELECT * FROM communities WHERE id = %s",
+        (community_id,)
+    ).fetchone()
+
+    if not community:
+        c.close()
+        raise HTTPException(status_code=404, detail="یافت نشد.")
+
+    member = c.execute(
+        """
+        SELECT role FROM community_members
+        WHERE community_id=%s AND user_id=%s
+        """,
+        (community_id, user["id"])
+    ).fetchone()
+
+    if not member:
+        c.close()
+        raise HTTPException(status_code=403, detail="عضو نیستی.")
+
+    count = c.execute(
+        "SELECT COUNT(*) AS n FROM community_members WHERE community_id=%s",
+        (community_id,)
+    ).fetchone()["n"]
+
+    admins = c.execute(
+        """
+        SELECT u.username,u.name,u.avatar_url,cm.role
+        FROM community_members cm
+        JOIN users u ON u.id=cm.user_id
+        WHERE cm.community_id=%s
+        AND cm.role IN ('owner','admin')
+        ORDER BY cm.role DESC, u.name
+        """,
+        (community_id,)
+    ).fetchall()
+
+    c.close()
+
+    return {
+        "community": {
+            "id": community["id"],
+            "type": community["type"],
+            "name": community["name"],
+            "description": community["description"] or "",
+            "avatar_url": community["avatar_url"],
+            "username": community["username"],
+            "visibility": community["visibility"],
+            "owner_id": community["owner_id"],
+            "role": member["role"],
+            "member_count": count,
+            "admins": [
+                {
+                    "username": x["username"],
+                    "name": x["name"] or x["username"],
+                    "avatar_url": x["avatar_url"],
+                    "role": x["role"]
+                }
+                for x in admins
+            ]
+        }
+    }
+
 @app.get("/communities/{community_id}")
 def get_community(
     community_id: int,

@@ -7763,334 +7763,160 @@ function showSuspensionLoginNotice(detail) {
     if (close) close.onclick = () => notice.remove();
 }
 
-/* ===== MEDIA COMMUNITY PAGE ===== */
+/* ===== MEDIA COMMUNITY V2 ===== */
+(() => {
+const css=document.createElement("style");
+css.textContent=`
+.mc2{position:fixed;inset:0;z-index:99999;background:#f7f5ff;display:none;flex-direction:column}
+.mc2.on{display:flex}
+.mc2-head{height:64px;background:#fff;border-bottom:1px solid #eee;display:flex;align-items:center;padding:7px 12px;gap:10px}
+.mc2-back,.mc2-more{border:0;background:none;font-size:27px;padding:5px;cursor:pointer}
+.mc2-more{margin-left:auto}
+.mc2-av{width:45px;height:45px;border-radius:50%;overflow:hidden;background:#e9e3ff;display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
+.mc2-av img{width:100%;height:100%;object-fit:cover}
+.mc2-name{font-weight:800;font-size:16px}
+.mc2-sub{font-size:12px;color:#777;margin-top:2px}
+.mc2-feed{flex:1;overflow:auto;padding:10px 12px 14px;display:flex;flex-direction:column;gap:7px}
+.mc2-msg{max-width:82%;background:#fff;border-radius:15px;padding:8px 10px;box-shadow:0 1px 5px #00000008}
+.mc2-msg.me{align-self:flex-end;background:#eee7ff}
+.mc2-author{font-size:12px;font-weight:800;color:#7047d8;margin-bottom:3px}
+.mc2-text{font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.mc2-img,.mc2-video{display:block;width:auto;max-width:100%;max-height:350px;border-radius:12px;margin-top:6px}
+.mc2-file{display:block;margin-top:6px;color:#7047d8;text-decoration:none}
+.mc2-meta{text-align:left;font-size:9px;color:#999;margin-top:3px}
+.mc2-compose{background:#fff;border-top:1px solid #eee;padding:7px;display:flex;gap:6px}
+.mc2-input{flex:1;border:1px solid #ddd;border-radius:22px;padding:10px 14px;outline:0;background:#fafafa}
+.mc2-btn{width:42px;height:42px;border:0;border-radius:50%;background:#7047d8;color:#fff;font-size:18px}
+.mc2-profile{position:absolute;inset:0;background:#f7f5ff;display:none;overflow:auto}
+.mc2-profile.on{display:block}
+.mc2-cover{background:#fff;text-align:center;padding:25px 15px 18px;border-bottom:1px solid #eee}
+.mc2-bigav{width:92px;height:92px;border-radius:50%;margin:auto;overflow:hidden;background:#e9e3ff;display:flex;align-items:center;justify-content:center;font-size:40px}
+.mc2-bigav img{width:100%;height:100%;object-fit:cover}
+.mc2-pname{font-size:21px;font-weight:900;margin-top:10px}
+.mc2-pdesc{color:#777;margin-top:6px;line-height:1.6}
+.mc2-stat{padding:14px;background:#fff;margin-top:8px;font-weight:700}
+.mc2-admin{display:flex;align-items:center;gap:9px;padding:10px 14px;background:#fff;border-top:1px solid #eee}
+.mc2-admin img,.mc2-admin-av{width:38px;height:38px;border-radius:50%;object-fit:cover;background:#eee;display:flex;align-items:center;justify-content:center}
+@media(max-width:600px){.mc2-msg{max-width:90%}}
+`;
+document.head.appendChild(css);
 
-(function () {
-    const style = document.createElement("style");
-    style.textContent = `
-    #mediaCommunityPage{
-        position:fixed;inset:0;z-index:99999;background:#f7f5ff;
-        display:none;flex-direction:column;
-    }
-    #mediaCommunityPage.active{display:flex}
-    .mcp-head{
-        height:64px;background:#fff;display:flex;align-items:center;
-        gap:12px;padding:8px 14px;border-bottom:1px solid #eee;
-        box-shadow:0 2px 10px #0000000b
-    }
-    .mcp-back{border:0;background:none;font-size:27px;cursor:pointer}
-    .mcp-avatar{
-        width:44px;height:44px;border-radius:50%;overflow:hidden;
-        background:#eee;display:flex;align-items:center;justify-content:center;
-        font-size:22px;flex:none
-    }
-    .mcp-avatar img{width:100%;height:100%;object-fit:cover}
-    .mcp-title{font-weight:800;font-size:16px}
-    .mcp-desc{font-size:12px;color:#777;margin-top:3px}
-    .mcp-profile{margin-left:auto;border:0;background:none;font-size:23px;cursor:pointer}
-    .mcp-feed{
-        flex:1;overflow-y:auto;padding:14px;display:flex;
-        flex-direction:column;gap:10px
-    }
-    .mcp-msg{
-        max-width:85%;background:#fff;border-radius:16px;padding:9px 11px;
-        box-shadow:0 2px 8px #00000009;align-self:flex-start
-    }
-    .mcp-name{font-size:12px;font-weight:800;color:#7047d8;margin-bottom:5px}
-    .mcp-text{font-size:14px;white-space:pre-wrap;word-break:break-word}
-    .mcp-media{max-width:100%;max-height:360px;border-radius:12px;margin-top:7px;display:block}
-    .mcp-file{display:block;margin-top:7px;color:#7047d8;text-decoration:none}
-    .mcp-time{font-size:10px;color:#999;margin-top:5px;text-align:left}
-    .mcp-compose{
-        background:#fff;border-top:1px solid #eee;padding:8px;
-        display:flex;gap:7px;align-items:center
-    }
-    .mcp-input{
-        flex:1;border:1px solid #ddd;border-radius:22px;padding:10px 14px;
-        outline:none;background:#fafafa
-    }
-    .mcp-send,.mcp-filebtn{
-        border:0;border-radius:50%;width:42px;height:42px;
-        background:#7047d8;color:#fff;font-size:18px;cursor:pointer
-    }
-    .mcp-filebtn{background:#eee;color:#7047d8}
-    .mcp-empty{text-align:center;color:#999;margin:auto}
-    @media(max-width:600px){
-        .mcp-msg{max-width:92%}
-        .mcp-feed{padding:9px}
-    }`;
-    document.head.appendChild(style);
+const page=document.createElement("div");
+page.className="mc2";
+page.innerHTML=`
+<div class="mc2-head">
+<button class="mc2-back">‹</button>
+<div class="mc2-av" id="mc2av">👥</div>
+<div><div class="mc2-name" id="mc2name"></div><div class="mc2-sub" id="mc2sub"></div></div>
+<button class="mc2-more">⋮</button>
+</div>
+<div class="mc2-feed" id="mc2feed"></div>
+<div class="mc2-compose" id="mc2compose">
+<input type="file" id="mc2file" hidden>
+<button class="mc2-btn" id="mc2attach">＋</button>
+<input class="mc2-input" id="mc2input" placeholder="پیام...">
+<button class="mc2-btn" id="mc2send">➤</button>
+</div>
+<div class="mc2-profile" id="mc2profile">
+<div class="mc2-head"><button class="mc2-back" id="mc2pback">‹</button><b>اطلاعات</b></div>
+<div class="mc2-cover">
+<div class="mc2-bigav" id="mc2bigav">👥</div>
+<div class="mc2-pname" id="mc2pname"></div>
+<div class="mc2-pdesc" id="mc2pdesc"></div>
+</div>
+<div class="mc2-stat" id="mc2count"></div>
+<div class="mc2-stat">مدیران</div>
+<div id="mc2admins"></div>
+</div>`;
+document.body.appendChild(page);
 
-    const page = document.createElement("div");
-    page.id = "mediaCommunityPage";
-    page.innerHTML = `
-      <div class="mcp-head">
-        <button class="mcp-back" id="mcpBack">‹</button>
-        <div class="mcp-avatar" id="mcpAvatar">👥</div>
-        <div style="min-width:0">
-          <div class="mcp-title" id="mcpTitle">مدیا</div>
-          <div class="mcp-desc" id="mcpDesc"></div>
-        </div>
-        <button class="mcp-profile" id="mcpProfile">⋮</button>
-      </div>
-      <div class="mcp-feed" id="mcpFeed"></div>
-      <div class="mcp-compose" id="mcpCompose">
-        <input type="file" id="mcpFile" hidden>
-        <button class="mcp-filebtn" id="mcpFileBtn">＋</button>
-        <input class="mcp-input" id="mcpInput" placeholder="پیام...">
-        <button class="mcp-send" id="mcpSend">➤</button>
-      </div>`;
-    document.body.appendChild(page);
+let current=null;
 
-    let activeCommunity = null;
+const token=()=>getToken();
+const url=x=>x?(x.startsWith("http")?x:API_URL+x):"";
 
-    function esc(v) {
-        return String(v ?? "").replace(/[&<>"']/g, x => ({
-            "&":"&amp;","<":"&lt;",">":"&gt;",
-            '"':"&quot;","'":"&#039;"
-        }[x]));
-    }
+async function openCommunityV2(id){
+try{
+const r=await fetch(API_URL+"/communities/"+id+"/profile",{headers:{Authorization:"Bearer "+token()}});
+const d=await r.json();
+if(!r.ok)throw Error(d.detail||"خطا");
+current=d.community;
 
-    function mediaUrl(url) {
-        if (!url) return "";
-        return url.startsWith("http") ? url : API_URL + url;
-    }
+document.getElementById("mc2name").textContent=current.name||"";
+document.getElementById("mc2sub").textContent=
+(current.type==="channel"?"کانال":"گروه")+" • "+current.member_count+" عضو";
 
-    async function openCommunity(id) {
-        try {
-            const headers = {Authorization:"Bearer " + getToken()};
+const av=document.getElementById("mc2av");
+av.innerHTML=current.avatar_url?`<img src="${url(current.avatar_url)}">`:(current.type==="channel"?"📢":"👥");
 
-            const infoRes = await fetch(
-                API_URL + "/communities/" + id,
-                {headers}
-            );
-            const info = await infoRes.json();
+document.getElementById("mc2compose").style.display=
+current.type==="channel"&&!["owner","admin"].includes(current.role)?"none":"flex";
 
-            if (!infoRes.ok) {
-                alert(info.detail || "خطا");
-                return;
-            }
+page.classList.add("on");
+await loadV2();
+}catch(e){console.error(e);alert(e.message||"خطا");}
+}
 
-            activeCommunity = info.community;
+async function loadV2(){
+const feed=document.getElementById("mc2feed");
+const r=await fetch(API_URL+"/communities/"+current.id+"/messages",{headers:{Authorization:"Bearer "+token()}});
+const d=await r.json();
+feed.innerHTML="";
+(d.messages||[]).forEach(m=>{
+const box=document.createElement("div");
+box.className="mc2-msg"+(current.owner_id===m.sender_id?"":"");
+let media="";
+if(m.media_type==="image"&&m.media_url)media=`<img class="mc2-img" src="${url(m.media_url)}">`;
+else if(m.media_type==="video"&&m.media_url)media=`<video class="mc2-video" src="${url(m.media_url)}" controls playsinline></video>`;
+else if(m.media_url)media=`<a class="mc2-file" href="${url(m.media_url)}" target="_blank">📎 ${m.media_filename||"فایل"}</a>`;
+box.innerHTML=`<div class="mc2-author">${m.name||m.username}</div>${m.text?`<div class="mc2-text">${escapeHtml(m.text)}</div>`:""}${media}<div class="mc2-meta">${new Date(m.created_at).toLocaleTimeString("fa-IR",{hour:"2-digit",minute:"2-digit"})} ✓✓</div>`;
+feed.appendChild(box);
+});
+requestAnimationFrame(()=>feed.scrollTop=feed.scrollHeight);
+}
 
-            document.getElementById("mcpTitle").textContent =
-                activeCommunity.name || "مدیا";
+async function sendV2(){
+if(!current)return;
+const input=document.getElementById("mc2input");
+const fi=document.getElementById("mc2file");
+if(!input.value.trim()&&!fi.files.length)return;
 
-            document.getElementById("mcpDesc").textContent =
-                activeCommunity.type === "channel"
-                    ? (activeCommunity.description || "کانال")
-                    : (activeCommunity.description || "گروه");
+let u="",t="",n="",z=0;
+if(fi.files.length){
+const f=new FormData();f.append("file",fi.files[0]);
+const r=await fetch(API_URL+"/upload",{method:"POST",headers:{Authorization:"Bearer "+token()},body:f});
+const d=await r.json();if(!r.ok){alert(d.detail||"آپلود نشد");return}
+u=d.url;t=d.type;n=d.filename;z=d.size||0;
+}
+const q=new URLSearchParams({text:input.value.trim(),media_url:u,media_type:t,media_filename:n,media_size:z});
+const r=await fetch(API_URL+"/communities/"+current.id+"/messages?"+q,{method:"POST",headers:{Authorization:"Bearer "+token()}});
+const d=await r.json();if(!r.ok){alert(d.detail||"ارسال نشد");return}
+input.value="";fi.value="";await loadV2();
+}
 
-            const avatar = document.getElementById("mcpAvatar");
-            avatar.innerHTML = activeCommunity.avatar_url
-                ? `<img src="${esc(mediaUrl(activeCommunity.avatar_url))}">`
-                : (activeCommunity.type === "channel" ? "📢" : "👥");
+async function profileV2(){
+if(!current)return;
+const p=document.getElementById("mc2profile");
+document.getElementById("mc2pname").textContent=current.name;
+document.getElementById("mc2pdesc").textContent=current.description||"بدون توضیحات";
+document.getElementById("mc2count").textContent="👥 "+current.member_count+" عضو";
+const a=document.getElementById("mc2admins");a.innerHTML="";
+(current.admins||[]).forEach(x=>{
+const d=document.createElement("div");d.className="mc2-admin";
+d.innerHTML=x.avatar_url?`<img src="${url(x.avatar_url)}">`:`<div class="mc2-admin-av">👤</div>`;
+const role=x.role==="owner"?"مالک":"مدیر";
+d.innerHTML+=`<div><b>${x.name}</b><div style="font-size:11px;color:#777">${role}</div></div>`;
+a.appendChild(d);
+});
+p.classList.add("on");
+}
 
-            document.getElementById("mcpCompose").style.display =
-                activeCommunity.type === "channel" &&
-                !["owner","admin"].includes(activeCommunity.role)
-                    ? "none" : "flex";
+page.querySelector(".mc2-back").onclick=()=>page.classList.remove("on");
+document.getElementById("mc2pback").onclick=()=>document.getElementById("mc2profile").classList.remove("on");
+page.querySelector(".mc2-more").onclick=profileV2;
+document.getElementById("mc2send").onclick=sendV2;
+document.getElementById("mc2attach").onclick=()=>document.getElementById("mc2file").click();
+document.getElementById("mc2input").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();sendV2()}};
 
-            page.classList.add("active");
-            await loadCommunityMessages(true);
-        } catch(e) {
-            console.error(e);
-            alert("باز کردن گروه/کانال انجام نشد.");
-        }
-    }
-
-    async function loadCommunityMessages(forceBottom=false) {
-        if (!activeCommunity) return;
-
-        const feed = document.getElementById("mcpFeed");
-
-        try {
-            const res = await fetch(
-                API_URL + "/communities/" +
-                activeCommunity.id + "/messages",
-                {headers:{Authorization:"Bearer " + getToken()}}
-            );
-
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.detail || "خطا");
-
-            feed.innerHTML = "";
-
-            if (!data.messages || !data.messages.length) {
-                feed.innerHTML =
-                    `<div class="mcp-empty">هنوز پیامی وجود ندارد 🌱</div>`;
-                return;
-            }
-
-            data.messages.forEach(m => {
-                const box = document.createElement("div");
-                box.className = "mcp-msg";
-
-                let media = "";
-
-                if (m.media_type === "image" && m.media_url) {
-                    media = `<img class="mcp-media"
-                        src="${esc(mediaUrl(m.media_url))}">`;
-                } else if (m.media_type === "video" && m.media_url) {
-                    media = `<video class="mcp-media"
-                        src="${esc(mediaUrl(m.media_url))}"
-                        controls playsinline></video>`;
-                } else if (m.media_url) {
-                    media = `<a class="mcp-file"
-                        href="${esc(mediaUrl(m.media_url))}"
-                        target="_blank">📎 ${esc(m.media_filename || "فایل")}</a>`;
-                }
-
-                box.innerHTML = `
-                    <div class="mcp-name">${esc(m.name || m.username)}</div>
-                    ${m.text ? `<div class="mcp-text">${esc(m.text)}</div>` : ""}
-                    ${media}
-                    <div class="mcp-time">${new Date(m.created_at).toLocaleString("fa-IR")}</div>
-                `;
-
-                feed.appendChild(box);
-            });
-
-            if (forceBottom) {
-                requestAnimationFrame(() => {
-                    feed.scrollTop = feed.scrollHeight;
-                });
-            }
-        } catch(e) {
-            console.error(e);
-            feed.innerHTML =
-                `<div class="mcp-empty">خطا در دریافت پیام‌ها</div>`;
-        }
-    }
-
-    async function sendCommunityMessage() {
-        if (!activeCommunity) return;
-
-        const input = document.getElementById("mcpInput");
-        const fileInput = document.getElementById("mcpFile");
-        const text = input.value.trim();
-
-        if (!text && !fileInput.files.length) return;
-
-        let media_url = null;
-        let media_type = null;
-        let media_filename = null;
-        let media_size = 0;
-
-        try {
-            if (fileInput.files.length) {
-                const fd = new FormData();
-                fd.append("file", fileInput.files[0]);
-
-                const upload = await fetch(
-                    API_URL + "/upload",
-                    {
-                        method:"POST",
-                        headers:{Authorization:"Bearer " + getToken()},
-                        body:fd
-                    }
-                );
-
-                const ud = await upload.json();
-
-                if (!upload.ok) {
-                    alert(ud.detail || "آپلود ناموفق بود.");
-                    return;
-                }
-
-                media_url = ud.url;
-                media_type = ud.type;
-                media_filename = ud.filename;
-                media_size = ud.size || 0;
-            }
-
-            const qs = new URLSearchParams({
-                text,
-                media_url: media_url || "",
-                media_type: media_type || "",
-                media_filename: media_filename || "",
-                media_size: String(media_size)
-            });
-
-            const res = await fetch(
-                API_URL + "/communities/" +
-                activeCommunity.id + "/messages?" + qs,
-                {
-                    method:"POST",
-                    headers:{Authorization:"Bearer " + getToken()}
-                }
-            );
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                alert(data.detail || "ارسال ناموفق بود.");
-                return;
-            }
-
-            input.value = "";
-            fileInput.value = "";
-            await loadCommunityMessages(true);
-
-        } catch(e) {
-            console.error(e);
-            alert("ارسال پیام انجام نشد.");
-        }
-    }
-
-    document.getElementById("mcpBack").onclick = () => {
-        page.classList.remove("active");
-        activeCommunity = null;
-    };
-
-    document.getElementById("mcpSend").onclick = sendCommunityMessage;
-
-    document.getElementById("mcpInput").addEventListener("keydown", e => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            sendCommunityMessage();
-        }
-    });
-
-    document.getElementById("mcpFileBtn").onclick = () =>
-        document.getElementById("mcpFile").click();
-
-    document.getElementById("mcpProfile").onclick = () => {
-        if (!activeCommunity) return;
-        alert(
-            activeCommunity.name + "\n\n" +
-            (activeCommunity.description || "بدون توضیحات") +
-            "\n\n" +
-            (activeCommunity.type === "channel" ? "کانال" : "گروه")
-        );
-    };
-
-    /* جلوگیری از alert لینک قبلی و باز کردن صفحه واقعی */
-    if (typeof mediaCommunitiesList !== "undefined" && mediaCommunitiesList) {
-        mediaCommunitiesList.addEventListener("click", e => {
-            const item = e.target.closest(".media-community-item");
-            if (!item) return;
-
-            e.preventDefault();
-            e.stopImmediatePropagation();
-
-            const items = Array.from(
-                mediaCommunitiesList.querySelectorAll(".media-community-item")
-            );
-            const index = items.indexOf(item);
-
-            if (index >= 0 && window.__mediaCommunitiesData) {
-                openCommunity(window.__mediaCommunitiesData[index].id);
-            }
-        }, true);
-    }
-
-    /* ذخیره لیست برای کلیک */
-    const oldRender = window.renderMediaCommunities;
-    window.renderMediaCommunities = function(communities) {
-        window.__mediaCommunitiesData = communities || [];
-        if (typeof oldRender === "function") oldRender(communities);
-    };
-
-    window.openMediaCommunity = openCommunity;
+window.openMediaCommunity=openCommunityV2;
 })();
