@@ -2588,6 +2588,62 @@ def mark_community_message_read(
     return {"ok": True}
 
 
+@app.get("/communities/{community_id}/members")
+def get_community_members(community_id: int, authorization: str = Header(None)):
+    user = get_current_user(authorization)
+    c = db()
+
+    community = c.execute(
+        "SELECT * FROM communities WHERE id=%s", (community_id,)
+    ).fetchone()
+
+    if not community:
+        c.close()
+        raise HTTPException(404, "کانال پیدا نشد.")
+
+    banned = c.execute(
+        "SELECT id FROM community_bans WHERE community_id=%s AND user_id=%s",
+        (community_id, user["id"])
+    ).fetchone()
+
+    if banned:
+        c.close()
+        raise HTTPException(403, "دسترسی به این کانال ندارید.")
+
+    member = c.execute(
+        "SELECT role FROM community_members WHERE community_id=%s AND user_id=%s",
+        (community_id, user["id"])
+    ).fetchone()
+
+    if not member:
+        c.close()
+        raise HTTPException(403, "عضو کانال نیستی.")
+
+    rows = c.execute(
+        """SELECT u.id,u.username,u.name,u.avatar_url,cm.role
+           FROM community_members cm
+           JOIN users u ON u.id=cm.user_id
+           WHERE cm.community_id=%s
+           ORDER BY CASE WHEN cm.role='owner' THEN 0
+                         WHEN cm.role='admin' THEN 1 ELSE 2 END,
+                    u.name ASC""",
+        (community_id,)
+    ).fetchall()
+
+    c.close()
+    return {
+        "members": [
+            {
+                "id": x["id"],
+                "username": x["username"],
+                "name": x["name"],
+                "avatar_url": x["avatar_url"],
+                "role": x["role"]
+            }
+            for x in rows
+        ]
+    }
+
 @app.get("/communities/{community_id}/messages")
 def get_community_messages(
     community_id: int,
@@ -4637,6 +4693,83 @@ def send_media_report_notification(
             error
         )
 
+
+@app.put("/communities/{community_id}/members/{user_id}/role")
+def update_community_member_role(
+    community_id: int,
+    user_id: int,
+    payload: dict,
+    authorization: str | None = Header(default=None)
+):
+    user = get_current_user(authorization)
+    c = db()
+
+    community = c.execute(
+        "SELECT * FROM communities WHERE id=%s",
+        (community_id,)
+    ).fetchone()
+
+    if not community:
+        c.close()
+        raise HTTPException(status_code=404, detail="کانال پیدا نشد.")
+
+    me = c.execute(
+        """SELECT role FROM community_members
+           WHERE community_id=%s AND user_id=%s""",
+        (community_id, user["id"])
+    ).fetchone()
+
+    if not me or me["role"] != "owner":
+        c.close()
+        raise HTTPException(
+            status_code=403,
+            detail="فقط مالک کانال می‌تواند مدیر تعیین کند."
+        )
+
+    target = c.execute(
+        """SELECT role FROM community_members
+           WHERE community_id=%s AND user_id=%s""",
+        (community_id, user_id)
+    ).fetchone()
+
+    if not target:
+        c.close()
+        raise HTTPException(
+            status_code=404,
+            detail="این کاربر عضو کانال نیست."
+        )
+
+    if target["role"] == "owner":
+        c.close()
+        raise HTTPException(
+            status_code=400,
+            detail="مالک را نمی‌توان مدیر کرد."
+        )
+
+    role = str(payload.get("role", "member")).strip()
+
+    if role not in ("member", "admin"):
+        c.close()
+        raise HTTPException(
+            status_code=400,
+            detail="نقش نامعتبر است."
+        )
+
+    c.execute(
+        """UPDATE community_members
+           SET role=%s
+           WHERE community_id=%s AND user_id=%s""",
+        (role, community_id, user_id)
+    )
+
+    c.commit()
+    c.close()
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "role": role
+    }
 
 @app.delete("/communities/{community_id}/members/{user_id}")
 def remove_community_member(

@@ -7844,6 +7844,16 @@ css.textContent=`
 .mc2-stat{padding:14px;background:#fff;margin-top:8px;font-weight:700}
 .mc2-admin{display:flex;align-items:center;gap:9px;padding:10px 14px;background:#fff;border-top:1px solid #eee}
 .mc2-admin img,.mc2-admin-av{width:38px;height:38px;border-radius:50%;object-fit:cover;background:#eee;display:flex;align-items:center;justify-content:center}
+.mc2-member{display:flex;align-items:center;gap:10px;padding:11px 14px;background:#fff;border-top:1px solid #eee;cursor:pointer}
+.mc2-member img,.mc2-member-av{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#eee;display:flex;align-items:center;justify-content:center}
+.mc2-member-info{flex:1;min-width:0}
+.mc2-member-name{font-weight:800}
+.mc2-member-user{font-size:11px;color:#888;margin-top:2px}
+.mc2-action-box{display:none;background:#fff;border-top:1px solid #eee}
+.mc2-action-box.on{display:block}
+.mc2-action{width:100%;border:0;background:#fff;text-align:right;padding:15px 18px;font-size:14px;cursor:pointer;border-bottom:1px solid #eee}
+.mc2-action.danger{color:#d33}
+.mc2-action:active{background:#f4f1ff}
 @media(max-width:600px){.mc2-msg{max-width:90%}}
 `;
 document.head.appendChild(css);
@@ -7874,6 +7884,13 @@ page.innerHTML=`
 <div class="mc2-stat" id="mc2count"></div>
 <div class="mc2-stat">مدیران</div>
 <div id="mc2admins"></div>
+<div class="mc2-stat">اعضای کانال</div>
+<div id="mc2members"></div>
+<div id="mc2memberActions" class="mc2-action-box">
+<button class="mc2-action" id="mc2makeAdmin">مدیر کردن</button>
+<button class="mc2-action" id="mc2reportMember">گزارش</button>
+<button class="mc2-action danger" id="mc2removeMember">حذف از کانال</button>
+</div>
 </div>`;
 document.body.appendChild(page);
 
@@ -7974,6 +7991,7 @@ input.value="";fi.value="";await loadV2();
 
 async function profileV2(){
 if(!current)return;
+
 const p=document.getElementById("mc2profile");
 document.getElementById("mc2pname").textContent=current.name||"";
 document.getElementById("mc2pdesc").textContent=current.description||"بدون توضیحات";
@@ -7983,6 +8001,7 @@ document.getElementById("mc2count").textContent=
 
 const a=document.getElementById("mc2admins");
 a.innerHTML="";
+
 (current.admins||[]).forEach(x=>{
 const d=document.createElement("div");
 d.className="mc2-admin";
@@ -7990,12 +8009,154 @@ d.innerHTML=x.avatar_url
 ?`<img src="${url(x.avatar_url)}">`
 :`<div class="mc2-admin-av">👤</div>`;
 const role=x.role==="owner"?"مالک":"مدیر";
-d.innerHTML+=`<div><b>${x.name}</b><div style="font-size:11px;color:#777">${role}</div></div>`;
+d.innerHTML+=`<div><b>${escapeHtml(x.name||x.username||"")}</b><div style="font-size:11px;color:#777">${role}</div></div>`;
 a.appendChild(d);
 });
 
+const members=document.getElementById("mc2members");
+members.innerHTML="<div style='padding:15px;text-align:center;color:#777'>در حال دریافت اعضا...</div>";
+
+try{
+const r=await fetch(API_URL+"/communities/"+current.id+"/members",{
+headers:{Authorization:"Bearer "+token()}
+});
+const d=await r.json();
+
+if(!r.ok)throw Error(d.detail||"دریافت اعضا ناموفق بود.");
+
+members.innerHTML="";
+
+(d.members||[]).forEach(x=>{
+const row=document.createElement("div");
+row.className="mc2-member";
+
+const av=x.avatar_url
+?`<img src="${url(x.avatar_url)}">`
+:`<div class="mc2-member-av">👤</div>`;
+
+const role=x.role==="owner"?"مالک":x.role==="admin"?"مدیر":"عضو";
+
+row.innerHTML=av+
+`<div class="mc2-member-info">
+<div class="mc2-member-name">${escapeHtml(x.name||x.username||"کاربر")}</div>
+<div class="mc2-member-user">@${escapeHtml(x.username||"")} • ${role}</div>
+</div>`;
+
+row.onclick=()=>{
+openCommunityMemberActions(x);
+};
+
+members.appendChild(row);
+});
+
+}catch(e){
+members.innerHTML=`<div style="padding:15px;color:#d33">${escapeHtml(e.message||"خطا")}</div>`;
+}
+
 p.classList.add("on");
 }
+
+function openCommunityMemberActions(member){
+const box=document.getElementById("mc2memberActions");
+const make=document.getElementById("mc2makeAdmin");
+const report=document.getElementById("mc2reportMember");
+const remove=document.getElementById("mc2removeMember");
+
+if(!box)return;
+
+box.classList.add("on");
+
+const canManage=current &&
+(current.role==="owner"||current.role==="admin");
+
+make.style.display=
+canManage &&
+member.role==="member" ? "block":"none";
+
+remove.style.display=
+canManage &&
+member.role!=="owner" &&
+!(current.role==="admin"&&member.role==="admin")
+? "block":"none";
+
+if(report){
+report.onclick=()=>{
+const reportModal=document.getElementById("reportModal");
+const reportTargetText=document.getElementById("reportTargetText");
+const reportReason=document.getElementById("reportReason");
+
+if(typeof activeChatUsername!=="undefined"){
+activeChatUsername=member.username||"";
+}
+
+if(reportTargetText){
+reportTargetText.textContent=
+"گزارش کاربر @"+(member.username||"");
+}
+
+if(reportReason){
+reportReason.value="";
+}
+
+if(reportModal){
+reportModal.classList.remove("hidden");
+if(reportReason)reportReason.focus();
+}else{
+alert("فرم گزارش پیدا نشد.");
+}
+};
+}
+
+make.onclick=async()=>{
+if(!confirm("این کاربر مدیر کانال شود؟"))return;
+
+const r=await fetch(
+API_URL+"/communities/"+current.id+"/members/"+member.id+"/role",
+{
+method:"PUT",
+headers:{
+Authorization:"Bearer "+token(),
+"Content-Type":"application/json"
+},
+body:JSON.stringify({role:"admin"})
+}
+);
+
+const d=await r.json().catch(()=>({}));
+
+if(!r.ok){
+alert(d.detail||"تغییر مدیر انجام نشد.");
+return;
+}
+
+box.classList.remove("on");
+await openCommunityV2(current.id);
+};
+
+remove.onclick=async()=>{
+if(!confirm("این کاربر از کانال حذف شود؟"))return;
+
+const r=await fetch(
+API_URL+"/communities/"+current.id+"/members/"+member.id,
+{
+method:"DELETE",
+headers:{Authorization:"Bearer "+token()}
+}
+);
+
+const d=await r.json().catch(()=>({}));
+
+if(!r.ok){
+alert(d.detail||"حذف از کانال انجام نشد.");
+return;
+}
+
+box.classList.remove("on");
+await profileV2();
+};
+
+window.openCommunityMemberActions=openCommunityMemberActions;
+
 
 page.querySelector(".mc2-back").onclick=()=>page.classList.remove("on");
 document.getElementById("mc2pback").onclick=()=>document.getElementById("mc2profile").classList.remove("on");
@@ -8005,4 +8166,6 @@ document.getElementById("mc2attach").onclick=()=>document.getElementById("mc2fil
 document.getElementById("mc2input").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();sendV2()}};
 
 window.openMediaCommunity=openCommunityV2;
+}
+
 })();
