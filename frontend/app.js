@@ -7847,20 +7847,130 @@ css.textContent=`
 .mc2-av{width:45px;height:45px;border-radius:50%;overflow:hidden;background:#e9e3ff;display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
 .mc2-av img{width:100%;height:100%;object-fit:cover}
 .mc2-name{font-weight:800;font-size:16px}
-.mc2-sub{font-size:12px;color:#777;margin-top:2px}
-.mc2-feed{flex:1;overflow:auto;padding:10px 12px 14px;display:flex;flex-direction:column;gap:7px}
+.mc2{
+position:fixed;
+inset:0;
+z-index:12000;
+background:#f7f5ff;
+display:none;
+flex-direction:column;
+overflow:hidden;
+pointer-events:auto;
+}
+.mc2.on{display:flex;}
+.mc2-head{
+position:relative;
+z-index:2;
+height:64px;
+min-height:64px;
+background:#fff;
+display:flex;
+align-items:center;
+gap:9px;
+padding:8px 10px;
+box-sizing:border-box;
+border-bottom:1px solid #eee;
+}
+.mc2-back,.mc2-more{
+width:40px;
+height:40px;
+min-width:40px;
+border:0;
+border-radius:50%;
+background:transparent;
+font-size:28px;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+position:relative;
+z-index:5;
+}
+.mc2-more{font-size:25px;margin-right:auto;}
+.mc2-av{
+width:42px;
+height:42px;
+min-width:42px;
+border-radius:50%;
+overflow:hidden;
+background:#e9e3ff;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:21px;
+}
+.mc2-av img{
+width:100%;
+height:100%;
+object-fit:cover;
+}
+.mc2-title-wrap{
+display:flex;
+align-items:center;
+gap:6px;
+min-width:0;
+}
+.mc2-name{
+font-size:16px;
+font-weight:900;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+.mc2-sub{font-size:12px;color:#777;margin-top:2px;position:absolute;left:101px;top:38px;}
+.mc2-feed{
+flex:1;
+min-height:0;
+overflow-y:auto;
+overflow-x:hidden;
+padding:10px 12px 14px;
+display:flex;
+flex-direction:column;
+gap:7px;
+-webkit-overflow-scrolling:touch;
+}
 .mc2-msg{max-width:82%;background:#fff;border-radius:15px;padding:8px 10px;box-shadow:0 1px 5px #00000008}
-.mc2-msg.me{align-self:flex-end;background:#eee7ff}
+.mc2-msg.mc2-mine{align-self:flex-end;background:#eee7ff}
 .mc2-author{font-size:12px;font-weight:800;color:#7047d8;margin-bottom:3px}
 .mc2-text{font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
 .mc2-img,.mc2-video{display:block;width:auto;max-width:100%;max-height:350px;border-radius:12px;margin-top:6px}
 .mc2-file{display:block;margin-top:6px;color:#7047d8;text-decoration:none}
 .mc2-meta{text-align:left;font-size:9px;color:#999;margin-top:3px}
-.mc2-compose{background:#fff;border-top:1px solid #eee;padding:7px;display:flex;gap:6px}
+.mc2-compose{
+position:relative;
+z-index:3;
+background:#fff;
+border-top:1px solid #eee;
+padding:7px;
+display:flex;
+gap:6px;
+}
 .mc2-input{flex:1;border:1px solid #ddd;border-radius:22px;padding:10px 14px;outline:0;background:#fafafa}
-.mc2-btn{width:42px;height:42px;border:0;border-radius:50%;background:#7047d8;color:#fff;font-size:18px}
-.mc2-profile{position:absolute;inset:0;background:#f7f5ff;display:none;overflow:auto}
-.mc2-profile.on{display:block}
+.mc2-btn{
+width:42px;
+height:42px;
+min-width:42px;
+border:0;
+border-radius:50%;
+background:#7047d8;
+color:#fff;
+font-size:18px;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+position:relative;
+z-index:5;
+}
+.mc2-profile{
+position:absolute;
+z-index:20;
+inset:0;
+background:#f7f5ff;
+display:none;
+overflow:auto;
+}
+.mc2-profile.on{display:block;}
 .mc2-cover{background:#fff;text-align:center;padding:25px 15px 18px;border-bottom:1px solid #eee}
 .mc2-bigav{width:92px;height:92px;border-radius:50%;margin:auto;overflow:hidden;background:#e9e3ff;display:flex;align-items:center;justify-content:center;font-size:40px}
 .mc2-bigav img{width:100%;height:100%;object-fit:cover}
@@ -7944,7 +8054,7 @@ document.getElementById("mc2name").textContent=current.name||"";
 
 const verifiedBadge=document.getElementById("mc2verified");
 if(verifiedBadge){
-    verifiedBadge.style.display=current.verified?"inline-flex":"none";
+    verifiedBadge.style.display=(current.verified===true || current.verified===1 || current.verified==="1" || current.verified==="true")?"inline-flex":"none";
 }
 
 document.getElementById("mc2sub").textContent=
@@ -7957,6 +8067,7 @@ document.getElementById("mc2compose").style.display=
 current.type==="channel"&&!["owner","admin"].includes(current.role)?"none":"flex";
 
 page.classList.add("on");
+page.style.display="flex";
 await loadV2();
 }catch(e){console.error(e);alert(e.message||"خطا");}
 }
@@ -8011,9 +8122,11 @@ requestAnimationFrame(()=>{if(feed.scrollHeight-feed.scrollTop-feed.clientHeight
 }
 
 async function sendV2(){
+try{
 if(!current)return;
 const input=document.getElementById("mc2input");
 const fi=document.getElementById("mc2file");
+if(!input||!fi)return;
 if(!input.value.trim()&&!fi.files.length)return;
 
 let u="",t="",n="",z=0;
@@ -8026,7 +8139,13 @@ u=d.url;t=d.type;n=d.filename;z=d.size||0;
 const q=new URLSearchParams({text:input.value.trim(),media_url:u,media_type:t,media_filename:n,media_size:z});
 const r=await fetch(API_URL+"/communities/"+current.id+"/messages?"+q,{method:"POST",headers:{Authorization:"Bearer "+token()}});
 const d=await r.json();if(!r.ok){alert(d.detail||"ارسال نشد");return}
-input.value="";fi.value="";await loadV2();
+input.value="";
+fi.value="";
+await loadV2();
+}catch(e){
+console.error("SEND COMMUNITY:",e);
+alert(e.message||"ارسال پیام انجام نشد.");
+}
 }
 
 async function profileV2(){
@@ -8037,7 +8156,7 @@ document.getElementById("mc2pname").textContent=current.name||"";
 
 const profileVerified=document.getElementById("mc2pverified");
 if(profileVerified){
-    profileVerified.style.display=current.verified?"inline-flex":"none";
+    profileVerified.style.display=(current.verified===true || current.verified===1 || current.verified==="1" || current.verified==="true")?"inline-flex":"none";
 }
 
 document.getElementById("mc2pdesc").textContent=current.description||"بدون توضیحات";
@@ -8203,8 +8322,11 @@ await profileV2();
 
 window.openCommunityMemberActions=openCommunityMemberActions;
 
-
-page.querySelector(".mc2-back").onclick=()=>page.classList.remove("on");
+page.querySelector(".mc2-back").onclick=()=>{
+page.classList.remove("on");
+page.style.display="none";
+document.getElementById("mc2profile").classList.remove("on");
+};
 document.getElementById("mc2pback").onclick=()=>document.getElementById("mc2profile").classList.remove("on");
 page.querySelector(".mc2-more").onclick=profileV2;
 document.getElementById("mc2send").onclick=sendV2;

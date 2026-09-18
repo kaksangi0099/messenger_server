@@ -6080,3 +6080,48 @@ textarea:focus{
     min-width:20px;
     font-size:12px;
 }
+
+/* ===== FINAL MC2 FIX ===== */
+.mc2{
+position:fixed !important;
+inset:0 !important;
+z-index:12000 !important;
+background:#f7f5ff;
+display:none;
+flex-direction:column;
+overflow:hidden;
+pointer-events:auto !important;
+}
+.mc2.on{display:flex !important;}
+.mc2-head{
+position:relative !important;
+z-index:12002 !important;
+pointer-events:auto !important;
+}
+.mc2-btn,
+.mc2-back,
+.mc2-more{
+position:relative !important;
+z-index:12005 !important;
+pointer-events:auto !important;
+cursor:pointer !important;
+}
+.mc2-compose{
+position:relative !important;
+z-index:12003 !important;
+pointer-events:auto !important;
+}
+.mc2-verified-badge{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+background:#2196f3 !important;
+color:#fff !important;
+width:18px !important;
+height:18px !important;
+min-width:18px !important;
+border-radius:50% !important;
+font-weight:900 !important;
+font-size:11px !important;
+line-height:1 !important;
+}
