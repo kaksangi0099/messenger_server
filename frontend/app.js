@@ -4859,28 +4859,24 @@ function renderMediaCommunities(
             item.appendChild(avatar);
             item.appendChild(info);
 
-            item.addEventListener(
-                "click",
-                async event => {
-                    event.preventDefault();
-                    event.stopPropagation();
+            item.onclick = async function(event) {
+                event.preventDefault();
+                event.stopPropagation();
 
-                    try {
-                        if (typeof window.openMediaCommunity !== "function") {
-                            await new Promise(r => setTimeout(r, 500));
-                        }
+                const communityId = Number(community.id);
+                console.log("MEDIA COMMUNITY CLICK:", communityId);
 
-                        if (typeof window.openMediaCommunity !== "function") {
-                            throw new Error("صفحه کانال هنوز آماده نشده است.");
-                        }
-
-                        await window.openMediaCommunity(community.id);
-                    } catch (error) {
-                        console.error("OPEN COMMUNITY:", error);
-                        alert(error.message || "باز کردن کانال انجام نشد.");
+                try {
+                    if (typeof window.openMediaCommunity !== "function") {
+                        throw new Error("صفحه گروه/کانال آماده نشده است.");
                     }
+
+                    await window.openMediaCommunity(communityId);
+                } catch (error) {
+                    console.error("OPEN COMMUNITY:", error);
+                    alert(error.message || "باز کردن گروه/کانال انجام نشد.");
                 }
-            );
+            };
 
             mediaCommunitiesList.appendChild(
                 item
