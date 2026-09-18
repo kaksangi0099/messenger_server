@@ -6040,3 +6040,43 @@ textarea:focus{
         bottom: 84px;
     }
 }
+
+/* ===== MEDIA VERIFIED BADGE ===== */
+.media-community-title{
+    display:flex;
+    align-items:center;
+    gap:5px;
+}
+
+.media-verified-badge,
+.mc2-verified-badge{
+    width:17px;
+    height:17px;
+    min-width:17px;
+    border-radius:50%;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:#2196f3;
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+    line-height:1;
+    vertical-align:middle;
+    box-shadow:0 1px 3px rgba(33,150,243,.35);
+}
+
+.mc2-title-wrap,
+.mc2-pname-row{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.mc2-profile-badge{
+    margin-top:10px;
+    width:20px;
+    height:20px;
+    min-width:20px;
+    font-size:12px;
+}

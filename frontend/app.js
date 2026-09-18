@@ -2814,6 +2814,10 @@ function closeChat() {
         "open"
     );
 
+    if (mediaCreateFab) {
+        mediaCreateFab.classList.remove("hidden");
+    }
+
     activeChatUsername = null;
 
     if (messageInput) {
@@ -4850,9 +4854,19 @@ function renderMediaCommunities(
 
             item.addEventListener(
                 "click",
-                () => {
-                    if (typeof window.openMediaCommunity === "function") {
-                        window.openMediaCommunity(community.id);
+                async event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    try {
+                        if (typeof window.openMediaCommunity !== "function") {
+                            throw new Error("صفحه کانال هنوز آماده نشده است.");
+                        }
+
+                        await window.openMediaCommunity(community.id);
+                    } catch (error) {
+                        console.error("OPEN COMMUNITY:", error);
+                        alert(error.message || "باز کردن کانال انجام نشد.");
                     }
                 }
             );
@@ -7864,7 +7878,11 @@ page.innerHTML=`
 <div class="mc2-head">
 <button class="mc2-back">‹</button>
 <div class="mc2-av" id="mc2av">👥</div>
-<div><div class="mc2-name" id="mc2name"></div><div class="mc2-sub" id="mc2sub"></div></div>
+<div class="mc2-title-wrap">
+<div class="mc2-name" id="mc2name"></div>
+<span class="mc2-verified-badge" id="mc2verified" style="display:none">✓</span>
+</div>
+<div class="mc2-sub" id="mc2sub"></div>
 <button class="mc2-more">⋮</button>
 </div>
 <div class="mc2-feed" id="mc2feed"></div>
@@ -7878,7 +7896,10 @@ page.innerHTML=`
 <div class="mc2-head"><button class="mc2-back" id="mc2pback">‹</button><b>اطلاعات</b></div>
 <div class="mc2-cover">
 <div class="mc2-bigav" id="mc2bigav">👥</div>
+<div class="mc2-pname-row">
 <div class="mc2-pname" id="mc2pname"></div>
+<span class="mc2-verified-badge mc2-profile-badge" id="mc2pverified" style="display:none">✓</span>
+</div>
 <div class="mc2-pdesc" id="mc2pdesc"></div>
 </div>
 <div class="mc2-stat" id="mc2count"></div>
@@ -7909,6 +7930,12 @@ if(!r.ok)throw Error(d.detail||"خطا");
 current=d.community;
 
 document.getElementById("mc2name").textContent=current.name||"";
+
+const verifiedBadge=document.getElementById("mc2verified");
+if(verifiedBadge){
+    verifiedBadge.style.display=current.verified?"inline-flex":"none";
+}
+
 document.getElementById("mc2sub").textContent=
 (current.type==="channel"?"کانال":"گروه")+" • "+current.member_count+" عضو";
 
@@ -7994,6 +8021,12 @@ if(!current)return;
 
 const p=document.getElementById("mc2profile");
 document.getElementById("mc2pname").textContent=current.name||"";
+
+const profileVerified=document.getElementById("mc2pverified");
+if(profileVerified){
+    profileVerified.style.display=current.verified?"inline-flex":"none";
+}
+
 document.getElementById("mc2pdesc").textContent=current.description||"بدون توضیحات";
 document.getElementById("mc2count").textContent=
 "👥 "+(current.member_count||0)+" عضو • "+

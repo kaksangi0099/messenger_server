@@ -278,6 +278,9 @@ def migrate_db():
         cursor.execute(
             "ALTER TABLE sessions ADD COLUMN IF NOT EXISTS user_agent TEXT DEFAULT ''"
         )
+        cursor.execute(
+            "ALTER TABLE communities ADD COLUMN IF NOT EXISTS verified INTEGER NOT NULL DEFAULT 0"
+        )
 
     connection.commit()
     connection.close()
@@ -2908,6 +2911,7 @@ def community_profile(
             "avatar_url": community["avatar_url"],
             "username": community["username"],
             "visibility": community["visibility"],
+            "verified": bool(community["verified"]),
             "owner_id": community["owner_id"],
             "role": member["role"],
             "member_count": count,
@@ -3589,6 +3593,7 @@ def get_communities(
             c.username,
             c.invite_token,
             c.created_at,
+            c.verified,
             cm.role
         FROM communities c
         JOIN community_members cm
@@ -3618,6 +3623,7 @@ def get_communities(
             "visibility": row["visibility"],
             "username": row["username"],
             "invite_token": row["invite_token"],
+            "verified": bool(row["verified"]),
             "link": link,
             "role": row["role"]
         })
