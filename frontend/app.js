@@ -2820,6 +2820,9 @@ function closeChat() {
 
     if (mediaCreateFab) {
         mediaCreateFab.classList.remove("hidden");
+        if (chatPage && chatPage.classList.contains("open")) {
+            mediaCreateFab.classList.add("hidden");
+        }
     }
 
     activeChatUsername = null;
@@ -4864,7 +4867,11 @@ function renderMediaCommunities(
 
                     try {
                         if (typeof window.openMediaCommunity !== "function") {
-                            throw new Error("صفحه کانال هنوز آماده نشده است. لطفاً یک‌بار صفحه را تازه‌سازی کنید.");
+                            await new Promise(r => setTimeout(r, 500));
+                        }
+
+                        if (typeof window.openMediaCommunity !== "function") {
+                            throw new Error("صفحه کانال هنوز آماده نشده است.");
                         }
 
                         await window.openMediaCommunity(community.id);
