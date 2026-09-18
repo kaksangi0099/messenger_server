@@ -7835,14 +7835,6 @@ function showSuspensionLoginNotice(detail) {
 (() => {
 const css=document.createElement("style");
 css.textContent=`
-.mc2{position:fixed;inset:0;z-index:99999;background:#f7f5ff;display:none;flex-direction:column}
-.mc2.on{display:flex}
-.mc2-head{height:64px;background:#fff;border-bottom:1px solid #eee;display:flex;align-items:center;padding:7px 12px;gap:10px}
-.mc2-back,.mc2-more{border:0;background:none;font-size:27px;padding:5px;cursor:pointer}
-.mc2-more{margin-left:auto}
-.mc2-av{width:45px;height:45px;border-radius:50%;overflow:hidden;background:#e9e3ff;display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
-.mc2-av img{width:100%;height:100%;object-fit:cover}
-.mc2-name{font-weight:800;font-size:16px}
 .mc2{
 position:fixed;
 inset:0;
@@ -8323,23 +8315,12 @@ page.classList.remove("on");
 page.style.display="none";
 document.getElementById("mc2profile").classList.remove("on");
 };
-document.getElementById("mc2pback").onclick=()=>document.getElementById("mc2profile").classList.remove("on");
-page.querySelector(".mc2-more").onclick=profileV2;
-document.getElementById("mc2send").onclick=sendV2;
-document.getElementById("mc2attach").onclick=()=>document.getElementById("mc2file").click();
-document.getElementById("mc2input").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();sendV2()}};
-
-window.openMediaCommunity=openCommunityV2;
-
-page.querySelector(".mc2-back").onclick=()=>{
-page.classList.remove("on");
-page.style.display="none";
-document.getElementById("mc2profile").classList.remove("on");
-};
 
 document.getElementById("mc2pback").onclick=()=>{
 document.getElementById("mc2profile").classList.remove("on");
 };
+
+page.querySelector(".mc2-more").onclick=profileV2;
 
 document.getElementById("mc2send").onclick=sendV2;
 
@@ -8354,7 +8335,7 @@ sendV2();
 }
 };
 
-page.querySelector(".mc2-more").onclick=profileV2;
+window.openMediaCommunity=openCommunityV2;
 }
 
 })();
