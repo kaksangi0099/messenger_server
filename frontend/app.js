@@ -8334,6 +8334,31 @@ document.getElementById("mc2attach").onclick=()=>document.getElementById("mc2fil
 document.getElementById("mc2input").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();sendV2()}};
 
 window.openMediaCommunity=openCommunityV2;
+
+page.querySelector(".mc2-back").onclick=()=>{
+page.classList.remove("on");
+page.style.display="none";
+document.getElementById("mc2profile").classList.remove("on");
+};
+
+document.getElementById("mc2pback").onclick=()=>{
+document.getElementById("mc2profile").classList.remove("on");
+};
+
+document.getElementById("mc2send").onclick=sendV2;
+
+document.getElementById("mc2attach").onclick=()=>{
+document.getElementById("mc2file").click();
+};
+
+document.getElementById("mc2input").onkeydown=e=>{
+if(e.key==="Enter"){
+e.preventDefault();
+sendV2();
+}
+};
+
+page.querySelector(".mc2-more").onclick=profileV2;
 }
 
 })();
