@@ -8322,7 +8322,7 @@ document.getElementById("mc2profile").classList.remove("on");
 
 page.querySelector(".mc2-more").onclick=profileV2;
 
-document.getElementById("mc2send").onclick=sendV2;
+document.getElementById("mc2send").onclick=()=>{console.log("MC2 SEND CLICK");sendV2();};
 
 document.getElementById("mc2attach").onclick=()=>{
 document.getElementById("mc2file").click();
