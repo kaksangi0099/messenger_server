@@ -7961,6 +7961,8 @@ await loadV2();
 }catch(e){console.error(e);alert(e.message||"خطا");}
 }
 
+window.openMediaCommunity=openCommunityV2;
+
 async function loadV2(){
 const feed=document.getElementById("mc2feed");
 const r=await fetch(API_URL+"/communities/"+current.id+"/messages",{headers:{Authorization:"Bearer "+token()}});
