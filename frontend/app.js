@@ -3974,6 +3974,63 @@ if (
     showLoginScreen();
 }
 
+async function loadRecentChats() {
+
+    if (!realChatList) {
+        return;
+    }
+
+    const token = getToken();
+
+    if (!token) {
+        return;
+    }
+
+    realChatList.innerHTML = `
+        <div class="empty-chat-list">
+            <div class="empty-list-icon">💬</div>
+            <strong>در حال دریافت گفتگوها...</strong>
+        </div>
+    `;
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/chats`,
+            {
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail || "گفتگوها دریافت نشدند."
+            );
+        }
+
+        renderRecentChats(data.chats || []);
+
+    } catch (error) {
+
+        console.error(
+            "Recent chats error:",
+            error
+        );
+
+        realChatList.innerHTML = `
+            <div class="empty-chat-list">
+                <div class="empty-list-icon">💬</div>
+                <strong>هنوز گفتگویی ندارید</strong>
+                <span>یک گفتگوی جدید شروع کنید.</span>
+            </div>
+        `;
+    }
+}
+
 /* =========================
    REAL SEARCH + USER PROFILE
 ========================= */
@@ -4211,6 +4268,142 @@ function renderSearchResults(users) {
     });
 
     console.log("SEARCH DISPLAYED:", users.length);
+}
+
+function renderRecentChats(chats) {
+
+    if (!realChatList) {
+        return;
+    }
+
+    realChatList.innerHTML = "";
+
+    if (!Array.isArray(chats) || chats.length === 0) {
+
+        realChatList.innerHTML = `
+            <div class="empty-chat-list">
+                <div class="empty-list-icon">💬</div>
+                <strong>هنوز گفتگویی ندارید</strong>
+                <span>یک گفتگوی جدید شروع کنید.</span>
+            </div>
+        `;
+
+        return;
+    }
+
+    chats.forEach(chat => {
+
+        const item = document.createElement("button");
+
+        item.type = "button";
+        item.className = "chat-item recent-chat-item";
+
+        const avatar = document.createElement("div");
+
+        avatar.className = "chat-avatar";
+
+        if (chat.avatar_url) {
+
+            const avatarUrl =
+                chat.avatar_url.startsWith("http")
+                    ? chat.avatar_url
+                    : API_URL + chat.avatar_url;
+
+            const img = document.createElement("img");
+
+            img.src = avatarUrl;
+            img.alt = chat.name || "کاربر";
+            img.loading = "lazy";
+
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover";
+            img.style.display = "block";
+            img.style.borderRadius = "50%";
+
+            avatar.appendChild(img);
+
+        } else if (chat.role === "owner") {
+
+            avatar.textContent = "👑";
+
+        } else {
+
+            const letter =
+                (
+                    chat.name ||
+                    chat.username ||
+                    "ک"
+                )
+                .trim()
+                .charAt(0);
+
+            avatar.textContent =
+                letter.toUpperCase();
+        }
+
+        const info = document.createElement("div");
+
+        info.className =
+            "chat-item-info";
+
+        const name = document.createElement("strong");
+
+        name.className =
+            "recent-chat-name";
+
+        name.textContent =
+            chat.name ||
+            chat.username ||
+            "کاربر";
+
+        const preview = document.createElement("span");
+
+        preview.className =
+            "recent-chat-preview";
+
+        preview.textContent =
+            chat.last_message ||
+            "پیامی وجود ندارد";
+
+        info.appendChild(name);
+        info.appendChild(preview);
+
+        const time = document.createElement("span");
+
+        time.className =
+            "recent-chat-time";
+
+        if (chat.last_message_at) {
+
+            time.textContent =
+                formatLastSeen(
+                    chat.last_message_at
+                );
+        }
+
+        item.appendChild(avatar);
+        item.appendChild(info);
+        item.appendChild(time);
+
+        item.addEventListener(
+            "click",
+            async event => {
+
+                event.preventDefault();
+
+                if (!chat.username) {
+                    return;
+                }
+
+                await loadChatMessages(
+                    chat.username
+                );
+            }
+        );
+
+        realChatList.appendChild(item);
+    });
 }
 
 async function restoreEmptyChatList() {
