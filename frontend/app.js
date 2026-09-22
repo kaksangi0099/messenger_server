@@ -903,7 +903,7 @@ if (loginButton) loginButton.addEventListener(
         } catch (error) {
 
             alert(
-                "سرور در دسترس نیست."
+                "خطا در ورود؛ کنسول را بررسی کنید."
             );
 
         } finally {
@@ -2930,12 +2930,26 @@ async function loadChatMessages(username) {
 
                 } else {
 
-                    chatHeaderAvatar.textContent =
-                        createDefaultAvatar(
-                            profile.name ||
-                            profile.username ||
-                            "کاربر"
-                        );
+                    chatHeaderAvatar.innerHTML = "";
+
+                    const defaultAvatarImg = document.createElement("img");
+                    defaultAvatarImg.src = createDefaultAvatar(
+                        profile.name ||
+                        profile.username ||
+                        "کاربر"
+                    );
+                    defaultAvatarImg.alt =
+                        profile.name ||
+                        profile.username ||
+                        "کاربر";
+                    defaultAvatarImg.loading = "eager";
+                    defaultAvatarImg.decoding = "async";
+                    defaultAvatarImg.style.width = "100%";
+                    defaultAvatarImg.style.height = "100%";
+                    defaultAvatarImg.style.objectFit = "cover";
+                    defaultAvatarImg.style.borderRadius = "50%";
+
+                    chatHeaderAvatar.appendChild(defaultAvatarImg);
                 }
             }
 
@@ -4012,7 +4026,7 @@ async function loadRecentChats() {
             );
         }
 
-        renderRecentChats(data.chats || []);
+        renderRecentChats(data.chats || []); loadMediaNewsEntry(); loadMediaNewsEntry();
 
     } catch (error) {
 
@@ -4677,42 +4691,23 @@ function escapeHtml(value) {
 
 
 function createDefaultAvatar(name) {
-
-    const letter =
-        String(name || "م")
-            .trim()
-            .charAt(0)
-            .toUpperCase();
+    const value = String(name || "").trim();
+    const letter = Array.from(value)[0] || "م";
 
     const svg = `
         <svg xmlns="http://www.w3.org/2000/svg"
-             width="200"
-             height="200"
-             viewBox="0 0 200 200">
-
-            <rect
-                width="200"
-                height="200"
-                rx="100"
-                fill="#7c3aed"
-            />
-
-            <text
-                x="100"
-                y="120"
-                text-anchor="middle"
-                font-size="90"
-                fill="white"
-                font-family="Arial"
-            >${escapeHtml(letter)}</text>
-
+             width="200" height="200" viewBox="0 0 200 200">
+            <rect width="200" height="200" rx="100" fill="#7c3aed"/>
+            <text x="100" y="120"
+                  text-anchor="middle"
+                  font-size="90"
+                  fill="white"
+                  font-family="Arial, sans-serif">${escapeHtml(letter.toUpperCase())}</text>
         </svg>
     `;
 
-    return "data:image/svg+xml;charset=UTF-8," +
-        encodeURIComponent(svg);
+    return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
 }
-
 
 function formatLastSeen(dateString) {
 
@@ -7133,3 +7128,634 @@ function showSuspensionLoginNotice(detail) {
     if (close) close.onclick = () => notice.remove();
 }
 
+
+/* =========================
+   MEDIA NEWS OFFICIAL CHANNEL
+========================= */
+
+const MEDIA_NEWS_AVATAR = "/static/media-news-avatar.jpg";
+
+async function loadMediaNewsEntry() {
+    const list = document.getElementById("chatList");
+    if (!list || !getToken()) return;
+
+    const old = document.getElementById("mediaNewsEntry");
+    if (old) old.remove();
+
+    const item = document.createElement("div");
+    item.id = "mediaNewsEntry";
+    item.className = "media-news-entry";
+    item.innerHTML = `
+        <div class="media-news-entry-row">
+            <div class="media-news-avatar"><img src="${MEDIA_NEWS_AVATAR}" alt="Media News"></div>
+            <div>
+                <div class="media-news-name">
+                    Media News
+                    <span class="media-news-verified">✓</span>
+                </div>
+                <div class="media-news-subtitle">کانال رسمی مدیا</div>
+            </div>
+        </div>
+    `;
+    item.onclick = openMediaNews;
+    list.prepend(item);
+}
+
+async function openMediaNews() {
+    let page = document.getElementById("mediaNewsPage");
+
+    if (!page) {
+        page = document.createElement("div");
+        page.id = "mediaNewsPage";
+        page.className = "media-news-page";
+
+        page.innerHTML = `
+            <div class="media-news-header">
+                <button type="button" id="mediaNewsBack">‹</button>
+                <div class="media-news-header-avatar"></div>
+                <div>
+                    <div class="media-news-header-title">
+                        Media News <span class="media-news-verified">✓</span>
+                    </div>
+                    <div class="media-news-header-sub">کانال رسمی مدیا</div>
+                </div>
+            </div>
+
+            <div class="media-news-posts" id="mediaNewsPosts">
+                در حال دریافت پست‌ها...
+            </div>
+
+            <div class="media-news-admin" id="mediaNewsAdmin">
+                <input id="mediaNewsText" placeholder="متن پست...">
+                <input id="mediaNewsFile" type="file" accept="image/*,video/*,.pdf,.zip,.doc,.docx">
+                <button type="button" id="mediaNewsSend">ارسال</button>
+            </div>
+        `;
+
+        document.body.appendChild(page);
+
+        document.getElementById("mediaNewsBack").onclick = () => {
+            page.classList.remove("open");
+            page.remove();
+            document.body.classList.remove("media-news-open");
+            const home = document.getElementById("app") || document.getElementById("mainApp") || document.body;
+            if (home) home.scrollTop = 0;
+        };
+
+        document.getElementById("mediaNewsSend").onclick = sendMediaNewsPost;
+    }
+
+    page.classList.add("open");
+    await loadMediaNewsPosts();
+}
+
+async function loadMediaNewsPosts() {
+    const token = getToken();
+    const box = document.getElementById("mediaNewsPosts");
+    if (!token || !box) return;
+
+    try {
+        const response = await fetch(`${API_URL}/media-news`, {
+            headers: {
+                Authorization: "Bearer " + token
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "خطا");
+        }
+
+        const admin = document.getElementById("mediaNewsAdmin"); if (admin) admin.classList.toggle("show", data.can_post === true);
+           if (admin) admin.classList.toggle("show", data.can_post === true);
+           box.innerHTML = "";
+
+        for (const post of (data.posts || [])) {
+            const card = document.createElement("article");
+            card.className = "media-news-post";
+
+            let html = "";
+
+            if (post.text) {
+                html += `<div class="media-news-post-text">${escapeHtml(post.text)}</div>`;
+            }
+
+            if (post.media_url && post.media_type === "image") {
+                html += `<img src="${escapeHtml(post.media_url)}" loading="lazy">`;
+            }
+
+            if (post.media_url && post.media_type === "video") {
+                html += `<video src="${escapeHtml(post.media_url)}" controls preload="metadata"></video>`;
+            }
+
+            if (post.media_url && post.media_type === "file") {
+                html += `<a href="${escapeHtml(post.media_url)}" target="_blank">📎 مشاهده فایل</a>`;
+            }
+
+            html += `<div class="media-news-post-meta">Media News • ${escapeHtml(post.author_username)}</div>`;
+
+            card.innerHTML = html;
+            box.appendChild(card);
+        }
+
+        if (!data.posts || !data.posts.length) {
+            box.innerHTML = `<div class="empty-chat-list">هنوز پستی منتشر نشده است.</div>`;
+        }
+
+    } catch (error) {
+        console.error("Media News:", error);
+        box.innerHTML = `<div class="empty-chat-list">دریافت پست‌ها انجام نشد.</div>`;
+    }
+}
+
+async function sendMediaNewsPost() {
+    const token = getToken();
+    const textEl = document.getElementById("mediaNewsText");
+    const fileEl = document.getElementById("mediaNewsFile");
+
+    if (!token) return;
+
+    const text = textEl.value.trim();
+    const file = fileEl.files[0];
+
+    try {
+        if (file) {
+            const form = new FormData();
+            form.append("file", file);
+            form.append("text", text);
+
+            const response = await fetch(`${API_URL}/media-news/upload`, {
+                method: "POST",
+                headers: {
+                    Authorization: "Bearer " + token
+                },
+                body: form
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || "ارسال انجام نشد");
+            }
+        } else {
+            const response = await fetch(`${API_URL}/media-news`, {
+                method: "POST",
+                headers: {
+                    Authorization: "Bearer " + token,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({text})
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || "ارسال انجام نشد");
+            }
+        }
+
+        textEl.value = "";
+        fileEl.value = "";
+        await loadMediaNewsPosts();
+
+    } catch (error) {
+        alert(error.message || "ارسال پست انجام نشد.");
+    }
+}
+
+setTimeout(() => {
+    loadMediaNewsEntry();
+}, 700);
+
+
+function formatMediaNews(type) {
+    const el = document.getElementById("mediaNewsText");
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const selected = el.value.slice(start, end);
+    if (!selected) {
+        el.focus();
+        return;
+    }
+    const mark = type === "bold" ? "**" : "_";
+    el.value = el.value.slice(0, start) + mark + selected + mark + el.value.slice(end);
+    el.focus();
+    el.selectionStart = start + mark.length;
+    el.selectionEnd = end + mark.length;
+}
+
+/* ================= MEDIA NEWS FINAL FIX ================= */
+
+(function(){
+    const oldOpen = window.openMediaNews;
+
+    window.openMediaNews = function(){
+        oldOpen();
+        setTimeout(() => {
+            const box = document.getElementById("mediaNewsPosts");
+            if (box) {
+                box.style.overflowY = "auto";
+                box.style.touchAction = "pan-y";
+            }
+
+            const file = document.getElementById("mediaNewsFile");
+            if (file) {
+                file.onchange = function(){
+                    const name = this.files?.[0]?.name || "";
+                    const text = document.getElementById("mediaNewsText");
+                    if (text && name && !text.value.trim()) {
+                        text.value = "📎 " + name;
+                    }
+                };
+            }
+        }, 100);
+    };
+
+    document.addEventListener("click", function(e){
+        if (e.target && e.target.id === "mediaNewsSend") {
+            setTimeout(() => {
+                const box = document.getElementById("mediaNewsPosts");
+                if (box) box.scrollTop = box.scrollHeight;
+            }, 500);
+        }
+    });
+})();
+
+/* ============== MEDIA NEWS PRO JS ============== */
+
+loadMediaNewsPosts = async function(){
+    const token = getToken();
+    const box = document.getElementById("mediaNewsPosts");
+    if (!token || !box) return;
+
+    box.innerHTML = '<div class="media-news-empty">در حال بارگذاری...</div>';
+
+    try {
+        const response = await fetch(`${API_URL}/media-news`, {
+            headers:{Authorization:"Bearer " + token},
+            cache:"no-store"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok)
+            throw new Error(data.detail || "خطا");
+
+        const admin = document.getElementById("mediaNewsAdmin");
+        if (admin)
+            admin.classList.toggle("show", data.can_post === true);
+
+        box.innerHTML = "";
+
+        const posts = data.posts || [];
+
+        if (!posts.length){
+            box.innerHTML =
+                '<div class="media-news-empty">هنوز پستی منتشر نشده است.</div>';
+            return;
+        }
+
+        for (const post of posts){
+
+            const card = document.createElement("article");
+            card.className = "media-news-post";
+            card.dataset.id = post.id;
+
+            let html = "";
+
+            if (post.text){
+                html += `
+                    <div class="media-news-post-text">
+                        ${escapeHtml(post.text)}
+                    </div>
+                `;
+            }
+
+            if (post.media_url && post.media_type === "image"){
+                html += `
+                    <div class="media-news-media-wrap loading">
+                        <img
+                            src="${escapeHtml(post.media_url)}"
+                            decoding="async"
+                            fetchpriority="high"
+                            alt=""
+                            onload="this.parentElement.classList.add('loaded')"
+                            onerror="this.parentElement.remove()">
+                    </div>
+                `;
+            }
+
+            if (post.media_url && post.media_type === "video"){
+                html += `
+                    <div class="media-news-media-wrap loading">
+                        <video
+                            src="${escapeHtml(post.media_url)}"
+                            controls
+                            preload="metadata"
+                            onloadeddata="this.parentElement.classList.add('loaded')">
+                        </video>
+                    </div>
+                `;
+            }
+
+            if (post.media_url && post.media_type === "file"){
+                html += `
+                    <a
+                        href="${escapeHtml(post.media_url)}"
+                        target="_blank"
+                        rel="noopener">
+                        📎 مشاهده فایل
+                    </a>
+                `;
+            }
+
+            html += `
+                <div class="media-news-post-meta">
+                    Media News • ${escapeHtml(post.author_username)}
+                </div>
+            `;
+
+            if (data.can_post === true){
+                html += `
+                    <div class="media-news-post-actions">
+                        <button
+                            type="button"
+                            class="media-news-action edit"
+                            data-action="edit">
+                            ✏️ ویرایش
+                        </button>
+
+                        <button
+                            type="button"
+                            class="media-news-action delete"
+                            data-action="delete">
+                            🗑 حذف
+                        </button>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = html;
+            box.appendChild(card);
+        }
+
+    } catch(error){
+        console.error("Media News:", error);
+        box.innerHTML =
+            '<div class="media-news-empty">دریافت پست‌ها انجام نشد.</div>';
+    }
+};
+
+
+sendMediaNewsPost = async function(){
+
+    const token = getToken();
+    const textEl = document.getElementById("mediaNewsText");
+    const fileEl = document.getElementById("mediaNewsFile");
+
+    if (!token || !textEl) return;
+
+    const text = textEl.value.trim();
+    const file = fileEl?.files?.[0];
+
+    if (!text && !file) return;
+
+    const button = document.getElementById("mediaNewsSend");
+
+    if (button){
+        button.disabled = true;
+        button.textContent = "در حال ارسال...";
+    }
+
+    try{
+
+        let response;
+
+        if (file){
+
+            const form = new FormData();
+            form.append("file", file);
+            form.append("text", text);
+
+            response = await fetch(`${API_URL}/media-news/upload`,{
+                method:"POST",
+                headers:{
+                    Authorization:"Bearer " + token
+                },
+                body:form
+            });
+
+        }else{
+
+            response = await fetch(`${API_URL}/media-news`,{
+                method:"POST",
+                headers:{
+                    Authorization:"Bearer " + token,
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({text})
+            });
+        }
+
+        const data = await response.json();
+
+        if (!response.ok)
+            throw new Error(data.detail || "ارسال انجام نشد");
+
+        textEl.value = "";
+
+        if (fileEl)
+            fileEl.value = "";
+
+        await loadMediaNewsPosts();
+
+        const box = document.getElementById("mediaNewsPosts");
+
+        if (box)
+            requestAnimationFrame(() => {
+                box.scrollTop = 0;
+            });
+
+    }catch(error){
+
+        console.error(error);
+        alert(error.message || "ارسال انجام نشد.");
+
+    }finally{
+
+        if (button){
+            button.disabled = false;
+            button.textContent = "ارسال";
+        }
+    }
+};
+
+
+/* حذف و ویرایش */
+document.addEventListener("click", async function(e){
+
+    const btn = e.target.closest(".media-news-action");
+    if (!btn) return;
+
+    const card = btn.closest(".media-news-post");
+    if (!card) return;
+
+    const id = card.dataset.id;
+    const token = getToken();
+
+    if (!id || !token) return;
+
+    if (btn.dataset.action === "delete"){
+
+        if (!confirm("این پست حذف شود؟"))
+            return;
+
+        try{
+
+            btn.disabled = true;
+
+            const response = await fetch(
+                `${API_URL}/media-news/${id}`,
+                {
+                    method:"DELETE",
+                    headers:{
+                        Authorization:"Bearer " + token
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok)
+                throw new Error(data.detail || "حذف انجام نشد");
+
+            card.classList.add("removing");
+
+            setTimeout(() => {
+                card.remove();
+
+                const box = document.getElementById("mediaNewsPosts");
+
+                if (box && !box.querySelector(".media-news-post")){
+                    box.innerHTML =
+                        '<div class="media-news-empty">هنوز پستی منتشر نشده است.</div>';
+                }
+            },260);
+
+        }catch(error){
+
+            btn.disabled = false;
+            alert(error.message || "حذف انجام نشد.");
+        }
+    }
+
+
+    if (btn.dataset.action === "edit"){
+
+        const oldText =
+            card.querySelector(".media-news-post-text")?.textContent || "";
+
+        const value = prompt("متن جدید پست:", oldText.trim());
+
+        if (value === null)
+            return;
+
+        try{
+
+            btn.disabled = true;
+
+            const response = await fetch(
+                `${API_URL}/media-news/${id}`,
+                {
+                    method:"PUT",
+                    headers:{
+                        Authorization:"Bearer " + token,
+                        "Content-Type":"application/json"
+                    },
+                    body:JSON.stringify({text:value})
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok)
+                throw new Error(data.detail || "ویرایش انجام نشد");
+
+            const textNode =
+                card.querySelector(".media-news-post-text");
+
+            if (textNode)
+                textNode.textContent = value;
+
+        }catch(error){
+
+            alert(error.message || "ویرایش انجام نشد.");
+
+        }finally{
+
+            btn.disabled = false;
+        }
+    }
+});
+
+
+/* لود سریع‌تر تصاویر تبلیغات */
+document.addEventListener("DOMContentLoaded",function(){
+
+    document.querySelectorAll("img").forEach(img=>{
+        img.decoding = "async";
+    });
+
+});
+
+/* ===== FAST IMAGE LOADER ===== */
+(function () {
+    function prepareImage(img) {
+        if (!img || img.dataset.fastReady === "1") return;
+
+        img.dataset.fastReady = "1";
+        img.decoding = "async";
+
+        if (img.complete && img.naturalWidth > 0) {
+            requestAnimationFrame(() => img.classList.add("loaded"));
+            return;
+        }
+
+        img.addEventListener("load", function () {
+            img.classList.add("loaded");
+        }, { once: true });
+
+        img.addEventListener("error", function () {
+            img.classList.remove("loaded");
+        }, { once: true });
+    }
+
+    function scanImages(root) {
+        if (!root) return;
+
+        if (root.tagName === "IMG") {
+            prepareImage(root);
+        }
+
+        root.querySelectorAll?.("img").forEach(prepareImage);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        scanImages(document);
+    });
+
+    const observer = new MutationObserver(function (mutations) {
+        for (const mutation of mutations) {
+            mutation.addedNodes.forEach(node => {
+                if (node.nodeType === 1) scanImages(node);
+            });
+        }
+    });
+
+    observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+    });
+})();

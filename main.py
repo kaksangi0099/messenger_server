@@ -259,7 +259,7 @@ def init_db():
     connection.close()
 
 
-init_db()
+# init_db()
 
 # =========================
 # DATABASE MIGRATIONS
@@ -286,7 +286,7 @@ def migrate_db():
     connection.close()
 
 
-migrate_db()
+# migrate_db()
 
 
 # =========================
@@ -817,7 +817,7 @@ def ensure_owner():
     connection.close()
 
 
-ensure_owner()
+# ensure_owner()
 
 
 # =========================
@@ -3762,7 +3762,7 @@ def init_moderation_tables():
     connection.close()
 
 
-init_moderation_tables()
+# init_moderation_tables()
 
 
 # =========================================================
@@ -4830,3 +4830,206 @@ def remove_community_member(
     c.commit()
     c.close()
     return {"ok": True, "message": "کاربر از کانال حذف شد."}
+
+# ================= MEDIA NEWS OFFICIAL CHANNEL =================
+
+
+
+MEDIA_NEWS_NAME = "Media News"
+
+def is_media_news_admin(user):
+    return (
+        user["username"] == OWNER_USERNAME
+        or user.get("is_admin") is True
+        or user.get("is_support") is True
+    )
+
+@app.get("/media-news")
+def get_media_news(authorization: str | None = Header(default=None)):
+    user = get_current_user(authorization)
+
+    with db() as connection:
+        rows = connection.execute("""
+            SELECT id, author_username, text, media_url, media_type, created_at
+            FROM media_news_posts
+            ORDER BY id DESC
+            LIMIT 100
+        """).fetchall()
+
+    return {
+        "channel": {
+            "name": MEDIA_NEWS_NAME,
+            "verified": True,
+            "username": "media_news"
+        },
+        "posts": rows,
+        "can_post": is_media_news_admin(user)
+    }
+
+
+@app.post("/media-news")
+async def create_media_news_post(
+    payload: dict = Body(default={}),
+    authorization: str | None = Header(default=None)
+):
+    text = str(payload.get("text", "") or "")
+    user = get_current_user(authorization)
+
+    if not is_media_news_admin(user):
+        raise HTTPException(
+            status_code=403,
+            detail="فقط مالک یا پشتیبانی اجازه انتشار دارد."
+        )
+
+    text = (text or "").strip()
+
+    if not text:
+        raise HTTPException(status_code=400, detail="متن پست خالی است.")
+
+    with db() as connection:
+        row = connection.execute("""
+            INSERT INTO media_news_posts
+                (author_username, text)
+            VALUES
+                (%s, %s)
+            RETURNING id, author_username, text, media_url, media_type, created_at
+        """, (user["username"], text)).fetchone()
+
+        connection.commit()
+
+    return {"post": row}
+
+
+@app.post("/media-news/upload")
+async def upload_media_news(
+    file: UploadFile = File(...),
+    text: str = "",
+    authorization: str | None = Header(default=None)
+):
+    user = get_current_user(authorization)
+
+    if not is_media_news_admin(user):
+        raise HTTPException(
+            status_code=403,
+            detail="فقط مالک یا پشتیبانی اجازه انتشار دارد."
+        )
+
+    filename = file.filename or "file"
+    extension = Path(filename).suffix.lower()
+
+    images = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+    videos = {".mp4", ".webm", ".mov", ".mkv"}
+    files = {
+        ".pdf", ".txt", ".zip", ".rar",
+        ".doc", ".docx", ".xls", ".xlsx",
+        ".ppt", ".pptx", ".csv"
+    }
+
+    if extension in images:
+        media_type = "image"
+    elif extension in videos:
+        media_type = "video"
+    elif extension in files:
+        media_type = "file"
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="فرمت فایل پشتیبانی نمی‌شود."
+        )
+
+    safe_name = f"news_{secrets.token_hex(16)}{extension}"
+    target = MEDIA_DIR / safe_name
+
+    with target.open("wb") as output:
+        while True:
+            chunk = await file.read(1024 * 1024)
+            if not chunk:
+                break
+            output.write(chunk)
+
+    media_url = f"/media/{safe_name}"
+
+    with db() as connection:
+        row = connection.execute("""
+            INSERT INTO media_news_posts
+                (author_username, text, media_url, media_type)
+            VALUES
+                (%s, %s, %s, %s)
+            RETURNING id, author_username, text, media_url, media_type, created_at
+        """, (
+            user["username"],
+            (text or "").strip(),
+            media_url,
+            media_type
+        )).fetchone()
+
+        connection.commit()
+
+    return {"post": row}
+
+
+# ===== Media News: Edit / Delete =====
+@app.put("/media-news/{post_id}")
+async def edit_media_news_post(
+    post_id: int,
+    payload: dict = Body(default={}),
+    authorization: str | None = Header(default=None)
+):
+    user = get_current_user(authorization)
+
+    if not is_media_news_admin(user):
+        raise HTTPException(status_code=403, detail="اجازه ویرایش ندارید.")
+
+    text = str(payload.get("text", "") or "").strip()
+
+    with db() as connection:
+        row = connection.execute("""
+            UPDATE media_news_posts
+            SET text = %s
+            WHERE id = %s
+            RETURNING id, author_username, text, media_url, media_type, created_at
+        """, (text, post_id)).fetchone()
+
+        if not row:
+            raise HTTPException(status_code=404, detail="پست پیدا نشد.")
+
+        connection.commit()
+
+    return {"post": row}
+
+
+@app.delete("/media-news/{post_id}")
+async def delete_media_news_post(
+    post_id: int,
+    authorization: str | None = Header(default=None)
+):
+    user = get_current_user(authorization)
+
+    if not is_media_news_admin(user):
+        raise HTTPException(status_code=403, detail="اجازه حذف ندارید.")
+
+    with db() as connection:
+        row = connection.execute("""
+            DELETE FROM media_news_posts
+            WHERE id = %s
+            RETURNING id, media_url
+        """, (post_id,)).fetchone()
+
+        if not row:
+            raise HTTPException(status_code=404, detail="پست پیدا نشد.")
+
+        connection.commit()
+
+    # حذف فایل رسانه‌ای پست، اگر وجود داشته باشد
+    media_url = row.get("media_url") if hasattr(row, "get") else row["media_url"]
+
+    if media_url:
+        try:
+            filename = Path(str(media_url)).name
+            target = MEDIA_DIR / filename
+            if target.exists():
+                target.unlink()
+        except Exception as e:
+            print("Media News media cleanup:", e)
+
+    return {"ok": True, "id": post_id}
