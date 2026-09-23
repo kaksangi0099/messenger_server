@@ -7690,3 +7690,188 @@ document.addEventListener("DOMContentLoaded",function(){
         subtree: true
     });
 })();
+
+/* ===== MEDIA NEWS ULTRA UI ===== */
+
+(function(){
+
+    function getNewsFontClass(value){
+        if(value === "serif") return "media-news-font-serif";
+        if(value === "mono") return "media-news-font-mono";
+        if(value === "rounded") return "media-news-font-rounded";
+        return "media-news-font-default";
+    }
+
+    function openNewsImage(url){
+        if(!url) return;
+
+        const old = document.querySelector(".media-news-image-viewer");
+        if(old) old.remove();
+
+        const viewer = document.createElement("div");
+        viewer.className = "media-news-image-viewer";
+
+        viewer.innerHTML = `
+            <button class="media-news-viewer-close" type="button">×</button>
+            <img src="${escapeHtml(url)}" alt="">
+        `;
+
+        viewer.addEventListener("click",function(e){
+            if(e.target === viewer || e.target.classList.contains("media-news-viewer-close")){
+                viewer.remove();
+            }
+        });
+
+        document.body.appendChild(viewer);
+    }
+
+    window.openNewsImage = openNewsImage;
+
+    function upgradeNewsImages(){
+        const box = document.getElementById("mediaNewsPosts");
+        if(!box) return;
+
+        box.querySelectorAll(".media-news-media-wrap").forEach(wrap => {
+
+            const img = wrap.querySelector("img");
+            if(!img) return;
+
+            if(wrap.querySelector(".media-news-image-actions")) return;
+
+            const url = img.getAttribute("src");
+            if(!url) return;
+
+            img.addEventListener("click",function(){
+                openNewsImage(url);
+            });
+
+            const actions = document.createElement("div");
+            actions.className = "media-news-image-actions";
+
+            actions.innerHTML = `
+                <button
+                    type="button"
+                    class="media-news-image-action"
+                    title="نمایش عکس">⌕</button>
+
+                <a
+                    class="media-news-image-action"
+                    href="${escapeHtml(url)}"
+                    download
+                    target="_blank"
+                    rel="noopener"
+                    title="دانلود عکس">↓</a>
+            `;
+
+            actions.querySelector("button").onclick = function(e){
+                e.stopPropagation();
+                openNewsImage(url);
+            };
+
+            wrap.appendChild(actions);
+        });
+    }
+
+    const oldLoad = window.loadMediaNewsPosts;
+
+    if(typeof oldLoad === "function"){
+        window.loadMediaNewsPosts = async function(){
+
+            await oldLoad();
+
+            setTimeout(upgradeNewsImages,80);
+            setTimeout(upgradeNewsImages,300);
+        };
+    }
+
+    document.addEventListener("change",function(e){
+
+        if(e.target && e.target.id === "mediaNewsFont"){
+
+            const text = document.getElementById("mediaNewsText");
+            if(!text) return;
+
+            text.dataset.font = e.target.value;
+
+            text.style.fontFamily =
+                e.target.value === "serif"
+                    ? 'Georgia,"Times New Roman",serif'
+                    : e.target.value === "mono"
+                    ? 'monospace'
+                    : e.target.value === "rounded"
+                    ? 'system-ui,sans-serif'
+                    : 'inherit';
+        }
+
+        if(e.target && e.target.id === "mediaNewsFile"){
+
+            const file = e.target.files?.[0];
+            const name = document.getElementById("mediaNewsFileName");
+
+            if(name){
+                name.textContent = file
+                    ? "📎 " + file.name
+                    : "فایلی انتخاب نشده";
+
+                name.classList.toggle("media-news-file-selected",!!file);
+            }
+        }
+
+    });
+
+    document.addEventListener("keydown",function(e){
+
+        const text = e.target;
+
+        if(
+            text &&
+            text.id === "mediaNewsText" &&
+            (e.ctrlKey || e.metaKey) &&
+            e.key === "Enter"
+        ){
+            e.preventDefault();
+
+            const button = document.getElementById("mediaNewsSend");
+
+            if(button && !button.disabled){
+                button.click();
+            }
+        }
+
+        if(e.key === "Escape"){
+            const viewer = document.querySelector(".media-news-image-viewer");
+            if(viewer) viewer.remove();
+        }
+
+    });
+
+})();
+
+/* فونت‌های نمایش پست */
+
+(function(){
+
+    const style = document.createElement("style");
+
+    style.textContent = `
+        .media-news-font-serif{
+            font-family:Georgia,"Times New Roman",serif !important;
+        }
+
+        .media-news-font-mono{
+            font-family:monospace !important;
+        }
+
+        .media-news-font-rounded{
+            font-family:system-ui,sans-serif !important;
+        }
+
+        .media-news-font-default{
+            font-family:inherit !important;
+        }
+    `;
+
+    document.head.appendChild(style);
+
+})();
+
