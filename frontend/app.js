@@ -4026,7 +4026,7 @@ async function loadRecentChats() {
             );
         }
 
-        renderRecentChats(data.chats || []); loadMediaNewsEntry(); loadMediaNewsEntry();
+        renderRecentChats(data.chats || []); loadMediaNewsEntry();
 
     } catch (error) {
 
@@ -4194,7 +4194,7 @@ async function searchUsers(q) {
 
 function renderSearchResults(users) {
 
-    const list = document.getElementById("chatList");
+    const list = document.getElementById("realChatList") || document.getElementById("chatList");
 
     if (!list) {
         console.error("SEARCH: chatList not found");
@@ -7136,7 +7136,7 @@ function showSuspensionLoginNotice(detail) {
 const MEDIA_NEWS_AVATAR = "/static/media-news-avatar.jpg";
 
 async function loadMediaNewsEntry() {
-    const list = document.getElementById("chatList");
+    const list = document.getElementById("realChatList") || document.getElementById("chatList");
     if (!list || !getToken()) return;
 
     const old = document.getElementById("mediaNewsEntry");
