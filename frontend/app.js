@@ -7171,9 +7171,13 @@ async function openMediaNews() {
 
         page.innerHTML = `
             <div class="media-news-header">
-                <button type="button" id="mediaNewsBack">‹</button>
-                <div class="media-news-header-avatar"></div>
-                <div>
+                <button type="button" id="mediaNewsBack" class="media-news-back">‹</button>
+
+                <div class="media-news-header-avatar">
+                    <img src="${MEDIA_NEWS_AVATAR}" alt="Media News">
+                </div>
+
+                <div class="media-news-header-info">
                     <div class="media-news-header-title">
                         Media News <span class="media-news-verified">✓</span>
                     </div>
@@ -7182,13 +7186,37 @@ async function openMediaNews() {
             </div>
 
             <div class="media-news-posts" id="mediaNewsPosts">
-                در حال دریافت پست‌ها...
+                <div class="media-news-empty">در حال دریافت پست‌ها...</div>
             </div>
 
             <div class="media-news-admin" id="mediaNewsAdmin">
-                <input id="mediaNewsText" placeholder="متن پست...">
-                <input id="mediaNewsFile" type="file" accept="image/*,video/*,.pdf,.zip,.doc,.docx">
-                <button type="button" id="mediaNewsSend">ارسال</button>
+                <div class="media-news-tools">
+                    <button type="button" onclick="formatMediaNews('bold')" title="ضخیم">B</button>
+                    <button type="button" onclick="formatMediaNews('italic')" title="کج"><i>I</i></button>
+
+                    <select id="mediaNewsFont" title="فونت">
+                        <option value="default">فونت پیش‌فرض</option>
+                        <option value="serif">کلاسیک</option>
+                        <option value="mono">کدنویسی</option>
+                        <option value="rounded">گرد</option>
+                    </select>
+
+                    <label for="mediaNewsFile" class="media-news-file-btn" title="افزودن فایل">
+                        📎
+                    </label>
+                    <input id="mediaNewsFile" type="file"
+                        accept="image/*,video/*,.pdf,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                        hidden>
+                </div>
+
+                <textarea id="mediaNewsText"
+                    placeholder="پست جدید برای Media News..."
+                    rows="3"></textarea>
+
+                <div class="media-news-admin-bottom">
+                    <span id="mediaNewsFileName">فایلی انتخاب نشده</span>
+                    <button type="button" id="mediaNewsSend">انتشار پست</button>
+                </div>
             </div>
         `;
 
@@ -7198,136 +7226,39 @@ async function openMediaNews() {
             page.classList.remove("open");
             page.remove();
             document.body.classList.remove("media-news-open");
-            const home = document.getElementById("app") || document.getElementById("mainApp") || document.body;
-            if (home) home.scrollTop = 0;
         };
+
+        const fileInput = document.getElementById("mediaNewsFile");
+        const fileName = document.getElementById("mediaNewsFileName");
+
+        if (fileInput) {
+            fileInput.addEventListener("change", () => {
+                const file = fileInput.files?.[0];
+                if (fileName) {
+                    fileName.textContent = file
+                        ? `📎 ${file.name}`
+                        : "فایلی انتخاب نشده";
+                }
+            });
+        }
+
+        const fontSelect = document.getElementById("mediaNewsFont");
+        const textArea = document.getElementById("mediaNewsText");
+
+        if (fontSelect && textArea) {
+            fontSelect.addEventListener("change", () => {
+                textArea.dataset.font = fontSelect.value;
+            });
+        }
 
         document.getElementById("mediaNewsSend").onclick = sendMediaNewsPost;
     }
 
     page.classList.add("open");
+    document.body.classList.add("media-news-open");
+
     await loadMediaNewsPosts();
 }
-
-async function loadMediaNewsPosts() {
-    const token = getToken();
-    const box = document.getElementById("mediaNewsPosts");
-    if (!token || !box) return;
-
-    try {
-        const response = await fetch(`${API_URL}/media-news`, {
-            headers: {
-                Authorization: "Bearer " + token
-            }
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.detail || "خطا");
-        }
-
-        const admin = document.getElementById("mediaNewsAdmin"); if (admin) admin.classList.toggle("show", data.can_post === true);
-           if (admin) admin.classList.toggle("show", data.can_post === true);
-           box.innerHTML = "";
-
-        for (const post of (data.posts || [])) {
-            const card = document.createElement("article");
-            card.className = "media-news-post";
-
-            let html = "";
-
-            if (post.text) {
-                html += `<div class="media-news-post-text">${escapeHtml(post.text)}</div>`;
-            }
-
-            if (post.media_url && post.media_type === "image") {
-                html += `<img src="${escapeHtml(post.media_url)}" loading="lazy">`;
-            }
-
-            if (post.media_url && post.media_type === "video") {
-                html += `<video src="${escapeHtml(post.media_url)}" controls preload="metadata"></video>`;
-            }
-
-            if (post.media_url && post.media_type === "file") {
-                html += `<a href="${escapeHtml(post.media_url)}" target="_blank">📎 مشاهده فایل</a>`;
-            }
-
-            html += `<div class="media-news-post-meta">Media News • ${escapeHtml(post.author_username)}</div>`;
-
-            card.innerHTML = html;
-            box.appendChild(card);
-        }
-
-        if (!data.posts || !data.posts.length) {
-            box.innerHTML = `<div class="empty-chat-list">هنوز پستی منتشر نشده است.</div>`;
-        }
-
-    } catch (error) {
-        console.error("Media News:", error);
-        box.innerHTML = `<div class="empty-chat-list">دریافت پست‌ها انجام نشد.</div>`;
-    }
-}
-
-async function sendMediaNewsPost() {
-    const token = getToken();
-    const textEl = document.getElementById("mediaNewsText");
-    const fileEl = document.getElementById("mediaNewsFile");
-
-    if (!token) return;
-
-    const text = textEl.value.trim();
-    const file = fileEl.files[0];
-
-    try {
-        if (file) {
-            const form = new FormData();
-            form.append("file", file);
-            form.append("text", text);
-
-            const response = await fetch(`${API_URL}/media-news/upload`, {
-                method: "POST",
-                headers: {
-                    Authorization: "Bearer " + token
-                },
-                body: form
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.detail || "ارسال انجام نشد");
-            }
-        } else {
-            const response = await fetch(`${API_URL}/media-news`, {
-                method: "POST",
-                headers: {
-                    Authorization: "Bearer " + token,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({text})
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.detail || "ارسال انجام نشد");
-            }
-        }
-
-        textEl.value = "";
-        fileEl.value = "";
-        await loadMediaNewsPosts();
-
-    } catch (error) {
-        alert(error.message || "ارسال پست انجام نشد.");
-    }
-}
-
-setTimeout(() => {
-    loadMediaNewsEntry();
-}, 700);
-
 
 function formatMediaNews(type) {
     const el = document.getElementById("mediaNewsText");
