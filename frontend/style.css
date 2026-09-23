@@ -6687,3 +6687,41 @@ body {
     object-fit: cover;
     border-radius: 50%;
 }
+
+/* کوچک‌سازی پنل پروفایل */
+.profile-panel,
+.profile-card,
+.account-profile,
+.account-profile-card {
+    max-width: 420px !important;
+    width: calc(100% - 32px) !important;
+    margin: 16px auto !important;
+}
+
+.profile-panel img,
+.profile-card img,
+.account-profile img,
+.account-profile-card img {
+    max-width: 96px !important;
+    max-height: 96px !important;
+}
+
+
+/* کوچک‌سازی پروفایل حساب */
+.profile-panel,
+.profile-card,
+.account-profile,
+.account-profile-card {
+    max-width: 420px !important;
+    width: calc(100% - 32px) !important;
+    margin: 16px auto !important;
+}
+
+.profile-panel img,
+.profile-card img,
+.account-profile img,
+.account-profile-card img {
+    max-width: 96px !important;
+    max-height: 96px !important;
+}
+
