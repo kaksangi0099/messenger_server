@@ -3273,7 +3273,20 @@ def get_recent_chats(
             lm.text AS last_message,
             lm.media_url,
             lm.media_type,
-            lm.created_at AS last_message_at
+            lm.created_at AS last_message_at,
+            (
+                SELECT COUNT(*)
+                FROM messages um
+                WHERE um.sender_id = u.id
+                  AND um.receiver_id = %s
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM message_receipts ur
+                      WHERE ur.message_id = um.id
+                        AND ur.user_id = %s
+                        AND ur.read_at IS NOT NULL
+                  )
+            ) AS unread_count
         FROM users u
 
         JOIN (
@@ -3300,6 +3313,8 @@ def get_recent_chats(
         ORDER BY recent.last_id DESC
         """,
         (
+            current["id"],
+            current["id"],
             current["id"],
             current["id"],
             current["id"]
@@ -3332,7 +3347,8 @@ def get_recent_chats(
             "premium_level": row["premium_level"],
             "avatar_url": row["avatar_url"],
             "last_message": last_message,
-            "last_message_at": row["last_message_at"]
+            "last_message_at": row["last_message_at"],
+            "unread_count": int(row["unread_count"] or 0)
         })
 
     return {

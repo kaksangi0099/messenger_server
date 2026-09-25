@@ -7875,3 +7875,325 @@ document.addEventListener("DOMContentLoaded",function(){
 
 })();
 
+
+/* =========================
+   MEDIA UNREAD + FAST AVATAR FINAL
+========================= */
+(function () {
+    "use strict";
+
+    function unreadBadgeText(count) {
+        count = Number(count || 0);
+        if (count <= 0) return "";
+        return count > 99 ? "99+" : String(count);
+    }
+
+    function applyUnreadBadge(item, count) {
+        if (!item) return;
+
+        const text = unreadBadgeText(count);
+        let badge = item.querySelector(".media-unread-badge");
+
+        if (!text) {
+            if (badge) badge.remove();
+            return;
+        }
+
+        if (!badge) {
+            badge = document.createElement("span");
+            badge.className = "media-unread-badge";
+            item.appendChild(badge);
+        }
+
+        badge.textContent = text;
+    }
+
+    function applyPrivateUnreadBadges(chats) {
+        if (!Array.isArray(chats)) return;
+
+        chats.forEach(chat => {
+            const username = String(chat.username || "");
+            if (!username) return;
+
+            const items = document.querySelectorAll(
+                '.recent-chat-item[data-username="' +
+                CSS.escape(username) +
+                '"]'
+            );
+
+            items.forEach(item => {
+                applyUnreadBadge(item, Number(chat.unread_count || 0));
+            });
+        });
+    }
+
+    function findChatItem(username) {
+        const safe = CSS.escape(String(username || ""));
+        return document.querySelector(
+            '.recent-chat-item[data-username="' + safe + '"]'
+        );
+    }
+
+    /*
+     * بعد از هر بار لود لیست چت‌ها، پاسخ /chats را پیدا می‌کنیم.
+     * این روش به window.renderRecentChats وابسته نیست.
+     */
+    const originalFetch = window.fetch;
+
+    window.fetch = async function () {
+        const response = await originalFetch.apply(this, arguments);
+
+        try {
+            const request = arguments[0];
+            const url = typeof request === "string"
+                ? request
+                : (request && request.url) || "";
+
+            if (
+                String(url).includes("/chats") &&
+                response.ok
+            ) {
+                const clone = response.clone();
+
+                clone.json().then(data => {
+                    if (data && Array.isArray(data.chats)) {
+                        setTimeout(() => {
+                            applyPrivateUnreadBadges(data.chats);
+                        }, 0);
+                    }
+                }).catch(() => {});
+            }
+        } catch (_) {}
+
+        return response;
+    };
+
+    /*
+     * وقتی چت باز می‌شود، کمی بعد Badge همان چت حذف می‌شود.
+     * Backend قبلاً /read را در loadChatMessages ثبت می‌کند.
+     */
+    function clearOpenedChatBadge(username) {
+        if (!username) return;
+
+        setTimeout(() => {
+            const item = findChatItem(username);
+            if (item) applyUnreadBadge(item, 0);
+        }, 900);
+    }
+
+    document.addEventListener("click", function (event) {
+        const item = event.target.closest(".recent-chat-item");
+        if (!item) return;
+
+        const username =
+            item.getAttribute("data-username") ||
+            item.dataset.username ||
+            "";
+
+        if (username) {
+            clearOpenedChatBadge(username);
+        }
+    }, true);
+
+    /*
+     * Media News unread
+     * آخرین پست دیده‌شده روی همان دستگاه ذخیره می‌شود و
+     * با بستن/بازکردن برنامه از بین نمی‌رود.
+     */
+    const NEWS_KEY = "media_news_last_seen_id_v2";
+
+    function getNewsLastSeen() {
+        const n = Number(localStorage.getItem(NEWS_KEY) || 0);
+        return Number.isFinite(n) ? n : 0;
+    }
+
+    function setNewsLastSeen(id) {
+        id = Number(id || 0);
+        if (id > 0) {
+            localStorage.setItem(NEWS_KEY, String(id));
+        }
+    }
+
+    function mediaNewsEntry() {
+        return document.querySelector(
+            "#mediaNewsEntry, .media-news-entry"
+        );
+    }
+
+    function updateMediaNewsBadge(count) {
+        const entry = mediaNewsEntry();
+        if (!entry) return;
+
+        let badge = entry.querySelector(".media-news-unread-badge");
+        const n = Number(count || 0);
+
+        if (n <= 0) {
+            if (badge) badge.remove();
+            return;
+        }
+
+        if (!badge) {
+            badge = document.createElement("span");
+            badge.className = "media-news-unread-badge";
+            entry.appendChild(badge);
+        }
+
+        badge.textContent = n > 99 ? "99+" : String(n);
+    }
+
+    async function refreshMediaNewsUnread() {
+        if (typeof getToken !== "function" || !getToken()) return;
+
+        try {
+            const response = await originalFetch(
+                API_URL + "/media-news",
+                {
+                    headers: typeof authHeaders === "function"
+                        ? authHeaders()
+                        : {}
+                }
+            );
+
+            if (!response.ok) return;
+
+            const data = await response.json();
+            const posts = Array.isArray(data.posts)
+                ? data.posts
+                : [];
+
+            if (!posts.length) {
+                updateMediaNewsBadge(0);
+                return;
+            }
+
+            const lastSeen = getNewsLastSeen();
+            const unread = posts.filter(
+                p => Number(p.id || 0) > lastSeen
+            ).length;
+
+            updateMediaNewsBadge(unread);
+        } catch (_) {}
+    }
+
+    function markMediaNewsSeen() {
+        const entry = mediaNewsEntry();
+        if (!entry) return;
+
+        originalFetch(
+            API_URL + "/media-news",
+            {
+                headers: typeof authHeaders === "function"
+                    ? authHeaders()
+                    : {}
+            }
+        )
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+            const posts = data && Array.isArray(data.posts)
+                ? data.posts
+                : [];
+
+            if (!posts.length) return;
+
+            const latest = Number(posts[0].id || 0);
+            if (latest > 0) {
+                setNewsLastSeen(latest);
+                updateMediaNewsBadge(0);
+            }
+        })
+        .catch(() => {});
+    }
+
+    document.addEventListener("click", function (event) {
+        const entry = event.target.closest(
+            "#mediaNewsEntry, .media-news-entry"
+        );
+
+        if (!entry) return;
+
+        setTimeout(markMediaNewsSeen, 700);
+    }, true);
+
+    /*
+     * آواتار سریع و بدون Blur
+     */
+    function makeAvatarFast(img) {
+        if (!img) return;
+
+        img.loading = "eager";
+        img.decoding = "sync";
+        img.setAttribute("fetchpriority", "high");
+
+        img.style.filter = "none";
+        img.style.opacity = "1";
+        img.style.visibility = "visible";
+        img.style.imageRendering = "auto";
+    }
+
+    function refreshAllAvatars() {
+        document.querySelectorAll(
+            ".chat-avatar img, " +
+            ".user-profile-avatar, " +
+            ".media-news-avatar img, " +
+            ".media-news-header-avatar img"
+        ).forEach(makeAvatarFast);
+    }
+
+    document.addEventListener("error", function (event) {
+        const img = event.target;
+
+        if (!(img instanceof HTMLImageElement)) return;
+
+        if (
+            img.matches(
+                ".chat-avatar img, .user-profile-avatar, " +
+                ".media-news-avatar img, .media-news-header-avatar img"
+            )
+        ) {
+            img.style.filter = "none";
+            img.style.opacity = "1";
+            img.style.visibility = "visible";
+        }
+    }, true);
+
+    /*
+     * هر چند ثانیه لیست چت و Media News تازه می‌شود.
+     * unread_count از سرور می‌آید، بنابراین با refresh/بستن برنامه
+     * تا وقتی پیام واقعاً خوانده نشده باقی می‌ماند.
+     */
+    setInterval(async function () {
+        try {
+            if (
+                typeof getToken === "function" &&
+                getToken() &&
+                typeof loadRecentChats === "function"
+            ) {
+                await loadRecentChats();
+            }
+        } catch (_) {}
+
+        try {
+            await refreshMediaNewsUnread();
+        } catch (_) {}
+
+        refreshAllAvatars();
+    }, 5000);
+
+    setTimeout(refreshMediaNewsUnread, 1200);
+    setTimeout(refreshAllAvatars, 500);
+    setTimeout(refreshAllAvatars, 1800);
+
+    /*
+     * MutationObserver برای وقتی که لیست چت‌ها دوباره ساخته می‌شود.
+     */
+    const observer = new MutationObserver(function () {
+        refreshAllAvatars();
+    });
+
+    if (document.body) {
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+})();
